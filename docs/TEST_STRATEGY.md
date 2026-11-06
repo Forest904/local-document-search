@@ -94,11 +94,16 @@ Questi sono test da implementare nelle milestone, non risultati già ottenuti.
 | M6 | Schema/processing incompatibile, sorgente presente/assente | Rebuild / errore; mai ricerca incompatibile, vecchi dati preservati fino al successo |
 | M6 | Crash durante rebuild di schema fisico | Vecchio database preservato finché il riferimento non seleziona quello nuovo completo |
 | M6 | Cambio A→B→A | Nessun risultato della directory errata, A reindicizzata al ritorno |
+| M6 | ClearLocalData durante job | Richiesta rifiutata, nessuna pulizia avviata |
 | M6 | ClearLocalData, anche con errore di cancellazione | Solo dati app rimossi; errore osservabile e ripetibile, sorgenti intatti |
 | M7 | Sync sovrapposti / seconda istanza | Stesso job_id e reused=true / rifiuto accesso storage |
 | M7 | Chiusura normale / kill durante job | Attesa del job / recovery e lock rilasciato dal sistema |
 | M8 | Query lenta seguita da altra query/cambio cartella | Risposta superata non sovrascrive lo stato corrente |
 | M8 | Invio, paginazione, polling, check | Ricerca esplicita, pagine 50, polling 200 ms, check 1,5 s |
+| M8 | Pagina successiva sullo stesso snapshot N | Offset richiesto mantenuto, ordine e totale riferiti a N |
+| M8 | Pagina successiva restituisce N+1 dopo lista su N | Risposta scartata; stessa query/campo ripetuta con offset=0, lista e totale dalla nuova prima pagina |
+| M8 | Cambio query/campo/directory durante ritorno alla prima pagina | Risposta precedente ignorata, nessuna sovrascrittura dello stato corrente |
+| M8 | Query senza match / offset oltre il totale | Lista vuota e snapshot_id valido; totale 0 / totale effettivo; cambio versione applica comunque il ritorno alla prima pagina |
 | M8 | Apri file assente / anteprima versione rimossa | Messaggio e proposta Sync / invito a ripetere ricerca |
 | M8 | Build/query/anteprima sotto carico | UI utilizzabile, nessun lavoro pesante nel thread grafico |
 | M9 | ZIP su Windows 11 x64 pulito, account standard | Avvio senza Python, indicizzazione, ricerca, restart e pulizia funzionanti |

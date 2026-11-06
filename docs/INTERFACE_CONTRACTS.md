@@ -47,6 +47,14 @@ flowchart LR
 
 `?` indica un campo opzionale o **non ancora obbligatorio**. Sono contratti in-process, non endpoint HTTP/IPC. Limit positivo e offset non negativo, altrimenti InvalidInput. Ordinare per percorso relativo preservato prima di paginare.
 
+### Paginazione e versione dei risultati
+
+Ogni `SearchDocuments` acquisisce lo snapshot attivo all'inizio della richiesta; `SearchRequest` non seleziona una versione. `SearchResponse.snapshot_id` identifica la versione usata per risultati e totale.
+
+Per una pagina successiva, la UI confronta lo `snapshot_id` restituito con quello della lista visualizzata: se coincide mantiene l'offset richiesto; se differisce scarta la risposta e ripete la stessa query e campo con `offset=0`, sostituendo lista e totale con la nuova prima pagina. La prima pagina accetta la versione acquisita dalla nuova richiesta, senza inseguire ulteriori commit.
+
+Un cambio query, campo o directory rende obsolete le risposte precedenti, compreso un eventuale ritorno alla prima pagina ancora in corso. Un risultato senza corrispondenze è valido: `results=[]`, `total_matches=0`, con lo `snapshot_id` interrogato. Un offset oltre i risultati produce una pagina vuota mantenendo il totale effettivo; se cambia versione si applica comunque il ritorno alla prima pagina.
+
 ### Query semantics
 
 - Modalità predefinita `BOTH`: `match_fully(filename, q) OR match_fully(content, q)`.

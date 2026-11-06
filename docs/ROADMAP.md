@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
 **Stato:** pianificazione approvata; prodotto non implementato.
-M0 richiede verifica documentale; M1–M9 restano da implementare e verificare.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -17,7 +17,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 
 | Milestone | Risultato | Stato |
 |---|---|---|
-| M0 | Specifica eseguibile | Da verificare |
+| M0 | Specifica eseguibile | Verificata (documentazione, 2026-11-06) |
 | M1 | Fondazioni verificabili | Da implementare |
 | M2 | Motore di ricerca puro | Da implementare |
 | M3 | CLI TXT e Homework 3 | Da implementare |

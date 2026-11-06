@@ -26,6 +26,8 @@ Nessuna notifica di cambiamento istantanea: il backend confronta i file solo ai 
 
 Search bar con selettore nome/contenuto/entrambi; Invio avvia la query, senza debounce o ricerca automatica. Clausole termini/frasi in AND, incluse combinazioni miste. Lista con filename, path relativo e formato, ordinata lessicograficamente per percorso preservato; pagine da 50. Selezione risultato apre testo completo mediante GetDocument(snapshot_id), senza snippet/highlighting.
 
+Ogni pagina interroga lo snapshot attivo. Se una pagina successiva restituisce uno `snapshot_id` diverso dalla lista visualizzata, scartarla e richiedere la prima pagina (`offset=0`) mantenendo query e campo; aggiornare lista e totale dalla nuova risposta. A versione invariata mantenere la pagina richiesta. Ignorare risposte superate da un cambio query, campo o directory, anche durante questo ritorno alla prima pagina. Zero corrispondenze è un esito valido con lista vuota. Dettagli nei [Contratti](INTERFACE_CONTRACTS.md).
+
 Se il file fisico non esiste più, l'azione `Apri file` deve comunicare `File non disponibile` e proporre Sync; non altera silenziosamente lo snapshot.
 
 ## 5. Pulsante Sync

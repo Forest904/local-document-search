@@ -16,6 +16,7 @@
 | [SECURITY_AND_PRIVACY.md](SECURITY_AND_PRIVACY.md) | Trattamento locale di documenti e testo persistito |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | Registro OD-01…OD-23 risolte/escluse, limiti e rischi |
 | [ROADMAP.md](ROADMAP.md) | Sequenza M0–M9 con prerequisiti, attività, test e criteri di uscita |
+| [M0_VERIFICATION.md](M0_VERIFICATION.md) | Evidenze della verifica documentale M0 e limiti |
 | [adr/](adr/) | Architecture Decision Records approvati/proposti |
 | [homework-3/](homework-3/) | Conformità consegna, test delle query, template relazione |
 

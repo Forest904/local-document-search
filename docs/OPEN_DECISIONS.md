@@ -26,7 +26,7 @@ Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confr
 | OD-16 | Chiamate in-process ai contratti; niente IPC/HTTP; una istanza sullo storage | [Architettura](ARCHITECTURE.md) | M7–M9 |
 | OD-17 | Ordine lessicografico per percorso relativo preservato; niente scoring | [Contratti](INTERFACE_CONTRACTS.md) | M2, M8 |
 | OD-18 | Testo completo e apertura file; snippet/highlighting fuori v1 | [UX](UX_WINDOWS.md) | M8 |
-| OD-19 | Ricerca con Invio; polling 200 ms; check 1,5 s; pagine da 50 | [UX](UX_WINDOWS.md) | M8 |
+| OD-19 | Ricerca con Invio; polling 200 ms; check 1,5 s; pagine da 50, ritorno alla prima se cambia snapshot | [UX](UX_WINDOWS.md) | M8 |
 | OD-20 | LOCALAPPDATA, protezioni account, niente cifratura aggiuntiva; ClearLocalData | [Privacy](SECURITY_AND_PRIVACY.md) | M6, M8–M9 |
 | OD-21 | PDF senza caratteri non-whitespace escluso; misti indicizzati per testo disponibile | [Analisi](INDEXING_AND_ANALYSIS.md) | M4 |
 | OD-22 | Sync sovrapposto restituisce stesso job_id con reused=true | [Contratti](INTERFACE_CONTRACTS.md) | M7 |
