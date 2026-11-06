@@ -1,10 +1,10 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti logici in-process. M1 implementa `SearchRequest`, `SearchResult`, `SearchResponse`, `DocumentDetails` e le quattro porte come `Protocol`; i casi d'uso, i DTO di lifecycle/job e gli adapter restano da implementare.
+**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. Lifecycle, job, `GetDocument` e persistenza restano nelle milestone successive.
 
 Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). Sono tipi di scambio, senza persistenza o lifecycle implementati.
 
-I DTO copiano le collezioni ricevute. `SearchRequest` rifiuta query vuote, campi non validi e paginazione non valida tramite `InvalidInput`; sintassi e clausole senza token sono validate dal parser/analyzer M2. I valori di dominio non validi sollevano `ValueError`; la traduzione in `InvalidInput` nel caso d'uso sarà collegata in M3. `matched_fields` contiene solo FILENAME e/o CONTENT, mai BOTH. Nessun servizio applicativo di ricerca operativo è introdotto da M2. Interfacce interne implementate e limiti in [Verifica M2](M2_VERIFICATION.md).
+I DTO copiano le collezioni ricevute. `SearchRequest` rifiuta query vuote, campi non validi e paginazione non valida tramite `InvalidInput`; sintassi e clausole senza token sono validate dal parser/analyzer M2. I valori di dominio non validi sollevano `ValueError`; M3 traduce gli errori del parser in `InvalidInput` nel caso d'uso. `matched_fields` contiene solo FILENAME e/o CONTENT, mai BOTH. Il servizio operativo M3 usa il motore M2 senza accessi ai sorgenti durante la ricerca. [Verifica M3](M3_VERIFICATION.md).
 
 ## 1. Modello di dipendenza
 
@@ -129,3 +129,17 @@ Categorie di errore:
 ## 6. Compatibilità tra sessioni
 
 Versioni `schema_version` e `processing_version` viaggiano nello snapshot. Una versione incompatibile non viene assunta valida solo perché i metadati dei file sono invariati. Incompatibilità → rebuild automatico, nessuna ricerca sui dati incompatibili né migrazione. Vecchi dati conservati fino al successo; sorgente assente → errore esplicito. Vedi [Snapshot](SNAPSHOTS_AND_SYNC.md).
+
+## 7. Superficie operativa M3
+
+`compose_cli(directory)` risolve e valida la radice in infrastructure e restituisce `CliApplication(root_directory, build, search)`. Ogni sessione usa una sola directory, un repository in memoria e un build iniziale bloccante. Il cablaggio M1 `compose_application` resta disponibile per dipendenze esplicite; non implementa lifecycle o settings operativi.
+
+`BuildIndex.execute(root_directory)` richiede la radice assoluta validata dall'adapter e costruisce un indice completo, senza diff. `BuildResult` immutabile contiene `snapshot_id`, `discovered`, `indexed`, `excluded`, `processed_bytes`, `elapsed` (secondi monotoni). Gli errori sono eccezioni, non risultati di successo con conteggi parziali. Gli ID progressivi sono allocati dall'application; un fallimento può lasciare intervalli inutilizzati. Il riuso multi-directory, la concorrenza e `SyncResult` appartengono alle milestone successive.
+
+La sequenza di pubblicazione è save → validate → activate; un errore scarta il candidato e conserva l'attivo. Il repository volatile non scrive su disco e richiede un candidato validato prima di attivarlo. Il single-writer è assicurato dalla sessione sincrona, non da un JobManager o lock tra processi. Le varianti `Excluded` ed `ExtractionFailed` restano distinte; il reader TXT produce soltanto `Extracted` o `ExtractionFailed`.
+
+Gli errori operativi M3 sono `SourceUnavailable`, `ExtractionFailure`, `StorageFailure`, `ResourceFailure`, `SnapshotUnavailable`, derivati da `ApplicationError`; `InvalidInput` rimane un `ValueError`. La ricerca senza indice alza `SnapshotUnavailable`. La scansione non salta silenziosamente directory illeggibili. La radice viene controllata prima della risoluzione, inclusi componenti antenati link/reparse point.
+
+CLI: `local-document-search DIRECTORY`, percorso relativo o assoluto. I prefissi sono esattamente `nome`, `contenuto`, `entrambi` minuscoli, iniziali e non quotati; un prefisso senza query è invalido. Il testo `"nome"` resta una query ordinaria. Un errore di query mantiene aperta la sessione; un errore di build impedisce la ricerca. La CLI mostra tutti i risultati recuperando pagine da 50, con percorso relativo e campi corrispondenti.
+
+Codici d'uscita: 0 su EOF normale o help; 1 errore operativo (inclusa directory assente); 2 argomenti non validi (incluso percorso non-directory o link); 130 su Ctrl+C. La sessione non riserva parole come `exit`: si esce con EOF (Windows: Ctrl+Z poi Invio; Unix: Ctrl+D) o Ctrl+C. Ctrl+C non attiva candidati incompleti; se arriva dopo l'attivazione lo snapshot è già completo.

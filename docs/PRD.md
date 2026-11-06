@@ -2,7 +2,7 @@
 
 **Prodotto:** Local Document Search  
 **Versione specifica:** v1 (progettazione)  
-**Stato:** requisiti concordati; fondazioni M1 e motore puro M2 implementati, CLI e funzionalità operative da implementare
+**Stato:** requisiti concordati; M1–M3 implementate, CLI TXT operativa con snapshot in memoria. Persistenza, sync, altri reader e desktop da implementare; [evidenze M3](M3_VERIFICATION.md).
 **Target:** applicazione desktop locale Windows con backend Python indipendente dalla UI  
 **Relazione con il corso:** la CLI per TXT, due campi e phrase queries deve soddisfare l'Homework 3; PDF/Markdown e UI sono estensioni.
 

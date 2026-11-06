@@ -1,4 +1,4 @@
-"""DTO pubblici di ricerca; i casi d'uso saranno introdotti successivamente."""
+"""DTO pubblici di ricerca e build completo M3."""
 from dataclasses import dataclass
 
 from local_document_search.domain.documents import (
@@ -25,7 +25,7 @@ class SearchRequest:
             raise InvalidInput("limit deve essere un intero positivo")
         if type(self.offset) is not int or self.offset < 0:
             raise InvalidInput("offset deve essere un intero non negativo")
-        # Parser/analyzer M2 validano sintassi e token; collegamento al caso d'uso in M3.
+        # SearchDocuments traduce gli errori del parser/analyzer in InvalidInput.
 
 
 @dataclass(frozen=True)
@@ -64,3 +64,14 @@ class DocumentDetails:
     document_id: DocumentId
     metadata: DocumentMetadata
     extracted_text: str
+
+
+@dataclass(frozen=True)
+class BuildResult:
+    """Esito del build iniziale completo; fallimenti esposti come errori."""
+    snapshot_id: str
+    discovered: int
+    indexed: int
+    excluded: int
+    processed_bytes: int
+    elapsed: float

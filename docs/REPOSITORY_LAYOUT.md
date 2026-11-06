@@ -22,7 +22,7 @@ local-document-search/
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. Servizi applicativi e adapter operativi restano segnaposto. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. Il frontend contiene soltanto un README.
 
 ## 2. Matrice di dipendenza
 
@@ -34,7 +34,7 @@ M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/compositio
 | `interfaces` | Application + composition root | Strutture mutabili dell'indice dall'esterno |
 | `frontend` | API pubbliche application, PySide6 | Domain Python interno, filesystem di storage diretto |
 
-Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitamente le quattro porte e restituisce `ApplicationDependencies`, senza eseguire I/O. M1 ne verifica il cablaggio con sostituti nei test; M3 collegherà i casi d'uso e gli adapter della CLI, poi riutilizzati dal frontend in-process. Evitare un generico `shared/` che diventi una dipendenza circolare.
+Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitamente le quattro porte e restituisce `ApplicationDependencies`, senza eseguire I/O. M1 ne verifica il cablaggio con sostituti nei test; `compose_cli` collega in M3 i casi d'uso e gli adapter TXT; non usa settings o lifecycle, rinviati a M6. Evitare un generico `shared/` che diventi una dipendenza circolare.
 
 ## 3. Responsabilità dei moduli
 
@@ -46,14 +46,14 @@ Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitam
 - `application/contracts.py`: DTO stabili dei casi d'uso.
 - `application/ports.py`: interfacce dei servizi esterni.
 - `application/lifecycle.py`: startup e directory selection.
-- `application/synchronization.py`: diff e pipeline di aggiornamento.
+- `application/synchronization.py`: build completo sincrono M3; diff e aggiornamenti in M6.
 - `application/jobs.py`: single-writer, sync/async, progress.
 - `application/search.py`: ricerca/recupero di documenti.
 - `infrastructure/filesystem.py`: discovery e metadati sorgente.
 - `infrastructure/readers/`: estrazione specifica per formato.
-- `infrastructure/snapshot_storage.py`: staging, validation, activation.
+- `infrastructure/snapshot_storage.py`: staging, validazione e attivazione in memoria M3; persistenza in M5.
 - `infrastructure/settings_storage.py`: directory ricordata.
-- `interfaces/cli.py`: comandi dell'Homework 3 (non ancora presenti).
+- `interfaces/cli.py`: sessione query dell'Homework 3 e codici d'uscita.
 
 ## 4. File operativi e Git
 

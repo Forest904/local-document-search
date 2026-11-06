@@ -1,4 +1,1 @@
-"""Reader TXT, Markdown e PDF tramite contratto comune.
-
-Modulo segnaposto: nessuna implementazione in questa bozza.
-"""
+"""Reader TXT operativo; Markdown e PDF restano segnaposto per M4."""

@@ -1,6 +1,6 @@
 # Homework 3 — Relazione (TEMPLATE NON COMPILATO)
 
-> Sostituire ogni campo `[DA COMPILARE]` con un risultato realmente ottenuto. Nessun numero o query è stato misurato in questo scaffold.
+> Sostituire ogni campo `[DA COMPILARE]` con un risultato realmente ottenuto. Questo file resta un template; per i risultati M3 effettivamente misurati vedere [REPORT.md](REPORT.md).
 
 ## 1. Informazioni generali
 

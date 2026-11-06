@@ -11,6 +11,9 @@ readme = "README.md"
 authors = []
 dependencies = []
 
+[project.scripts]
+local-document-search = "local_document_search.interfaces.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest==8.3.5"]
 

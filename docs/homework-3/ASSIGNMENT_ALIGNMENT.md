@@ -27,9 +27,9 @@ Le slide `id-02-source-discovery-basics.pptx` presentano inverted index con dict
 ## Stato della consegna
 
 - Design documentato: sì.
-- Codice di indexing/ricerca: **non ancora implementato**.
-- Dati di benchmark: **non ancora misurati**.
-- Dieci query eseguite: **no**.
-- Repository remoto GitHub: **non creato automaticamente**.
+- Codice di indexing/ricerca e CLI TXT: **implementati e verificati localmente in M3**.
+- Misura del build iniziale su corpus sintetico: **8 file, 192 byte, 0,016752 s**; non è un benchmark di scala.
+- Dieci query eseguite: **PASS**, oltre a due regressioni BOTH/clausole miste.
+- Repository pubblico fornito dall'utente: https://github.com/Forest904/local-document-search. Nessun push o invio al docente eseguito.
 
-Vedere [ROADMAP](../ROADMAP.md) e [REPORT_TEMPLATE](REPORT_TEMPLATE.md).
+Vedere [ROADMAP](../ROADMAP.md), [relazione compilata](REPORT.md) e [evidenze M3](../M3_VERIFICATION.md). Il [template](REPORT_TEMPLATE.md) resta riutilizzabile.

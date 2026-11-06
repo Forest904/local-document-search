@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** fondazioni M1 e motore puro M2 implementati e verificati localmente; CLI e prodotto non ancora operativi.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3–M9 restano da implementare e verificare.
+**Stato:** M1–M3 implementate e verificate localmente; CLI TXT operativa. Persistenza, sync, altri reader e desktop restano nelle milestone successive.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -20,7 +20,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | M0 | Specifica eseguibile | Verificata (documentazione, 2026-11-06) |
 | M1 | Fondazioni verificabili | Verificata localmente (2026-11-06); CI remota da verificare |
 | M2 | Motore di ricerca puro | Verificata localmente (2026-11-06); CI remota da verificare |
-| M3 | CLI TXT e Homework 3 | Da implementare |
+| M3 | CLI TXT e Homework 3 | Verificata localmente (2026-11-06); 3 test saltati, CI remota da verificare |
 | M4 | Ingestione multiformato | Da implementare |
 | M5 | Snapshot persistenti | Da implementare |
 | M6 | Sync e lifecycle | Da implementare |
@@ -101,6 +101,8 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 - Sessione console completa con AND, frasi e clausole miste.
 - Encoding/lettura errati non espongono candidati parziali.
 - Relazione con query, risultati, ambiente, numero file, tempi e URL repository reali.
+
+**Evidenze:** 194 test superati, 3 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Dieci query e due regressioni PASS su 8 TXT sintetici (192 byte), build iniziale misurato in 0,016752 s. [Verifica M3](M3_VERIFICATION.md), [relazione compilata](homework-3/REPORT.md). Nessun push o invio al docente; CI remota non verificata.
 
 **Riferimenti:** [Consegna](homework-3/ASSIGNMENT_ALIGNMENT.md), [Query](homework-3/QUERY_TEST_PLAN.md), [Relazione](homework-3/REPORT_TEMPLATE.md).
 

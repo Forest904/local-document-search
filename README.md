@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: fondazioni M1 e motore puro M2 (v0.1.0), verificati localmente.** Il package contiene analyzer, parser, builder di indici posizionali e ricerca su snapshot immutabili, oltre a DTO e porte. CLI, ingestione dei file, persistenza, sincronizzazione e UI restano da implementare. Non è ancora un'applicazione operativa.
+> **Stato: M1–M3 implementate e verificate localmente (v0.1.0).** CLI TXT operativa, discovery ricorsiva, reader UTF-8 rigoroso, build completo e ricerca su snapshot in memoria. Persistenza, sync, Markdown/PDF e UI restano nelle milestone successive. [Evidenze M3](docs/M3_VERIFICATION.md).
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -35,7 +35,15 @@ local-document-search/
 └── README.md
 ```
 
-Il package Python contiene le fondazioni M1 e il motore puro M2; casi d'uso e adapter operativi restano segnaposto. Non esiste ancora una CLI operativa. Installazione e test sono descritti in [backend/README.md](backend/README.md); risultati e limiti in [Verifica M1](docs/M1_VERIFICATION.md) e [Verifica M2](docs/M2_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
+Installazione e test sono descritti in [backend/README.md](backend/README.md). Con ambiente virtuale attivo:
+
+```powershell
+local-document-search "C:\percorso\documenti"
+```
+
+Esempi di query: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. Senza prefisso si cerca in entrambi i campi; l'intera query deve essere soddisfatta da un singolo campo. EOF o Ctrl+C chiudono la sessione. Tutti i risultati vengono stampati, ordinati per percorso. L'indice è ricostruito in RAM a ogni avvio.
+
+Suite locale: 194 test superati, 3 skip; [limiti della verifica](docs/M3_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
 
 ## Da dove partire
 
@@ -45,25 +53,13 @@ Il package Python contiene le fondazioni M1 e il motore puro M2; casi d'uso e ad
 4. Seguire [docs/ROADMAP.md](docs/ROADMAP.md) e il [piano di verifica](docs/TEST_STRATEGY.md).
 5. Per il perimetro minimo del corso, vedere [docs/homework-3/ASSIGNMENT_ALIGNMENT.md](docs/homework-3/ASSIGNMENT_ALIGNMENT.md).
 
-## Portare questa bozza su GitHub
+## Repository pubblico e dati locali
 
-Estrarre lo ZIP, aprire un terminale nella cartella `local-document-search/`, quindi:
-
-```bash
-git init
-git add .
-git commit -m "docs: scaffold architecture and contracts"
-git branch -M main
-# Creare un repository vuoto su GitHub dal sito, poi sostituire `USERNAME` nell’URL di esempio.
-git remote add origin https://github.com/USERNAME/local-document-search.git
-git push -u origin main
-```
-
-Non committare raccolte di documenti personali, snapshot operativi o testi estratti dagli utenti. Il file `.gitignore` ignora le directory di runtime convenzionali, ma non può proteggere directory arbitrarie aggiunte manualmente.
+Repository: https://github.com/Forest904/local-document-search. Le modifiche M3 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
 
 ## Conformità all'Homework 3
 
-L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), query da console con supporto alle frasi, circa dieci query di prova e relazione con URL del repository, scelte sugli analyzer, numero di file e tempi. PDF, Markdown, snapshot e UI sono estensioni di progetto. Nessun risultato sperimentale è ancora disponibile.
+L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), query da console con supporto alle frasi, circa dieci query di prova e relazione con URL del repository, scelte sugli analyzer, numero di file e tempi. PDF, Markdown, snapshot e UI sono estensioni di progetto. Dieci query e due regressioni sono state eseguite con successo su otto TXT sintetici: [relazione compilata](docs/homework-3/REPORT.md) e [runner riproducibile](experiments/run_homework3.py).
 
 ## Stato delle decisioni
 

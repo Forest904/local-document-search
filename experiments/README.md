@@ -1,8 +1,13 @@
-# Esperimenti
+# Esperimenti Homework 3
 
-Raccogliere un corpus **non sensibile**, le circa dieci query di prova, i risultati attesi, l'esito effettivo e misure ripetibili dei tempi di indicizzazione. Le misure non sono state effettuate.
+`run_homework3.py` crea otto TXT sintetici in una directory temporanea, esegue dieci query e due regressioni in una sessione CLI reale, confronta gli attesi espliciti e stampa misure/trascrizione in JSON. Nessun dato personale o snapshot è versionato.
 
-- [Piano di valutazione](../docs/homework-3/QUERY_TEST_PLAN.md)
-- [Relazione da compilare](../docs/homework-3/REPORT_TEMPLATE.md)
+Dalla radice, dopo l'installazione del backend:
 
-Salvare risultati locali in `experiments/results/` (ignorata da Git) salvo scegliere esplicitamente di pubblicare soltanto report anonimi o aggregati.
+```powershell
+backend/.venv/Scripts/python experiments/run_homework3.py
+```
+
+Su Linux usare `backend/.venv/bin/python`. Il runner restituisce codice 1 se i risultati differiscono. Il corpus è deterministico, i tempi no. Il tempo copre il build iniziale completo, senza avvio del processo e validazione iniziale dell'argomento directory.
+
+Risultati locali in `experiments/results/` (ignorata da Git). [Relazione M3](../docs/homework-3/REPORT.md), [matrice query](../docs/homework-3/QUERY_TEST_PLAN.md).

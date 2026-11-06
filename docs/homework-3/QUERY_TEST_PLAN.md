@@ -1,6 +1,6 @@
 # Piano di validazione — Circa 10 query
 
-**Stato:** matrice di test proposta. Le query concrete devono essere selezionate in base al corpus `.txt` effettivamente usato; non inventare corrispondenze attese.
+**Stato:** matrice eseguita sul corpus sintetico M3: dieci query PASS più due regressioni, con attesi espliciti definiti dai testi. Query e misure nella [relazione](REPORT.md); runner riproducibile in [experiments](../../experiments/run_homework3.py). La matrice resta utilizzabile per altri corpus.
 
 | # | Scenario | Campo/modalità | Aspettativa da verificare |
 |---|---|---|---|
