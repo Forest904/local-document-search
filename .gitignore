@@ -1,0 +1,41 @@
+# Python / build
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Runtime local data: never commit indexed content/snapshots
+runtime/
+local-data/
+app-data/
+snapshots/
+index-data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Secrets / personal configuration
+.env
+.env.*
+!.env.example
+
+# Local benchmark outputs
+experiments/results/
