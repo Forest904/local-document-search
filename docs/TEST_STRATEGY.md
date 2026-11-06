@@ -1,6 +1,6 @@
 # Test Strategy & Acceptance Plan
 
-**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). M2 aggiunge 72 casi per analyzer, parser, builder, matching e pipeline in memoria: [evidenze M2](M2_VERIFICATION.md). M3 aggiunge test adapter, pipeline, fault injection e CLI reale: 194 test superati e 3 skip nella suite totale; [evidenze e limiti](M3_VERIFICATION.md). M4 verifica reader e pipeline multiformato: 234 test superati e 5 skip nella suite totale; [evidenze e limiti](M4_VERIFICATION.md). M5 aggiunge 34 casi su persistenza, retention, errori e recovery: 268 test superati e 5 skip nella suite totale; [evidenze M5](M5_VERIFICATION.md). I casi M6–M9 restano un piano di verifica.
+**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). M2 aggiunge 72 casi per analyzer, parser, builder, matching e pipeline in memoria: [evidenze M2](M2_VERIFICATION.md). M3 aggiunge test adapter, pipeline, fault injection e CLI reale: 194 test superati e 3 skip nella suite totale; [evidenze e limiti](M3_VERIFICATION.md). M4 verifica reader e pipeline multiformato: 234 test superati e 5 skip nella suite totale; [evidenze e limiti](M4_VERIFICATION.md). M5 aggiunge 34 casi su persistenza, retention, errori e recovery: 268 test superati e 5 skip nella suite totale; [evidenze M5](M5_VERIFICATION.md). M6 aggiunge 25 casi di sync/lifecycle: 293 test superati e 5 skip nella suite totale; [evidenze M6](M6_VERIFICATION.md). I casi M7–M9 restano un piano di verifica.
 
 ## 1. Livelli
 
@@ -68,7 +68,7 @@ Una funzionalità è completata solo se: contratto implementato, invarianti cope
 
 ## 8. Accettazione delle decisioni v1
 
-Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symlink reali e nomi distinti solo per case saltati su questo Windows; junction reale verificata). Le righe M4 sono coperte dalle fixture sintetiche e dalla pipeline multiformato ([evidenze](M4_VERIFICATION.md)); le righe M5 sono coperte con i limiti dei crash test documentati in [Verifica M5](M5_VERIFICATION.md). Le letture protette M5 sono verificate tramite acquisizioni esplicite nella stessa sessione; la concorrenza reale resta M7. Le righe M6–M9 restano test da implementare, non risultati già ottenuti.
+Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symlink reali e nomi distinti solo per case saltati su questo Windows; junction reale verificata). Le righe M4 sono coperte dalle fixture sintetiche e dalla pipeline multiformato ([evidenze](M4_VERIFICATION.md)); le righe M5 sono coperte con i limiti dei crash test documentati in [Verifica M5](M5_VERIFICATION.md). Le letture protette M5 sono verificate tramite acquisizioni esplicite nella stessa sessione; la concorrenza reale resta M7. Le righe M6 sono verificate con i limiti in [Verifica M6](M6_VERIFICATION.md). Le righe M7–M9 restano test da implementare, non risultati già ottenuti.
 
 | Milestone | Scenario | Risultato atteso |
 |---|---|---|

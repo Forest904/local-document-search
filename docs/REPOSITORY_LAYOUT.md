@@ -22,7 +22,7 @@ local-document-search/
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. M5 aggiunge `infrastructure/sqlite_snapshot_storage.py`, acquisizioni protette e `GetDocument`; la CLI conserva il repository volatile. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. M5 aggiunge `infrastructure/sqlite_snapshot_storage.py`, acquisizioni protette e `GetDocument`; la CLI conserva il repository volatile. M6 aggiunge lifecycle bloccante, sync incrementale, settings e `infrastructure/persistent_storage.py` per il catalogo e il rebuild. Il frontend contiene soltanto un README.
 
 ## 2. Matrice di dipendenza
 
@@ -34,7 +34,7 @@ M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/compositio
 | `interfaces` | Application + composition root | Strutture mutabili dell'indice dall'esterno |
 | `frontend` | API pubbliche application, PySide6 | Domain Python interno, filesystem di storage diretto |
 
-Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitamente le quattro porte e restituisce `ApplicationDependencies`, senza eseguire I/O. M1 ne verifica il cablaggio con sostituti nei test; `compose_cli` collega i casi d'uso agli adapter multiformato M4; non usa settings o lifecycle, rinviati a M6. Evitare un generico `shared/` che diventi una dipendenza circolare.
+Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitamente le quattro porte e restituisce `ApplicationDependencies`, senza eseguire I/O. M1 ne verifica il cablaggio con sostituti nei test; `compose_cli` collega i casi d'uso agli adapter multiformato M4; non usa settings o lifecycle. `compose_persistent_application` assembla separatamente il backend persistente M6. Evitare un generico `shared/` che diventi una dipendenza circolare.
 
 ## 3. Responsabilità dei moduli
 

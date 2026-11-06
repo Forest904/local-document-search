@@ -64,7 +64,7 @@ def _failure(exc):
 
 
 class SqliteSnapshotRepository:
-    def __init__(self, directory=None, *, source_directory=None):
+    def __init__(self, directory=None, *, source_directory=None, database_name="snapshots.sqlite3"):
         self.directory = storage_directory(directory, source_directory=source_directory)
         self._db = None
         self._active = None
@@ -74,7 +74,10 @@ class SqliteSnapshotRepository:
         self.cleanup_diagnostic = None
         try:
             self.directory.mkdir(parents=True, exist_ok=True)
-            self._db = sqlite3.connect(self.directory / "snapshots.sqlite3", isolation_level=None)
+            if Path(database_name).name != database_name:
+                raise StorageFailure("Nome database non valido")
+            self._db = sqlite3.connect(self.directory / database_name, isolation_level=None,
+                                      check_same_thread=False)
             self._db.execute("PRAGMA foreign_keys=ON")
             version = self._db.execute("PRAGMA user_version").fetchone()[0]
             tables = self._db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()

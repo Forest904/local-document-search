@@ -75,3 +75,26 @@ class BuildResult:
     excluded: int
     processed_bytes: int
     elapsed: float
+
+
+@dataclass(frozen=True)
+class SyncResult:
+    snapshot_id: str
+    changed: bool
+    added: int
+    modified: int
+    removed: int
+    unchanged: int
+    excluded: int
+    failed: int
+    elapsed: float
+    processed_bytes: int
+
+
+@dataclass(frozen=True)
+class ApplicationState:
+    active_directory: str | None
+    active_snapshot_id: str | None
+    search_available: bool
+    warning: str | None = None
+    last_sync_outcome: str | None = None

@@ -83,4 +83,23 @@ with SqliteSnapshotRepository(source_directory=root) as snapshots:
 
 L’esempio costruisce solo TXT; i reader multiformato esistenti possono essere iniettati nello stesso `BuildIndex`. Non esegue sync o controllo dei cambiamenti. La riapertura del repository non richiede i sorgenti; `resolve_directory` nell’esempio serve alla scelta iniziale della radice.
 
-Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Lock, settings, rebuild e ClearLocalData completo sono rinviati a M6–M7. [Verifica M5](../docs/M5_VERIFICATION.md).
+Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild e ClearLocalData sono disponibili nella composizione M6 seguente; lock e worker restano M7. [Verifica M5](../docs/M5_VERIFICATION.md).
+
+## Sessione persistente M6
+
+```python
+from local_document_search.interfaces.composition import compose_persistent_application
+from local_document_search.application.contracts import SearchRequest
+
+with compose_persistent_application() as app:  # LOCALAPPDATA su Windows
+    state = app.initialize.execute()          # ripristino + sync bloccante
+    if state.active_directory is None:
+        state = app.select_directory.execute(r"C:\Documenti")
+    response = app.search.execute(SearchRequest("machine learning"))
+    report = app.synchronize.execute()        # invariati non riletti
+    # app.clear_local_data.execute()          # elimina solo dati applicativi
+```
+
+Nei test e sui sistemi non Windows passare una directory storage esplicita esterna ai sorgenti
+e al repository. Gestire le eccezioni operative nelle interfacce chiamanti. Una sessione proprietaria,
+nessun worker o lock fra processi; CLI invariata. [Verifica M6](../docs/M6_VERIFICATION.md).

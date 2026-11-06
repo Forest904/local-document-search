@@ -1,6 +1,6 @@
 # Snapshots & Incremental Synchronization v1
 
-**Stato:** persistenza, recovery e retention M5 implementate nel backend ([evidenze](M5_VERIFICATION.md)); diff/lifecycle/rebuild e coordinamento concorrente M6–M7 da implementare. CLI invariata in memoria; [ADR 0008](adr/0008-sqlite-snapshots.md).
+**Stato:** persistenza, recovery e retention M5 implementate nel backend ([evidenze](M5_VERIFICATION.md)); diff/lifecycle/rebuild M6 implementati in modalità bloccante ([evidenze](M6_VERIFICATION.md)); coordinamento dei job e lock M7 da implementare. CLI invariata in memoria; [ADR 0008](adr/0008-sqlite-snapshots.md).
 
 ## 1. Rappresentazione e memoria
 
@@ -85,3 +85,23 @@ ClearLocalData richiede assenza di job, impedisce nuove letture e attende quelle
 Elimina snapshot, settings, stato operativo, temporanei e log dell'app; torna allo stato senza directory.
 Non elimina sorgenti; non promette cancellazione forense. Dettagli in [Privacy](SECURITY_AND_PRIVACY.md).
 Test: [Test Strategy](TEST_STRATEGY.md), milestone M5–M7 e M9 in [Roadmap](ROADMAP.md).
+
+## 8. Realizzazione M6
+
+`control.sqlite3` contiene settings, ultimo controllo, selezione del database dati e registro dei
+file posseduti. Il formato di controllo è v1; i normali sync mantengono la transazione M5 nel database
+dati selezionato. I rebuild incompatibili usano `snapshot-<uuid>.sqlite3`: la selezione avviene solo
+dopo commit/validazione del nuovo database. Anche l'incompatibilità logica usa questo percorso.
+Gli orfani registrati vengono eliminati al riavvio; file estranei non vengono enumerati per cancellazione.
+Errori di retention sono diagnostica riprovabile, separata dall'esito del commit.
+
+Il database M5 `snapshots.sqlite3` viene registrato senza migrazione del contenuto. Se compatibile,
+la directory viene recuperata dallo snapshot quando mancano settings. Uno storage M5 incompatibile
+senza settings richiede selezione esplicita della sorgente: il backend segnala SnapshotUnavailable
+e conserva il database fino al rebuild riuscito, senza interpretarne lo schema incompatibile.
+
+ClearLocalData rimuove database dati registrati e relative sidecar, settings e stato operativo;
+conserva il contenitore SQLite di controllo vuoto e il suo schema per il riuso della sessione.
+M6 non produce log o altri temporanei applicativi. Nessuna garanzia di cancellazione forense.
+Le acquisizioni già aperte completano; una barriera impedisce nuove letture durante la pulizia.
+Questa sincronizzazione limitata non introduce worker né supporto generale a writer concorrenti.

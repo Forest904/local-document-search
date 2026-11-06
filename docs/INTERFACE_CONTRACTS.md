@@ -1,8 +1,8 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). M5 implementa persistenza SQLite, acquisizioni protette e `GetDocument` ([evidenze](M5_VERIFICATION.md)). Lifecycle e job restano nelle milestone successive.
+**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). M5 implementa persistenza SQLite, acquisizioni protette e `GetDocument` ([evidenze](M5_VERIFICATION.md)). M6 implementa lifecycle e sync bloccanti; job e API asincrone restano M7.
 
-Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). Sono tipi di scambio, senza persistenza o lifecycle implementati.
+Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). M6 implementa persistenza dei settings e lifecycle nella composizione persistente separata dalla CLI.
 
 I DTO copiano le collezioni ricevute. `SearchRequest` rifiuta query vuote, campi non validi e paginazione non valida tramite `InvalidInput`; sintassi e clausole senza token sono validate dal parser/analyzer M2. I valori di dominio non validi sollevano `ValueError`; M3 traduce gli errori del parser in `InvalidInput` nel caso d'uso. `matched_fields` contiene solo FILENAME e/o CONTENT, mai BOTH. Il servizio operativo M3 usa il motore M2 senza accessi ai sorgenti durante la ricerca. [Verifica M3](M3_VERIFICATION.md).
 
@@ -73,7 +73,7 @@ Un cambio query, campo o directory rende obsolete le risposte precedenti, compre
 
 ### `FileDiscoveryPort`
 
-**In:** directory assoluta valida.  
+**In:** directory assoluta valida.
 **Out:** sequenza ordinata di `FileCandidate(relative_path, format, size_bytes, mtime_ns, ...)` oppure errore esplicito di scansione.
 
 **Garantisce:** visita ricorsiva, soli suffissi `.txt`, `.md`, `.pdf`, nessun attraversamento di symlink/junction di directory, nessuna indicizzazione di symlink a file. Path preservati secondo [Dominio](DOMAIN_MODEL.md), nessun casefold dei percorsi. La CLI M4 usa `DocumentFileDiscovery` per tutti i formati; `TextFileDiscovery` conserva il filtro TXT per gli utilizzatori esistenti.
@@ -82,7 +82,7 @@ Un cambio query, campo o directory rende obsolete le risposte precedenti, compre
 
 ### `DocumentReaderPort`
 
-**In:** `FileCandidate`.  
+**In:** `FileCandidate`.
 **Out:** variante esplicita fra `Extracted(CanonicalDocument)`, `Excluded(reason)` ed `ExtractionFailed(reason)`.
 
 - TXT/Markdown con encoding invalido → errore, no commit.
@@ -149,3 +149,30 @@ Gli errori operativi M3 sono `SourceUnavailable`, `ExtractionFailure`, `StorageF
 CLI: `local-document-search DIRECTORY`, percorso relativo o assoluto. I prefissi sono esattamente `nome`, `contenuto`, `entrambi` minuscoli, iniziali e non quotati; un prefisso senza query è invalido. Il testo `"nome"` resta una query ordinaria. Un errore di query mantiene aperta la sessione; un errore di build impedisce la ricerca. La CLI mostra tutti i risultati recuperando pagine da 50, con percorso relativo e campi corrispondenti.
 
 Codici d'uscita: 0 su EOF normale o help; 1 errore operativo (inclusa directory assente); 2 argomenti non validi (incluso percorso non-directory o link); 130 su Ctrl+C. La sessione non riserva parole come `exit`: si esce con EOF (Windows: Ctrl+Z poi Invio; Unix: Ctrl+D) o Ctrl+C. Ctrl+C non attiva candidati incompleti; se arriva dopo l'attivazione lo snapshot è già completo.
+
+## 8. Superficie operativa M6
+
+`compose_persistent_application(storage=None)` restituisce una sessione context manager con
+`initialize`, `select_directory`, `synchronize`, `status`, `clear_local_data`, `search` e `get_document`.
+Ogni caso d'uso espone `execute`; composizione e startup sono separati. Storage predefinito per utente
+su Windows, percorso esplicito su altri sistemi. La CLI e `BuildIndex` restano invariati.
+
+InitializeApplication, SelectDirectory e GetIndexStatus restituiscono per M6 lo stesso DTO immutabile
+`ApplicationState(active_directory, active_snapshot_id, search_available, warning, last_sync_outcome)`.
+Startup/selezione completano il sync bloccante prima di restituire; non esistono JobRef o worker M6.
+`RunSynchronization.execute(trigger="manual")` accetta l'origine startup/select/manual, senza cambiarne
+l'algoritmo. `SyncResult` riporta snapshot_id, changed, added, modified, removed, unchanged, excluded,
+failed, elapsed e processed_bytes. Excluded conta le esclusioni nello snapshot finale; failed è zero
+sugli esiti restituiti: i fallimenti sollevano eccezioni e aggiornano LastCheck separatamente.
+I byte comprendono solo file aggiunti/modificati elaborati; NO_CHANGES non salva uno snapshot.
+
+`DirectoryResolverPort` è un callable di validazione della radice.
+`LifecycleSnapshotRepositoryPort` estende la porta snapshot con incompatible, select_directory,
+clear e close. `PersistentSnapshotRepository` implementa il confine lifecycle e delega il formato dati
+al repository SQLite M5. La guardia bloccante rifiuta sync, cambio directory e pulizia rientranti
+con InvalidInput; non sostituisce il JobManager M7.
+
+Sorgente assente all'avvio: ApplicationState espone warning SourceUnavailable e mantiene ricerca
+compatibile; se lo storage è incompatibile l'errore viene propagato. Gli altri errori operativi
+restano eccezioni. Un errore di salvataggio LastCheck dopo commit non annulla il commit già riuscito.
+ClearLocalData restituisce lo stato senza directory; un errore richiede un nuovo tentativo.

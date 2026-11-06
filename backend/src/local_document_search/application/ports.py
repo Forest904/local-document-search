@@ -99,3 +99,23 @@ class SettingsRepositoryPort(Protocol):
     def save(self, settings: Settings) -> None: ...
 
     def clear(self) -> None: ...
+
+
+class DirectoryResolverPort(Protocol):
+    def __call__(self, directory: str) -> str:
+        """Valida e restituisce la radice assoluta senza attraversare link."""
+        ...
+
+
+class LifecycleSnapshotRepositoryPort(SnapshotRepositoryPort, Protocol):
+    incompatible: bool
+
+    def select_directory(self, root: str) -> None:
+        """Invalida le nuove acquisizioni della precedente directory."""
+        ...
+
+    def clear(self) -> None:
+        """Blocca nuove letture, attende le esistenti e pulisce i dati posseduti."""
+        ...
+
+    def close(self) -> None: ...
