@@ -17,12 +17,13 @@ local-document-search/
 │   │   ├── infrastructure/  # filesystem, readers, snapshot/settings storage
 │   │   └── interfaces/      # CLI
 │   └── tests/{unit,integration,fixtures}/
-├── frontend/              # futuro progetto Windows
+├── frontend/              # pacchetto desktop PySide6 e test Qt
+├── scripts/               # automazione sviluppo Windows e relativi test
 ├── experiments/           # query di test e benchmark, senza dati sensibili
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. M5 aggiunge `infrastructure/sqlite_snapshot_storage.py`, acquisizioni protette e `GetDocument`; la CLI conserva il repository volatile. M6 aggiunge lifecycle bloccante, sync incrementale, settings e `infrastructure/persistent_storage.py` per il catalogo e il rebuild. M7 implementa jobs, runtime delle letture e `infrastructure/storage_lock.py`, con coordinamento thread-safe degli adapter persistenti. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. M5 aggiunge `infrastructure/sqlite_snapshot_storage.py`, acquisizioni protette e `GetDocument`; la CLI conserva il repository volatile. M6 aggiunge lifecycle bloccante, sync incrementale, settings e `infrastructure/persistent_storage.py` per il catalogo e il rebuild. M7 implementa jobs, runtime delle letture e `infrastructure/storage_lock.py`, con coordinamento thread-safe degli adapter persistenti. M8 aggiunge il pacchetto frontend separato `local_document_search_desktop` con launcher, finestra/controller, composizione desktop e test Qt. La dipendenza PySide6 appartiene soltanto a frontend; CLI e backend restano installabili senza Qt.
 
 ## 2. Matrice di dipendenza
 
@@ -56,6 +57,11 @@ Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitam
 - `interfaces/cli.py`: sessione query dell'Homework 3 e codici d'uscita.
 
 ## 4. File operativi e Git
+
+`scripts/dev/` contiene il master di avvio VS Code e gli script coesi per virtualenv, dipendenze,
+arresto e avvio desktop. `.vscode/tasks.json` è versionato; gli altri file personali VS Code restano
+ignorati. Il lock dipendenze di sviluppo è distinto dalla distribuzione M9. PID e log di avvio
+restano in `runtime/`, fuori da Git. [Uso e verifiche](../scripts/dev/README.md).
 
 Gli snapshot del motore, i contenuti estratti dagli utenti, i database runtime e la configurazione personale devono restare **fuori dal repository**, in `%LOCALAPPDATA%/LocalDocumentSearch` su Windows. La `.gitignore` include convenzioni per prevenire commit accidentali, ma non garantisce protezione di file posizionati arbitrariamente.
 

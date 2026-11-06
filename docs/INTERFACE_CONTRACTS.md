@@ -224,3 +224,18 @@ close è idempotente: chiude l'ammissione, attende job e letture accettate (anch
 chiude repository/executor e rilascia il lock. Nuove richieste operative durante/dopo chiusura → InvalidInput.
 Le acquisizioni già aperte completano anche durante cambio directory o pulizia; nuove acquisizioni
 durante ClearLocalData sono rifiutate con SnapshotUnavailable. Nessun controllo dei file sorgenti nelle query.
+
+## 10. Superficie desktop M8
+
+Il pacchetto separato `local-document-search-desktop` usa i casi d'uso M7 senza modificarne la semantica.
+Il composition root frontend collega `compose_persistent_application` e l'apertura tramite QDesktopServices.
+Widget/controller importano DTO, tipi ed errori da application; non accedono a repository o dominio interno.
+Composizione, initialize, selezione, stato/job, pulizia e close passano dal worker desktop;
+search/get_document utilizzano submit. Le Future sono consumate dal timer Qt di 200 ms soltanto se concluse.
+Una sola richiesta di polling può essere pendente. Nessun aggiornamento widget da worker.
+
+Query/campo/directory invalidano le risposte precedenti, inclusi errori e anteprime; una nuova selezione
+di risultato invalida la precedente anteprima. Paginazione e snapshot rispettano il contratto della sezione 2.
+Il frontend tratta DocumentId e RelativePath dei DTO senza ricostruire l'indice né interrogare i sorgenti;
+solo Apri file verifica il percorso tramite l'adapter desktop. Chiusura attende anche composizione/lifecycle pendenti.
+Startup con SnapshotUnavailable senza sorgente mantiene disponibili selezione e pulizia per recuperare.

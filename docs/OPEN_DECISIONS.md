@@ -3,12 +3,16 @@
 **Stato:** OD-01…OD-23 risolte per la v1 o escluse esplicitamente; fondazioni M1 verificate localmente ([evidenze](M1_VERIFICATION.md)). Le verifiche operative assegnate alle milestone successive restano aperte.
 Le decisioni sono approvate il 6 novembre 2026. Accepted significa progettato, non verificato nel codice.
 
-M2 verifica OD-08/09, semantica query OD-10 e ordine OD-17. M3 verifica UTF-8/BOM OD-07 per TXT, prefissi CLI OD-10 e identità per percorso OD-12, con i limiti di piattaforma in [Verifica M3](M3_VERIFICATION.md). M4 verifica OD-05/06/21 e UTF-8/BOM Markdown OD-07: [evidenze e limiti](M4_VERIFICATION.md). M5 verifica OD-01/02, retention e acquisizioni esplicite OD-03, errori di risorse intercettabili OD-04 e serializzazione completa OD-11: [evidenze e limiti](M5_VERIFICATION.md). M6 verifica OD-11/12/13/14 e pulizia backend OD-20: [evidenze e limiti](M6_VERIFICATION.md). M7 verifica OD-03/16/22 per concorrenza, lock e riuso job: [evidenze e limiti](M7_VERIFICATION.md). Restano aperti UI, pacchetto e misure M8–M9.
+M2 verifica OD-08/09, semantica query OD-10 e ordine OD-17. M3 verifica UTF-8/BOM OD-07 per TXT, prefissi CLI OD-10 e identità per percorso OD-12, con i limiti di piattaforma in [Verifica M3](M3_VERIFICATION.md). M4 verifica OD-05/06/21 e UTF-8/BOM Markdown OD-07: [evidenze e limiti](M4_VERIFICATION.md). M5 verifica OD-01/02, retention e acquisizioni esplicite OD-03, errori di risorse intercettabili OD-04 e serializzazione completa OD-11: [evidenze e limiti](M5_VERIFICATION.md). M6 verifica OD-11/12/13/14 e pulizia backend OD-20: [evidenze e limiti](M6_VERIFICATION.md). M7 verifica OD-03/16/22 per concorrenza, lock e riuso job: [evidenze e limiti](M7_VERIFICATION.md). M8 verifica frontend PySide6 OD-15/16, presentazione OD-17/18, interazioni OD-19 e informativa/pulizia UI OD-20: [evidenze e limiti](M8_VERIFICATION.md). Restano aperti pacchetto e misure M9.
 
 Avvio CLI e build iniziale M3 concordati il 6 novembre 2026: directory come argomento, sessione fino a EOF/Ctrl+C, tutte le pagine stampate; [ADR 0006](adr/0006-application-interfaces.md) e [contratti M3](INTERFACE_CONTRACTS.md#7-superficie-operativa-m3).
 M7 concordata: CLI Homework invariata; lock solo sulle sessioni persistenti. Startup/selezione asincroni, RunSynchronization attende il job condiviso, ricerca/dettagli espongono submit con Future mantenendo execute. [ADR 0006](adr/0006-application-interfaces.md), [ADR 0009](adr/0009-desktop-runtime.md).
 
 Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confronto con l'utente.
+
+M8 concordata: pacchetto frontend separato con dipendenza dal backend e da PySide6, launcher proprio,
+informativa a ogni avvio prima di Continua e nessuna nuova preferenza persistente.
+La CLI resta indipendente da Qt; dettagli e versioni verificate nell'[ADR 0009](adr/0009-desktop-runtime.md).
 
 ## Tracciabilità
 

@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: M1–M7 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; UI e distribuzione restano M8–M9. [Evidenze M7](docs/M7_VERIFICATION.md).
+> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; distribuzione standalone ancora M9. [Evidenze M8](docs/M8_VERIFICATION.md).
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -28,7 +28,7 @@ local-document-search/
 │   │   ├── infrastructure/
 │   │   └── interfaces/
 │   └── tests/
-├── frontend/             # Segnaposto per la futura applicazione Windows
+├── frontend/             # Pacchetto desktop PySide6 e test Qt
 ├── experiments/          # Piano delle query e misure dell'homework
 ├── docs/                 # PRD, architettura, dominio, contratti, ADR e limiti
 ├── .gitignore
@@ -45,6 +45,25 @@ Esempi di query: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep 
 
 Suite locale M7: risultati e cinque skip di piattaforma in [Verifica M7](docs/M7_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
 
+## Desktop M8
+
+Da VS Code su Windows: **Terminal → Run Task → Local Document Search: avvia / riavvia**.
+Il task prepara automaticamente il virtualenv e le dipendenze anche da una clone pulita,
+salta installazioni già valide e riavvia l'app eventualmente aperta.
+[Script, prerequisiti e gestione del riavvio](scripts/dev/README.md).
+
+Con Python >=3.12 e ambiente virtuale attivo, dalla root:
+
+```powershell
+python -m pip install -e "./backend[dev]" -e "./frontend[dev]"
+local-document-search-desktop
+```
+
+Leggi l'informativa e premi Continua, poi seleziona una cartella. Ricerca con Invio, pagine da 50,
+testo completo e apertura file; sync e letture asincroni sul backend comune.
+[Istruzioni desktop](frontend/README.md) e [verifica M8](docs/M8_VERIFICATION.md).
+Il pacchetto frontend è separato: l'installazione della sola CLI non richiede Qt.
+
 ## Da dove partire
 
 1. Leggere [docs/PRD.md](docs/PRD.md) e [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -55,7 +74,7 @@ Suite locale M7: risultati e cinque skip di piattaforma in [Verifica M7](docs/M7
 
 ## Repository pubblico e dati locali
 
-Repository: https://github.com/Forest904/local-document-search. Le modifiche M7 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
+Repository: https://github.com/Forest904/local-document-search. Le modifiche M8 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
 
 ## Conformità all'Homework 3
 

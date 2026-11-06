@@ -1,20 +1,20 @@
 # Architecture — Modular Monolith / Ports & Adapters
 
-**Stato:** backend M1–M7 implementato e verificato localmente; runtime concorrente e lock operativi. Desktop e distribuzione restano M8–M9; [evidenze M7](M7_VERIFICATION.md).
+**Stato:** backend M1–M7 e desktop M8 implementati e verificati localmente; runtime concorrente e lock operativi. Distribuzione standalone ancora M9; [evidenze M8](M8_VERIFICATION.md).
 
 ## 1. Principi
 
 1. Domain: identità documentale, manifest, indici, analyzer e regole di matching **senza I/O**.
 2. Application: orchestration dei casi d'uso, sincronizzazione, sessione e job; definisce le porte di cui ha bisogno.
 3. Infrastructure: filesystem, reader, persistenza snapshot e settings, implementando le porte.
-4. Presentation: CLI oggi, desktop Windows domani, tramite gli stessi contratti applicativi.
+4. Presentation: CLI e desktop Windows PySide6 tramite gli stessi contratti applicativi.
 5. Un solo processo/job scrittore e un solo snapshot attivo per la directory corrente.
 
 ## 2. Dipendenze (dal codice)
 
 ```mermaid
 flowchart TB
-  UI[Windows frontend futuro] --> API[Application API in-process]
+  UI[Windows frontend PySide6] --> API[Application API in-process]
   CLI[CLI] --> API
   API --> APP[Application services + use cases]
   APP --> DOM[Domain: documents, analyzers, indexes, queries]
@@ -79,7 +79,7 @@ L'`IndexSnapshot` è un **aggregate boundary logico**, non implica un singolo fi
 
 ## 7. Installazione e distribuzione
 
-Il backend è un package Python con dominio indipendente dal sistema operativo. `frontend/` ospiterà PySide6 Qt Widgets. Target Windows 11 x64: ZIP portabile pyside6-deploy standalone, senza Python preinstallato. Versioni/configurazione riproducibili e verifica su ambiente pulito in M9; nessun frontend operativo nello scaffold.
+Il backend è un package Python con dominio indipendente dal sistema operativo. `frontend/` ospita il pacchetto separato PySide6 Qt Widgets, con dipendenza dal backend e launcher proprio. Il worker di coordinamento desktop esegue composizione e lifecycle, mentre i worker M7 eseguono sync e letture. Il timer Qt consuma solo Future concluse e non accumula polling. Target Windows 11 x64: ZIP portabile pyside6-deploy standalone, senza Python preinstallato. Versioni/configurazione riproducibili e verifica su ambiente pulito in M9.
 
 ## 8. Confini intenzionalmente esclusi
 
@@ -92,7 +92,7 @@ Nessuna architettura a microservizi; niente OCR o infrastrutture cloud; nessun f
 ## 10. Runtime v1 e primo incremento
 
 Un worker sync e un worker separato per ricerca/dettagli; execute rimane bloccante, submit restituisce Future.
-La futura UI riceverà i DTO tramite il proprio adapter; nessun callback grafico nel backend.
+La UI M8 riceve DTO e Future dai casi d'uso; nessun callback grafico nel backend.
 Application non importa Qt; dominio non conosce thread, SQLite o reader.
 Lock OS esclusivo per tutta la sessione persistente; seconda istanza rifiutata prima di aprire i database.
 La CLI Homework usa soltanto memoria e non acquisisce il lock.

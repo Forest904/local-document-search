@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** M1–M7 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Persistenza, sync incrementale, job asincroni, ricerca concorrente e lock di sessione disponibili nel backend; desktop e distribuzione restano M8–M9.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8–M9 restano da implementare e verificare.
+**Stato:** M1–M8 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Desktop PySide6 con backend persistente, sync, ricerca e anteprima asincroni disponibile; distribuzione standalone ancora M9. [Evidenze M8](M8_VERIFICATION.md).
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8 verificata localmente il 6 novembre 2026: [evidenze e limiti](M8_VERIFICATION.md). M9 resta da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -25,7 +25,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | M5 | Snapshot persistenti | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M6 | Sync e lifecycle | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M7 | Job e concorrenza | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M8 | Desktop completo | Da implementare |
+| M8 | Desktop completo | Verificata localmente (2026-11-06); CI remota da verificare |
 | M9 | Distribuzione e accettazione v1 | Da implementare |
 
 ## M0 — Specifica eseguibile
@@ -209,6 +209,11 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 - Pulizia disabilitata durante job; nessun accesso UI diretto allo storage.
 
 **Riferimenti:** [UX](UX_WINDOWS.md), [Privacy](SECURITY_AND_PRIVACY.md).
+
+**Evidenze M8:** pacchetto frontend separato, interfaccia italiana, ricerca con Invio e pagine da 50,
+testo completo, apertura file, polling e lifecycle asincroni. Backend: 314 test superati e 5 saltati;
+frontend: 24 test superati. Verifica visiva Windows su 56 documenti sintetici. Installazioni e
+`pip check` riusciti. [Verifica M8](M8_VERIFICATION.md). CI remota, pacchetto e misure di scala restano da verificare.
 
 ## M9 — Distribuzione e accettazione v1
 

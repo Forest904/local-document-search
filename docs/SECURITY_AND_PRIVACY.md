@@ -1,6 +1,6 @@
 # Security & Privacy v1
 
-**Stato:** policy approvata; M5 verifica storage per utente, confini dei percorsi e pulizia dei dati del repository senza toccare sorgenti ([evidenze](M5_VERIFICATION.md)). M6 implementa ClearLocalData nel backend ([evidenze](M6_VERIFICATION.md)); informativa UI e lock tra processi restano M7–M8.
+**Stato:** policy approvata; M5 verifica storage per utente, confini dei percorsi e pulizia dei dati del repository senza toccare sorgenti ([evidenze](M5_VERIFICATION.md)). M6 implementa ClearLocalData nel backend ([evidenze](M6_VERIFICATION.md)); lock tra processi verificato in M7; informativa prima dello startup, pulizia confermata e attesa della chiusura implementate in M8 ([evidenze](M8_VERIFICATION.md)). Distribuzione da verificare in M9.
 
 ## Dati e storage
 

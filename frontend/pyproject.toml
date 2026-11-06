@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==75.8.0", "wheel==0.45.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-document-search-desktop"
+version = "0.1.0"
+description = "Desktop Qt Widgets per Local Document Search"
+requires-python = ">=3.12"
+dependencies = ["local-document-search==0.1.0", "PySide6>=6.8,<7"]
+
+[project.gui-scripts]
+local-document-search-desktop = "local_document_search_desktop.main:main"
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

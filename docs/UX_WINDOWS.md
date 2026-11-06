@@ -1,10 +1,14 @@
-# UX — Windows Desktop (specifica, non mock implementato)
+# UX — Windows Desktop
 
-**Stato:** requisiti di interazione approvati; PySide6 Qt Widgets scelto, implementazione non iniziata.
+**Stato:** implementata in M8 con PySide6 Qt Widgets; [verifiche e limiti](M8_VERIFICATION.md).
 
 ## 1. Schermata iniziale
 
 Quando non è selezionata una directory: selettore cartella e spiegazione dei formati supportati. Nessuna search bar attiva finché non esiste uno snapshot valido per la directory corrente.
+
+A ogni avvio, l'informativa sulla persistenza locale precede il pulsante Continua: solo dopo
+Continua si apre la sessione persistente e si avvia il sync automatico. Nessuna preferenza aggiuntiva
+viene salvata; l'informativa rimane consultabile. Un avvio fallito permette di riprovare Continua.
 
 ## 2. Prima indicizzazione
 
@@ -56,4 +60,5 @@ Snapshot incompatibile: ricerca disabilitata fino a rebuild riuscito. Versione r
 Prima di indicizzare informare che il testo viene salvato localmente anche se il sorgente diventa assente.
 Pulizia con conferma, disabilitata durante job: elimina dati applicativi, non documenti; torna alla schermata iniziale.
 Apertura file tramite adapter desktop del sistema operativo, senza shell costruita con input utente.
-ZIP Windows 11 x64 pyside6-deploy standalone, senza Python preinstallato. Nessun frontend implementato nello scaffold.
+ZIP Windows 11 x64 pyside6-deploy standalone, senza Python preinstallato: verifica M9.
+M8 si installa come pacchetto frontend separato; [istruzioni desktop](../frontend/README.md).

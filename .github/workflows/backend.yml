@@ -1,4 +1,4 @@
-name: Backend foundations
+name: Backend and desktop
 
 on: [push, pull_request]
 
@@ -29,8 +29,18 @@ jobs:
           cache-dependency-path: |
             backend/requirements-dev.txt
             backend/pyproject.toml
+            frontend/pyproject.toml
       - name: Create isolated test environment
         run: python -m venv .venv
       - run: '"${{ matrix.python }}" -m pip install -r requirements-dev.txt'
       - run: '"${{ matrix.python }}" -m pip check'
       - run: '"${{ matrix.python }}" -m pytest'
+      - name: Verify CLI installation has no Qt dependency
+        run: '"${{ matrix.python }}" -c "import importlib.util; assert importlib.util.find_spec(''PySide6'') is None"'
+      - name: Install desktop and test dependencies
+        run: '"${{ matrix.python }}" -m pip install -e "../frontend[dev]"'
+      - run: '"${{ matrix.python }}" -m pip check'
+      - name: Desktop Qt tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: '"${{ matrix.python }}" -m pytest ../frontend/tests ../scripts/tests'
