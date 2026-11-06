@@ -14,6 +14,6 @@ Un ADR descrive una decisione di progetto e i compromessi che comporta. Qui **Ac
 | [0008](0008-sqlite-snapshots.md) | SQLite, RAM e ciclo di vita snapshot | Accepted (design) |
 | [0009](0009-desktop-runtime.md) | PySide6 in-process e ZIP portabile | Accepted (design) |
 
-Gli ADR 0007–0009 completano i dettagli dei precedenti; nessuna funzionalità è ancora implementata.
+Gli ADR 0007–0009 completano i dettagli dei precedenti. M1 implementa le sole fondazioni ([evidenze](../M1_VERIFICATION.md)); le funzionalità operative previste dagli ADR restano da implementare e verificare.
 
 Per decisioni future usare [TEMPLATE.md](TEMPLATE.md) e aggiornare [OPEN_DECISIONS](../OPEN_DECISIONS.md).

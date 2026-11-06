@@ -1,6 +1,10 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti **logici**, non firme Python/API HTTP. Nomi dei metodi e tipi concreti potranno essere affinati in implementazione senza cambiare le responsabilità.
+**Stato:** contratti logici in-process. M1 implementa `SearchRequest`, `SearchResult`, `SearchResponse`, `DocumentDetails` e le quattro porte come `Protocol`; i casi d'uso, i DTO di lifecycle/job e gli adapter restano da implementare.
+
+Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). Sono tipi di scambio, senza persistenza o lifecycle implementati.
+
+I DTO copiano le collezioni ricevute. `SearchRequest` rifiuta query vuote, campi non validi e paginazione non valida tramite `InvalidInput`; sintassi e clausole senza token saranno validate dal parser/analyzer M2. I valori di dominio non validi sollevano `ValueError`. `matched_fields` contiene solo FILENAME e/o CONTENT, mai BOTH. Nessun endpoint HTTP o servizio di ricerca operativo è introdotto da M1.
 
 ## 1. Modello di dipendenza
 

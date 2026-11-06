@@ -1,3 +1,3 @@
 # Unit
 
-Directory riservata a unit. Nessun test implementato nello scaffold.
+Test M1 per modelli, DTO, snapshot e confini degli import. Analyzer e matching saranno verificati in M2.

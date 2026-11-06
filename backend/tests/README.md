@@ -1,9 +1,9 @@
 # Test backend
 
-Scaffold: **non sono ancora presenti test eseguibili**.
+M1 include test eseguibili con `python -m pytest` da `backend/`, dopo l'installazione di sviluppo.
 
-- `unit/`: analyzer, posizioni, indice, query, manifest e invarianti.
-- `integration/`: adapter, repository, sincronizzazione, snapshot e CLI.
-- `fixtures/`: file TXT/Markdown/PDF *sintetici* e controllati, mai documenti personali.
+- `unit/`: modelli, snapshot, DTO e confini statici degli import, inclusi esempi di violazioni.
+- `integration/`: solo composizione minima con sostituti locali; nessun adapter operativo verificato.
+- `fixtures/`: riservata a file sintetici delle milestone successive. M1 costruisce i dati sintetici nei test.
 
-Specifiche: [TEST_STRATEGY](../../docs/TEST_STRATEGY.md).
+Risultati in [Verifica M1](../../docs/M1_VERIFICATION.md); scenari futuri in [Test Strategy](../../docs/TEST_STRATEGY.md).

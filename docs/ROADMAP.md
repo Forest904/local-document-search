@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** pianificazione approvata; prodotto non implementato.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1–M9 restano da implementare e verificare.
+**Stato:** fondazioni M1 implementate e verificate localmente; prodotto non ancora operativo.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -18,7 +18,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | Milestone | Risultato | Stato |
 |---|---|---|
 | M0 | Specifica eseguibile | Verificata (documentazione, 2026-11-06) |
-| M1 | Fondazioni verificabili | Da implementare |
+| M1 | Fondazioni verificabili | Verificata localmente (2026-11-06); CI remota da verificare |
 | M2 | Motore di ricerca puro | Da implementare |
 | M3 | CLI TXT e Homework 3 | Da implementare |
 | M4 | Ingestione multiformato | Da implementare |
@@ -52,13 +52,15 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 **Attività ordinate**
 1. Configurare ambiente riproducibile, pytest e CI.
 2. Introdurre tipi minimi per documenti, token, clausole, snapshot e DTO.
-3. Definire porte e composition root; verificare automaticamente i confini d'import.
+3. Definire porte e punto di composizione minimo; verificare automaticamente i confini d'import. Il collegamento operativo a casi d'uso e adapter resta in M3.
 
 **Confini:** Domain puro; application dipende da dominio e porte; nessun Qt/SQLite/parser nel core.
 
 **Verifica e uscita**
 - Installazione da ambiente pulito e test di invarianti verdi; zero test non è successo.
 - Nessun framework generico o astrazione senza utilizzatore concreto.
+
+**Evidenze:** 73 test superati su Windows/Python 3.12.2, installazione in ambiente virtuale e `pip check` riusciti. GitHub Actions configurata per Windows/Linux e Python 3.12; nessuna esecuzione remota verificata. Dettagli e comandi in [Verifica M1](M1_VERIFICATION.md).
 
 **Riferimenti:** [Layout](REPOSITORY_LAYOUT.md), [Dominio](DOMAIN_MODEL.md), [Test](TEST_STRATEGY.md).
 

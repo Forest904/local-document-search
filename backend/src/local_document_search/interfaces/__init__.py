@@ -1,4 +1,4 @@
 """Adapter in ingresso (CLI ora; comunicazione Windows futura).
 
-Modulo segnaposto: nessuna implementazione in questa bozza.
+Fondazioni M1 implementate; algoritmi, casi d’uso e CLI operativa nelle milestone successive.
 """

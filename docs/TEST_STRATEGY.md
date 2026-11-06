@@ -1,6 +1,6 @@
 # Test Strategy & Acceptance Plan
 
-**Stato:** piano di verifica, nessun test implementato. I test dovranno dimostrare **correttezza** prima delle ottimizzazioni.
+**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). I casi operativi delle milestone successive restano un piano di verifica.
 
 ## 1. Livelli
 
@@ -64,11 +64,11 @@ La prima consegna richiede il numero di file indicizzati, tempi e ~10 query: [QU
 
 ## 7. Definition of Done
 
-Una funzionalità è completata solo se: contratto implementato, invarianti coperti, test automatici verdi, errori osservabili, documentazione e ADR aggiornati. Lo scaffold presente non soddisfa ancora questa DoD.
+Una funzionalità è completata solo se: contratto implementato, invarianti coperti, test automatici verdi, errori osservabili, documentazione e ADR aggiornati. La verifica M1 riguarda le sole fondazioni; non dimostra ricerca, ingestione, atomicità di un repository o comportamento concorrente.
 
 ## 8. Accettazione delle decisioni v1
 
-Questi sono test da implementare nelle milestone, non risultati già ottenuti.
+La riga M1 è coperta dai test locali; le altre righe restano test da implementare nelle rispettive milestone, non risultati già ottenuti.
 
 | Milestone | Scenario | Risultato atteso |
 |---|---|---|

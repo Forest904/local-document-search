@@ -1,4 +1,4 @@
 """Modello di dominio puro: documenti, analyzer, indice posizionale, query, snapshot.
 
-Modulo segnaposto: nessuna implementazione in questa bozza.
+Fondazioni M1 implementate; algoritmi, casi d’uso e CLI operativa nelle milestone successive.
 """

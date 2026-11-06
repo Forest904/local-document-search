@@ -1,6 +1,8 @@
 # Domain Model v1
 
-**Stato:** decisioni di dominio consolidate; tipi concreti da codificare successivamente.
+**Stato:** tipi immutabili e invarianti strutturali implementati in M1. Analyzer, parser, builder/draft e matching restano in M2; allocazione/preservazione degli ID e gestione dello snapshot attivo nelle milestone operative.
+
+La rappresentazione Python raggruppa i metadati sorgente in `DocumentMetadata`; `DocumentDescriptor` aggiunge `DocumentId`. Manifest, catalogo e indici copiano le mappe ricevute e le espongono in sola lettura; posizioni e clausole sono tuple. Lo snapshot verifica coerenza di riferimenti/metadati e copertura delle posizioni rispetto ai conteggi token, ma non rianalizza il testo né verifica la compatibilità runtime delle versioni. La risoluzione della radice resta responsabilità dell'infrastruttura.
 
 ## 1. Identità del documento
 

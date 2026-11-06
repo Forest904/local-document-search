@@ -1,7 +1,31 @@
-# Backend (scaffold)
+# Backend — fondazioni M1
 
-Questa directory contiene il futuro package Python, organizzato in quattro livelli: `domain`, `application`, `infrastructure`, `interfaces`. **Non contiene ancora logica di produzione.** Reader selezionati: markdown-it-py e pypdf, da introdurre in M4; SQLite usa la standard library. Il `pyproject.toml` non li dichiara ancora perché questo è uno scaffold.
+Package Python >=3.12 con modelli immutabili, DTO di ricerca, porte e punto di composizione minimo. Nessuna dipendenza runtime esterna. Analyzer, parser, matching, reader, repository operativo, CLI e job restano nelle milestone successive.
 
-Struttura e regole d'import: [Repository Layout](../docs/REPOSITORY_LAYOUT.md). Contratti: [Interface Contracts](../docs/INTERFACE_CONTRACTS.md).
+## Installazione e verifica
 
-Il progetto sarà installabile come package Python, ma al momento non è configurato alcun comando CLI: non attribuire capacità operative a uno scaffold non implementato.
+Da `backend/`, su Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+python -m pip check
+python -m pytest
+```
+
+Su Linux attivare l'ambiente con `source .venv/bin/activate`; gli altri comandi restano uguali.
+`requirements-dev.txt` fissa le dipendenze di sviluppo e transitive per Python 3.12 e include l'installazione editable con extra dev. Le dipendenze di build sono fissate anche nel `pyproject.toml`.
+Il comando rapido `python -m pip install -e ".[dev]"` resta supportato, ma da solo non fissa tutte le dipendenze transitive: per riprodurre la verifica M1 usare il file requirements.
+
+GitHub Actions configura gli stessi controlli su Windows e Linux, Python 3.12. La verifica locale non sostituisce l'esecuzione remota: [evidenze e limiti](../docs/M1_VERIFICATION.md).
+
+## Confini implementati
+
+- Domain: documenti, token, clausole, posting e snapshot immutabili; nessun I/O.
+- Application: DTO e quattro `Protocol`; nessun adapter concreto.
+- Interfaces: `compose_application` riceve dipendenze esplicite e restituisce un contenitore tipizzato. Il cablaggio operativo sarà introdotto in M3.
+- Test: invarianti, coerenza, copie difensive, DTO, sostituti di test e controllo AST degli import.
+
+Reader pypdf/markdown-it-py (M4), SQLite (M5) e PySide6 (M8) non vengono installati. Non è configurato un comando CLI.
+Vedere [Layout](../docs/REPOSITORY_LAYOUT.md) e [Contratti](../docs/INTERFACE_CONTRACTS.md).

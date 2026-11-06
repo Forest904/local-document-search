@@ -22,7 +22,7 @@ local-document-search/
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-Ogni package Python è rappresentato da un `__init__.py` e da **moduli con docstring segnaposto**, senza business logic. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. Algoritmi, servizi applicativi e adapter operativi restano segnaposto. Il frontend contiene soltanto un README.
 
 ## 2. Matrice di dipendenza
 
@@ -34,7 +34,7 @@ Ogni package Python è rappresentato da un `__init__.py` e da **moduli con docst
 | `interfaces` | Application + composition root | Strutture mutabili dell'indice dall'esterno |
 | `frontend` | API pubbliche application, PySide6 | Domain Python interno, filesystem di storage diretto |
 
-I componenti vengono collegati da un piccolo **composition root** da introdurre con la CLI e poi con il frontend in-process. Evitare un generico `shared/` che diventi una dipendenza circolare.
+Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitamente le quattro porte e restituisce `ApplicationDependencies`, senza eseguire I/O. M1 ne verifica il cablaggio con sostituti nei test; M3 collegherà i casi d'uso e gli adapter della CLI, poi riutilizzati dal frontend in-process. Evitare un generico `shared/` che diventi una dipendenza circolare.
 
 ## 3. Responsabilità dei moduli
 
@@ -59,4 +59,4 @@ I componenti vengono collegati da un piccolo **composition root** da introdurre 
 
 Gli snapshot del motore, i contenuti estratti dagli utenti, i database runtime e la configurazione personale devono restare **fuori dal repository**, in `%LOCALAPPDATA%/LocalDocumentSearch` su Windows. La `.gitignore` include convenzioni per prevenire commit accidentali, ma non garantisce protezione di file posizionati arbitrariamente.
 
-Il repository non include un file LICENSE perché la licenza non è stata scelta. Nessun servizio CI è configurato perché non esistono test eseguibili; saranno aggiunti durante l'implementazione.
+Il repository non include un file LICENSE perché la licenza non è stata scelta. GitHub Actions esegue installazione, `pip check` e pytest su Windows/Linux con Python 3.12. Il workflow è configurato; l'esecuzione remota resta da verificare. Il test AST controlla import assoluti, relativi e sotto `TYPE_CHECKING` nei moduli domain/application, vietando anche SQLite nel core. Non è una sandbox contro import dinamici o I/O arbitrario.

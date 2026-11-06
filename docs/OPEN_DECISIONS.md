@@ -1,6 +1,6 @@
 # Registro decisioni v1 e limiti
 
-**Stato:** OD-01…OD-23 risolte per la v1 o escluse esplicitamente; implementazione non iniziata.
+**Stato:** OD-01…OD-23 risolte per la v1 o escluse esplicitamente; fondazioni M1 verificate localmente ([evidenze](M1_VERIFICATION.md)). Le verifiche operative assegnate alle milestone successive restano aperte.
 Le decisioni sono approvate il 6 novembre 2026. Accepted significa progettato, non verificato nel codice.
 Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confronto con l'utente.
 

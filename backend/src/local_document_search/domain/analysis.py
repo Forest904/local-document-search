@@ -1,4 +1,14 @@
-"""FilenameAnalyzer, ContentAnalyzer e posizioni token. Le regole definitive di tokenizzazione sono ancora da formalizzare.
+"""Token posizionali; analyzer previsti in M2."""
+from dataclasses import dataclass
+from .documents import require_nonnegative
 
-Modulo segnaposto: nessuna implementazione in questa bozza.
-"""
+
+@dataclass(frozen=True)
+class Token:
+    term: str
+    position: int
+
+    def __post_init__(self) -> None:
+        if not self.term.strip():
+            raise ValueError("Termine vuoto")
+        require_nonnegative(self.position, "position")

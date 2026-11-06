@@ -1,3 +1,3 @@
-# Fixtures
+# Fixture sintetiche
 
-Directory riservata a fixtures. Nessun test implementato nello scaffold.
+Directory riservata ai file di test delle milestone successive. M1 usa dati sintetici costruiti nei test; nessun corpus personale.
