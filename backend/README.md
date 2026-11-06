@@ -14,7 +14,7 @@ python -m pip check
 python -m pytest
 ```
 
-Per riprodurre anche le versioni transitive dell'ambiente di sviluppo usare `python -m pip install -r requirements-dev.txt`. Su Linux attivare `.venv` con `source .venv/bin/activate`; gli altri comandi restano uguali. GitHub Actions configura installazione e test su Windows/Linux, Python 3.12; non è stata verificata la CI remota in questa esecuzione.
+Per riprodurre anche le versioni transitive dell'ambiente di sviluppo usare `python -m pip install -r requirements-dev.txt`. Su Linux attivare `.venv` con `source .venv/bin/activate`; gli altri comandi restano uguali. GitHub Actions crea una virtualenv isolata e usa esplicitamente il suo interprete per installazione, `pip check` e test su Windows/Linux, Python 3.12. Questo evita conflitti con pacchetti preinstallati sul runner, come `pipx`; non è stata verificata la CI remota in questa esecuzione.
 
 ## Sessione console
 
