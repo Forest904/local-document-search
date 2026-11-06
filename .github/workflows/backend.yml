@@ -39,8 +39,13 @@ jobs:
         run: '"${{ matrix.python }}" -c "import importlib.util; assert importlib.util.find_spec(''PySide6'') is None"'
       - name: Install desktop and test dependencies
         run: '"${{ matrix.python }}" -m pip install -e "../frontend[dev]"'
+      - name: Install Qt runtime library on Ubuntu
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1
       - run: '"${{ matrix.python }}" -m pip check'
       - name: Desktop Qt tests
         env:
           QT_QPA_PLATFORM: offscreen
-        run: '"${{ matrix.python }}" -m pytest ../frontend/tests ../scripts/tests'
+        run: |
+          "${{ matrix.python }}" -c "from PySide6.QtTest import QTest; from PySide6.QtWidgets import QApplication"
+          "${{ matrix.python }}" -m pytest ../frontend/tests ../scripts/tests

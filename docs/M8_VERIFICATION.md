@@ -69,6 +69,11 @@ I test con worker rallentati dimostrano la gestione asincrona, non un benchmark 
 Nessuna soglia prestazionale inventata; corpus di scala, packaging standalone, licenze di distribuzione
 e Windows senza Python restano M9. Linux/offscreen configurato in CI, non verificato localmente su Linux.
 
+Primo tentativo remoto Ubuntu: fallito durante l'import di `PySide6.QtTest` con
+`libEGL.so.1` assente, prima della raccolta dei test. La CI installa ora `libegl1`
+solo sul runner Linux e verifica l'import Qt prima di pytest; l'esito remoto dopo
+questa correzione resta da verificare.
+
 Durante una ripetizione nativa successiva all'ispezione di accessibilità, Windows ha emesso una
 diagnostica COM `0x8001010d`; il processo ha comunque concluso con 24 passed ed exit code 0.
 I test automatici ora scelgono offscreen per isolarsi dalla sessione desktop; la verifica visiva
