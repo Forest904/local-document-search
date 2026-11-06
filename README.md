@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: fondazioni M1 (v0.1.0), verificate localmente.** Il package contiene modelli immutabili, DTO, porte, un punto di composizione minimo e test automatici. **L'indicizzazione, la ricerca, la sincronizzazione e la UI non sono ancora implementate.** Non è un'applicazione funzionante.
+> **Stato: fondazioni M1 e motore puro M2 (v0.1.0), verificati localmente.** Il package contiene analyzer, parser, builder di indici posizionali e ricerca su snapshot immutabili, oltre a DTO e porte. CLI, ingestione dei file, persistenza, sincronizzazione e UI restano da implementare. Non è ancora un'applicazione operativa.
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -35,7 +35,7 @@ local-document-search/
 └── README.md
 ```
 
-Il package Python contiene le fondazioni M1; i moduli dei futuri algoritmi, casi d'uso e adapter restano segnaposto. Non esiste ancora una CLI operativa. Installazione e test sono descritti in [backend/README.md](backend/README.md); risultati e limiti in [Verifica M1](docs/M1_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
+Il package Python contiene le fondazioni M1 e il motore puro M2; casi d'uso e adapter operativi restano segnaposto. Non esiste ancora una CLI operativa. Installazione e test sono descritti in [backend/README.md](backend/README.md); risultati e limiti in [Verifica M1](docs/M1_VERIFICATION.md) e [Verifica M2](docs/M2_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
 
 ## Da dove partire
 

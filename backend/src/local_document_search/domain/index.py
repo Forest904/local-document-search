@@ -1,4 +1,4 @@
-"""Posting immutabili; costruzione dell'indice prevista in M2."""
+"""Posting e indici immutabili; IndexBuilder in snapshots costruisce il draft."""
 from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType

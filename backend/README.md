@@ -1,6 +1,6 @@
-# Backend — fondazioni M1
+# Backend — fondazioni M1 e motore puro M2
 
-Package Python >=3.12 con modelli immutabili, DTO di ricerca, porte e punto di composizione minimo. Nessuna dipendenza runtime esterna. Analyzer, parser, matching, reader, repository operativo, CLI e job restano nelle milestone successive.
+Package Python >=3.12 con modelli immutabili, DTO di ricerca, porte e punto di composizione minimo. Nessuna dipendenza runtime esterna. Analyzer, parser, builder/draft e matching sono implementati in M2. Reader, repository operativo, CLI e job restano nelle milestone successive. [Evidenze e interfacce M2](../docs/M2_VERIFICATION.md).
 
 ## Installazione e verifica
 
@@ -22,7 +22,7 @@ GitHub Actions configura gli stessi controlli su Windows e Linux, Python 3.12. L
 
 ## Confini implementati
 
-- Domain: documenti, token, clausole, posting e snapshot immutabili; nessun I/O.
+- Domain: documenti, analyzer, parser, builder/draft, posting, snapshot immutabili e matching AND/frasi per campo e BOTH; nessun I/O.
 - Application: DTO e quattro `Protocol`; nessun adapter concreto.
 - Interfaces: `compose_application` riceve dipendenze esplicite e restituisce un contenitore tipizzato. Il cablaggio operativo sarà introdotto in M3.
 - Test: invarianti, coerenza, copie difensive, DTO, sostituti di test e controllo AST degli import.

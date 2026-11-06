@@ -25,7 +25,7 @@ class SearchRequest:
             raise InvalidInput("limit deve essere un intero positivo")
         if type(self.offset) is not int or self.offset < 0:
             raise InvalidInput("offset deve essere un intero non negativo")
-        # Sintassi e clausole senza token saranno validate dal parser/analyzer M2.
+        # Parser/analyzer M2 validano sintassi e token; collegamento al caso d'uso in M3.
 
 
 @dataclass(frozen=True)

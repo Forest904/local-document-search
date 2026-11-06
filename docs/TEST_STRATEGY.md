@@ -1,6 +1,6 @@
 # Test Strategy & Acceptance Plan
 
-**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). I casi operativi delle milestone successive restano un piano di verifica.
+**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). M2 aggiunge 72 casi per analyzer, parser, builder, matching e pipeline in memoria: [evidenze M2](M2_VERIFICATION.md). I casi operativi M3–M9 restano un piano di verifica.
 
 ## 1. Livelli
 
@@ -68,7 +68,7 @@ Una funzionalità è completata solo se: contratto implementato, invarianti cope
 
 ## 8. Accettazione delle decisioni v1
 
-La riga M1 è coperta dai test locali; le altre righe restano test da implementare nelle rispettive milestone, non risultati già ottenuti.
+Le righe M1 e M2 sono coperte dai test locali; le righe M3–M9 restano test da implementare nelle rispettive milestone, non risultati già ottenuti.
 
 | Milestone | Scenario | Risultato atteso |
 |---|---|---|

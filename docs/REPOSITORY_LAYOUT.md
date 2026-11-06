@@ -22,7 +22,7 @@ local-document-search/
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. Algoritmi, servizi applicativi e adapter operativi restano segnaposto. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. Servizi applicativi e adapter operativi restano segnaposto. Il frontend contiene soltanto un README.
 
 ## 2. Matrice di dipendenza
 
@@ -40,9 +40,9 @@ Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitam
 
 - `domain/documents.py`: identità e metadati dei documenti; CDM e IndexedDocument.
 - `domain/analysis.py`: tokenization, normalizzazione e posizioni.
-- `domain/index.py`: posting lists e costruzione dell'indice.
+- `domain/index.py`: posting lists e indici immutabili.
 - `domain/queries.py`: sintassi già interpretata e matching.
-- `domain/snapshots.py`: manifest, catalogo, snapshot/draft.
+- `domain/snapshots.py`: manifest, catalogo, snapshot/draft e IndexBuilder puro.
 - `application/contracts.py`: DTO stabili dei casi d'uso.
 - `application/ports.py`: interfacce dei servizi esterni.
 - `application/lifecycle.py`: startup e directory selection.

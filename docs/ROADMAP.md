@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** fondazioni M1 implementate e verificate localmente; prodotto non ancora operativo.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2–M9 restano da implementare e verificare.
+**Stato:** fondazioni M1 e motore puro M2 implementati e verificati localmente; CLI e prodotto non ancora operativi.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -19,7 +19,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 |---|---|---|
 | M0 | Specifica eseguibile | Verificata (documentazione, 2026-11-06) |
 | M1 | Fondazioni verificabili | Verificata localmente (2026-11-06); CI remota da verificare |
-| M2 | Motore di ricerca puro | Da implementare |
+| M2 | Motore di ricerca puro | Verificata localmente (2026-11-06); CI remota da verificare |
 | M3 | CLI TXT e Homework 3 | Da implementare |
 | M4 | Ingestione multiformato | Da implementare |
 | M5 | Snapshot persistenti | Da implementare |
@@ -80,6 +80,8 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 - Unicode, apostrofi, CamelCase, numeri, posizioni e termini ripetuti verificati.
 - Query miste soddisfatte in un singolo campo; nessun match distribuito tra campi.
 - Modifiche successive al draft non alterano lo snapshot attivo.
+
+**Evidenze:** 145 test superati su Windows/Python 3.12.2, inclusi 72 nuovi casi M2; `pip check` riuscito. Analyzer, parser, draft/builder, matching e isolamento degli snapshot verificati con dati sintetici in memoria. [Verifica M2](M2_VERIFICATION.md). CLI e persistenza restano nelle milestone successive.
 
 **Riferimenti:** [Analisi](INDEXING_AND_ANALYSIS.md), [Dominio](DOMAIN_MODEL.md).
 
