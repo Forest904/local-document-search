@@ -62,3 +62,7 @@ Pulizia con conferma, disabilitata durante job: elimina dati applicativi, non do
 Apertura file tramite adapter desktop del sistema operativo, senza shell costruita con input utente.
 ZIP Windows 11 x64 pyside6-deploy standalone, senza Python preinstallato: verifica M9.
 M8 si installa come pacchetto frontend separato; [istruzioni desktop](../frontend/README.md).
+
+## Diagnostica del job (2026-11-07)
+
+«Dettagli ultimo job» mostra riepilogo e diagnostiche sicure: categoria, file relativo e motivo. I report restano disponibili nella sessione; il fallimento non sostituisce lo snapshot precedente.

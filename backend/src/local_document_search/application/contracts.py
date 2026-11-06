@@ -77,6 +77,7 @@ class BuildResult:
     excluded: int
     processed_bytes: int
     elapsed: float
+    report: "JobReport | None" = None
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,27 @@ class SyncResult:
     failed: int
     elapsed: float
     processed_bytes: int
+    report: "JobReport | None" = None
+
+
+@dataclass(frozen=True)
+class JobDiagnostic:
+    category: str
+    phase: "JobPhase"
+    relative_path: str | None
+    reason: str
+
+
+@dataclass(frozen=True)
+class JobReport:
+    diagnostics: tuple[JobDiagnostic, ...] = ()
+    complete: bool = True
+    published_snapshot_id: str | None = None
+    added: int = 0
+    modified: int = 0
+    removed: int = 0
+    unchanged: int = 0
+    excluded: int = 0
 
 
 @dataclass(frozen=True)
@@ -138,6 +160,7 @@ class JobStatus:
     current_file: str | None = None
     finished_at: datetime | None = None
     error: str | None = None
+    report: JobReport | None = None
 
     @property
     def progress(self) -> float | None:

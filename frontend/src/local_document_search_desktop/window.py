@@ -92,9 +92,11 @@ class SearchWindow(QMainWindow):
         layout.addWidget(self.message)
         bottom = QHBoxLayout()
         self.privacy = QPushButton("Informativa dati locali")
+        self.job_details = QPushButton("Dettagli ultimo job")
         self.start = QPushButton("Continua")
         self.clear = QPushButton("Elimina dati locali…")
         bottom.addWidget(self.privacy)
+        bottom.addWidget(self.job_details)
         bottom.addStretch()
         bottom.addWidget(self.start)
         bottom.addWidget(self.clear)
@@ -115,6 +117,8 @@ class SearchWindow(QMainWindow):
         self.clear.clicked.connect(self.clear_data)
         self.start.clicked.connect(self.initialize)
         self.privacy.clicked.connect(lambda: QMessageBox.information(self, "Dati locali", PRIVACY))
+        self.job_details.clicked.connect(self.show_job_report)
+        self.last_job_report = None
         self.check_timer = QTimer(self)
         self.check_timer.setSingleShot(True)
         self.check_timer.setInterval(1500)
@@ -202,10 +206,28 @@ class SearchWindow(QMainWindow):
                              and self.offset + 50 < self.response.total_matches)
         self.open_file.setEnabled(searchable and self.results.currentItem() is not None)
         self.start.setEnabled(self.session is None and not busy)
+        self.job_details.setEnabled(self.last_job_report is not None)
+
+    def show_job_report(self):
+        report = self.last_job_report
+        if report is None:
+            return
+        lines = ["Report completo" if report.complete else "Report incompleto",
+                 f"Esclusi: {report.excluded}",
+                 f"Snapshot pubblicato: {report.published_snapshot_id or 'nessuno'}"]
+        lines.extend(f"{item.category} · {item.relative_path or 'job'} · {item.reason}"
+                     for item in report.diagnostics)
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("Dettagli ultimo job")
+        dialog.setText("\n".join(lines[:3]))
+        dialog.setDetailedText("\n".join(lines[3:]) or "Nessuna diagnostica")
+        dialog.exec()
 
     def apply_state(self, state):
         if self.state and self.state.active_directory != state.active_directory:
             self.invalidate()
+        if state.active_directory is None and self.state and self.state.active_directory is not None:
+            self.last_job_report = None
         self.state = state
         self.directory.setText(state.active_directory or "Nessuna cartella selezionata — TXT, Markdown e PDF")
         if state.warning:
@@ -255,6 +277,9 @@ class SearchWindow(QMainWindow):
         self.watch(self.coordinator.submit(poll), received, failed)
 
     def apply_job(self, job):
+        if job and job.report is not None:
+            self.last_job_report = job.report
+            self.job_details.setEnabled(True)
         running = job and job.state in (JobState.PENDING, JobState.RUNNING)
         self.progress.setVisible(bool(job))
         if running:
@@ -271,7 +296,8 @@ class SearchWindow(QMainWindow):
                 text += f" · {job.current_file}"
             if self.state.search_available:
                 text += " — Aggiornamento in corso: i risultati potrebbero non riflettere le modifiche più recenti"
-            self.status.setText(text)
+            if not (self.state and self.state.warning):
+                self.status.setText(text)
         elif job and job.job_id not in self.seen_terminal:
             self.seen_terminal.add(job.job_id)
             self.progress.setRange(0, 100)

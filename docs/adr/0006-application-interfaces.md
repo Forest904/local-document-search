@@ -12,3 +12,8 @@
 - **M6 clarification (2026-11-06):** backend persistente separato dalla CLI Homework, come concordato. InitializeApplication, SelectDirectory e GetIndexStatus condividono ApplicationState; RunSynchronization è bloccante e restituisce SyncResult. Nessun JobRef anticipato. Worker/async/lock restano M7. [Superficie M6](../INTERFACE_CONTRACTS.md#8-superficie-operativa-m6).
 
 - **M7 implementation clarification (2026-11-06, approvata):** InitializeApplication e SelectDirectory restituiscono ApplicationState con JobRef senza attendere il job; RequestSynchronization restituisce lo stesso ID con reused=true durante il lavoro. RunSynchronization attende quel medesimo job. SearchDocuments/GetDocument mantengono execute e aggiungono submit con Future, su un worker letture separato. Stati immutabili conservati per la sessione; nessun Qt o nuova dipendenza. [Contratti M7](../INTERFACE_CONTRACTS.md#9-superficie-operativa-m7), [evidenze](../M7_VERIFICATION.md).
+
+- **FR-18 (2026-11-07, approvata):** JobStatus espone un report immutabile di sessione
+  con diagnostiche per categoria/fase/percorso relativo/motivo sicuro. SyncResult include
+  il report di successo. Nessuno storico persistente; il manifest pubblicato conserva le
+  esclusioni, un candidato fallito non è pubblicato.

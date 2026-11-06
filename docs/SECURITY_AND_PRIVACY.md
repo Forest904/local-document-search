@@ -35,3 +35,7 @@ Parser trattano documenti come input non fidati: test per file corrotti e risors
 Pacchetto per account standard Windows 11 x64, senza privilegi amministrativi o Python installato.
 Includere avvisi/licenze delle dipendenze; nessun cloud, telemetry o updater introdotto implicitamente.
 Verifica operativa e pulizia del pacchetto in M9; [Roadmap](ROADMAP.md).
+
+## Stato distribuzione (2026-11-07)
+
+Il pacchetto locale M9 esiste; la prova finale dopo le correzioni è in corso. Per decisione esplicita dell'utente, la prova su Windows pulito e account standard distinto è rinviata alle versioni successive. La CLI Homework resta volatile e non acquisisce il lock delle sessioni persistenti. I report dei job mostrano categorie e percorsi relativi, senza testo, query o percorsi assoluti nei log.

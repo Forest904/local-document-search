@@ -12,8 +12,14 @@ Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confr
 
 M9 concordata: build standalone per uso personale, nessuna licenza del progetto o pubblicazione;
 prove sul solo PC attuale. Packaging e corpus riproducibile implementati, misure locali registrate;
-Windows 11 senza Python resta aperto e impedisce di dichiarare l'accettazione completa.
+il 7 novembre 2026 l'utente ha rinviato la prova su Windows pulito/account standard distinto alle
+versioni successive. L'accettazione M9 riguarda il PC attuale; il rinvio non costituisce una prova
+di portabilità. Restano da verificare le altre righe M9 sul pacchetto finale.
 [Verifica M9](M9_VERIFICATION.md), [ADR 0009](adr/0009-desktop-runtime.md).
+
+Il 7 novembre 2026 sono stati approvati: ID documentali non riciclati fino a ClearLocalData
+riuscita, anche attraverso rebuild/cambio directory; pulizia esplicita dello storage precedente;
+report dettagliato dei job limitato alla sessione; fault harness compilato separato dallo ZIP.
 
 M8 concordata: pacchetto frontend separato con dipendenza dal backend e da PySide6, launcher proprio,
 informativa a ogni avvio prima di Continua e nessuna nuova preferenza persistente.

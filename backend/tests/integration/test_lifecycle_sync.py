@@ -254,12 +254,55 @@ def test_excluded_reuse_and_transitions(roots):
     assert len(calls) == 1
     write(source, 'a.txt', 'indexed text')
     assert sync.execute(str(source)).excluded == 0
-    assert repo.load_active().catalog.documents
+    first_id = next(iter(repo.load_active().catalog.documents))
     write(source, 'a.txt', 'excluded')
     assert sync.execute(str(source)).excluded == 1
     assert not repo.load_active().catalog.documents
     assert not repo.load_active().filename_index.terms
     assert not repo.load_active().content_index.terms
+    write(source, 'a.txt', 'indexed again')
+    assert sync.execute(str(source)).excluded == 0
+    assert next(iter(repo.load_active().catalog.documents)).value > first_id.value
+
+
+def test_document_ids_never_recycle_across_removal_restart_and_retention(roots):
+    source, storage = roots
+    write(source, 'a.txt', 'alpha')
+    write(source, 'b.txt', 'bravo')
+    with compose_persistent_application(storage) as app:
+        select(app, str(source))
+        first = app.search.execute(SearchRequest('bravo')).results[0].document_id.value
+        (source / 'b.txt').unlink()
+        app.synchronize.execute()
+        write(source, 'c.txt', 'charlie')
+        app.synchronize.execute()
+        second = app.search.execute(SearchRequest('charlie')).results[0].document_id.value
+        assert second > first
+        (source / 'a.txt').unlink()
+        (source / 'c.txt').unlink()
+        app.synchronize.execute()
+    write(source, 'd.txt', 'delta')
+    with compose_persistent_application(storage) as app:
+        initialize(app)
+        assert app.search.execute(SearchRequest('delta')).results[0].document_id.value > second
+
+
+def test_legacy_storage_requires_explicit_clear(roots):
+    source, storage = roots
+    write(source, 'a.txt', 'alpha')
+    with compose_persistent_application(storage) as app:
+        select(app, str(source))
+    (storage / 'document-ids.sqlite3').unlink()
+    with compose_persistent_application(storage) as app:
+        state = app.initialize.execute()
+        assert 'Elimina dati locali' in state.warning
+        assert app.search.execute(SearchRequest('alpha')).total_matches == 1
+        with pytest.raises(InvalidInput, match='Elimina dati locali'):
+            app.synchronize.execute()
+        app.clear_local_data.execute()
+        assert (source / 'a.txt').read_text(encoding='utf-8') == 'alpha'
+        select(app, str(source))
+        assert app.search.execute(SearchRequest('alpha')).results[0].document_id.value == 0
 
 
 def test_legacy_m5_storage(roots):

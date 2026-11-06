@@ -30,6 +30,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"File scoperti: {report.discovered}; indicizzati: {report.indexed}; "
               f"esclusi: {report.excluded}; byte: {report.processed_bytes}; "
               f"tempo build: {report.elapsed:.6f} s")
+        if report.report is not None:
+            for diagnostic in report.report.diagnostics:
+                print(f"Escluso: {diagnostic.relative_path}: {diagnostic.reason}")
         print("Query: nome/contenuto/entrambi, AND e frasi tra virgolette. EOF o Ctrl+C per uscire.")
         while True:
             try:

@@ -148,3 +148,51 @@ snapshot o corpus generato incluso fra le modifiche versionabili.
 - CI remota e distribuzione pubblica: **non eseguite**.
 - Nessuna misura dimostra sicurezza contro esaurimento di memoria non intercettabile
   o interruzione fisica dell'alimentazione; valgono i limiti e i test di fault injection M5–M7.
+
+## Aggiornamento corrente — 7 novembre 2026
+
+La sezione precedente documenta l'artefatto storico. Dopo la correzione degli ID e del
+report FR-18, l'artefatto corrente è `dist/LocalDocumentSearch-0.1.0-windows-x64.zip`,
+SHA256 `d045595d30e425567f5a06f8897082e3856f226e1c600537334fc07990cfe895`.
+Lo ZIP contiene 86 file; CRC, hash del payload e hash dei sorgenti del manifest coincidono.
+Il manifest registra HEAD `de93bab01f8f4af058c368190da040336ccf6a45` con working
+tree modificato. La build è identificabile tramite gli hash, ma non proviene da un commit pulito.
+La toolchain è Python 3.12.2 x64, Nuitka 4.1.1, PySide6/Shiboken6 6.12.0 e MSVC
+14.44.35207 (VS Build Tools 17.14.37411.7); percorso e hash del compilatore installato
+sono nel manifest. Sono presenti QtNetwork e gli avvisi dei componenti effettivi.
+
+Verifiche sorgente correnti: backend **317 passed, 5 skipped** (quattro casi symlink
+senza privilegi Windows e un caso di nomi distinti solo per maiuscole su filesystem
+insensibile), frontend **25 passed**, script **17 passed**; `pip check` riuscito.
+Il runner Homework ha superato dieci query e due regressioni su otto TXT sintetici.
+La CI verde su Windows e Ubuntu riguarda soltanto il commit baseline; i log dettagliati
+degli skip non erano accessibili anonimamente. Queste modifiche non sono state inviate alla CI.
+
+Misura backend ripetuta, senza build o suite simultanee, sul corpus M9 di 3.000 documenti
+e 29.993.956 byte estraibili: build 105,448 s, riapertura 20,781 s, no-change 0,205 s,
+incrementale 46,550 s; picco working set 990.765.056 byte (944,9 MiB). Riapertura a
+cache calda, stessa metodologia e nessuna soglia prestazionale nuova. I risultati grezzi
+restano fuori Git.
+
+Il nuovo ZIP è stato estratto fuori repository in un percorso con spazi e Unicode, con
+LOCALAPPDATA isolato e variabili Python/Qt pulite nel processo figlio. Sono stati osservati
+informativa, apertura dello snapshot, sync no-change, ricerca e pagina 2 di 60 risultati,
+anteprima PDF, errore su PDF corrotto con percorso relativo e motivo sicuro nei Dettagli
+ultimo job, correzione del corpus e retry riuscito, chiusura e riavvio senza errori.
+Picchi delle due sessioni GUI: 200.609.792 e 151.392.256 byte; le durate includono
+attese dell'operatore e non sono benchmark.
+
+L'harness compilato **separato dal prodotto distribuito**, costruito con Nuitka 4.1.1 e
+`--msvc=14.3`, ha superato arresto prima e dopo commit, `SQLITE_FULL` su database
+isolato, `MemoryError` simulato, errore di scrittura e tre terminazioni esterne in
+competizione con il commit (ritardi 0, 1 e 10 ms). Al riavvio ogni prova ha trovato uno
+snapshot completo vecchio o nuovo e il lock riacquisibile. Le terminazioni in competizione
+non identificano il punto interno di flush; non dimostrano resistenza a perdita fisica di
+alimentazione o OOM non intercettabile.
+
+**Stato:** M9 resta parzialmente accettata. Sullo ZIP corrente non sono ancora documentati
+il ciclo completo di cambio directory e rebuild, pulizia rifiutata durante job, la matrice
+di PDF protetto/senza testo/misto e TXT/MD vuoti, né ricerca e anteprima sotto carico.
+I test sorgente M5–M8 coprono parte di questi comportamenti ma non costituiscono una prova
+del nuovo pacchetto. La prova Windows pulito/account standard distinto è stata rinviata
+esplicitamente dall'utente alle versioni successive e resta non verificata.

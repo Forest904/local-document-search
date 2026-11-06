@@ -108,3 +108,7 @@ Lista ordinata per percorso, testo completo e apertura file; Invio e pagine da 5
 ClearLocalData elimina soli dati applicativi a job fermo; storage per utente, nessuna cifratura aggiuntiva.
 Attivo/precedente della sola directory corrente, nessuna cache multi-directory.
 Dettagli in [Contratti](INTERFACE_CONTRACTS.md), [UX](UX_WINDOWS.md), [Roadmap](ROADMAP.md).
+
+## Stato FR-18 (2026-11-07)
+
+Il report strutturato del job è disponibile per la sessione tramite JobStatus, con categoria, fase, percorso relativo e motivo controllato. SyncResult include il report di successo. Il manifest dello snapshot pubblicato conserva le esclusioni; un candidato fallito non è pubblicato. La prova finale del pacchetto resta da registrare in M9.

@@ -111,3 +111,7 @@ conserva il contenitore SQLite di controllo vuoto e il suo schema per il riuso d
 M6 non produce log o altri temporanei applicativi. Nessuna garanzia di cancellazione forense.
 Le acquisizioni già aperte completano; una barriera impedisce nuove letture durante la pulizia.
 Questa sincronizzazione limitata non introduce worker né supporto generale a writer concorrenti.
+
+## Allocazione ID (2026-11-07)
+
+Gli ID nuovi provengono da un allocatore SQLite separato dagli snapshot. La prenotazione precede il candidato e rimane durevole in caso di rollback. Il contatore sopravvive a retention, rebuild, cambio directory e riavvio; ClearLocalData riuscita avvia una nuova vita. Storage precedente privo di allocatore richiede pulizia esplicita prima di nuovi job.

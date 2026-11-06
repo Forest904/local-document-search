@@ -58,5 +58,4 @@ arresto forzato e recovery, sorgente assente e pulizia dei soli dati app.
 Misurare il processo compilato separatamente dal benchmark backend.
 Esiti e limiti effettivi: [M9_VERIFICATION](../../docs/M9_VERIFICATION.md).
 
-Questa prova sul PC di sviluppo non sostituisce Windows 11 senza Python, che resta
-un criterio aperto prima di dichiarare M9 completamente verificata.
+Per decisione dell'utente del 2026-11-07 la prova Windows pulito/account standard distinto è rinviata alle versioni successive. M9 richiede il collaudo dello ZIP finale sul PC attuale; la prova locale non dimostra portabilità su ambiente pulito.

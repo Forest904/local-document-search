@@ -99,3 +99,7 @@ La CLI Homework usa soltanto memoria e non acquisisce il lock.
 Chiusura attende job e letture; arresto forzato gestito dal recovery.
 CLI M3 usa repository in memoria e build bloccante; M5/M6 introducono persistenza e diff
 senza duplicare il motore né richiedere funzionalità future per la consegna.
+
+## Stato distribuzione (2026-11-07)
+
+Il packaging standalone è implementato; il nuovo ZIP e il collaudo locale finale sono in corso. La prova Windows pulito/account standard distinto è rinviata per decisione dell'utente e non è dimostrata dalle prove locali. L'allocatore documentale durevole è esterno agli snapshot; la CLI Homework continua a usare storage volatile senza lock di sessione persistente.

@@ -24,10 +24,10 @@ flowchart LR
 | Use case | Richiesta | Risposta | Regole |
 |---|---|---|---|
 | `InitializeApplication` | nessuna | `ApplicationState` | Recupera ultima directory e snapshot valido; se possibile avvia sync asincrono |
-| `SelectDirectory` | `absolute_path` | `DirectorySelectionResult` | Valida, salva e avvia sync; rifiuta cambio cartella con job attivo |
+| `SelectDirectory` | `absolute_path` | `ApplicationState` | Valida, salva e avvia sync; rifiuta cambio cartella con job attivo |
 | `RequestSynchronization` | `trigger` (startup/select/manual) | `JobRef` | Non lancia un secondo job; restituisce il job già attivo ove applicabile |
 | `RunSynchronization` | trigger | `SyncResult` | Modalità bloccante, **stesso** algoritmo; destinata a CLI/test |
-| `GetIndexStatus` | nessuna | `IndexStatus` | Directory, snapshot attivo, stato sync/ricerca, ultima diagnostica |
+| `GetIndexStatus` | nessuna | `ApplicationState` | Directory, snapshot attivo, stato sync/ricerca, ultima diagnostica |
 | `GetJobStatus` | `job_id` | `JobStatus` | Stato e progress aggiornati, anche con totali non ancora noti |
 | `SearchDocuments` | `SearchRequest` | `SearchResponse` | Ricerca solo su snapshot attivo e stabile |
 | `GetDocument` | `document_id`, `snapshot_id` | `DocumentDetails` | Testo della versione richiesta; SnapshotUnavailable se rimossa/incompatibile |
@@ -39,15 +39,14 @@ flowchart LR
 
 | DTO | Campi significativi |
 |---|---|
-| `ApplicationState` | `active_directory?`, `active_snapshot_id?`, `search_available`, `job?`, `warning?` |
+| `ApplicationState` | `active_directory?`, `active_snapshot_id?`, `search_available`, `job?`, `warning?`, `last_sync_outcome?` |
 | `JobRef` | `job_id`, `status`, `reused` |
-| `IndexStatus` | `active_directory?`, `active_snapshot_id?`, `last_sync_outcome?`, `job?`, `search_available` |
-| `JobStatus` | `job_id`, `state`, `phase`, `files_total?`, `files_completed`, `bytes_total?`, `bytes_completed`, `current_file?`, `started_at`, `finished_at?`, `error?` |
+| `JobStatus` | `job_id`, `state`, `phase`, `files_total?`, `files_completed`, `bytes_total?`, `bytes_completed`, `current_file?`, `started_at`, `finished_at?`, `error?`, `report?` |
 | `SearchRequest` | `query`, `field` (default BOTH), `limit` (default 50), `offset` (default 0) |
 | `SearchResponse` | `snapshot_id`, `results`, `total_matches` |
 | `SearchResult` | `document_id`, `filename`, `relative_path`, `format`, `matched_fields` |
 | `DocumentDetails` | `snapshot_id`, `document_id`, metadati, `extracted_text` |
-| `SyncResult` | `snapshot_id?`, `changed`, `added`, `modified`, `removed`, `unchanged`, `excluded`, `failed`, `elapsed`, `processed_bytes` |
+| `SyncResult` | `snapshot_id`, `changed`, `added`, `modified`, `removed`, `unchanged`, `excluded`, `failed`, `elapsed`, `processed_bytes`, `report?` |
 
 `?` indica un campo opzionale o **non ancora obbligatorio**. Sono contratti in-process, non endpoint HTTP/IPC. Limit positivo e offset non negativo, altrimenti InvalidInput. Ordinare per percorso relativo preservato prima di paginare.
 
@@ -239,3 +238,9 @@ di risultato invalida la precedente anteprima. Paginazione e snapshot rispettano
 Il frontend tratta DocumentId e RelativePath dei DTO senza ricostruire l'indice né interrogare i sorgenti;
 solo Apri file verifica il percorso tramite l'adapter desktop. Chiusura attende anche composizione/lifecycle pendenti.
 Startup con SnapshotUnavailable senza sorgente mantiene disponibili selezione e pulizia per recuperare.
+
+## 11. Chiarimenti correnti (2026-11-07)
+
+La tabella generale usa ApplicationState per InitializeApplication, SelectDirectory e GetIndexStatus; le sezioni M3–M8 descrivono l'evoluzione storica. JobStatus.report è un JobReport immutabile conservato per la sessione, con diagnostiche di categoria, fase, percorso relativo opzionale e motivo controllato. complete=false distingue il report interrotto; published_snapshot_id indica solo una versione davvero pubblicata. SyncResult.report espone il report di successo. Il report include le esclusioni del manifest finale anche per NO_CHANGES. Il candidato fallito non viene pubblicato.
+
+SnapshotRepositoryPort.reserve_document_ids(count) restituisce l'inizio di un intervallo prenotato. L'implementazione persistente lo rende durevole prima della costruzione del candidato.

@@ -57,6 +57,10 @@ class DocumentReaderPort(Protocol):
 class SnapshotRepositoryPort(Protocol):
     def load_active(self) -> IndexSnapshot | None: ...
 
+    def reserve_document_ids(self, count: int) -> int:
+        """Rende durevole la prenotazione e restituisce il primo ID."""
+        ...
+
     def acquire(self, snapshot_id: str | None = None) -> AbstractContextManager[IndexSnapshot]:
         """Protegge la versione richiesta (o attiva) fino al rilascio."""
         ...

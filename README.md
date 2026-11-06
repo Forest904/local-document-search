@@ -1,20 +1,20 @@
 # Local Document Search
 
-> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; packaging M9 implementato con verifiche locali. Windows senza Python resta da verificare. [Evidenze M9](docs/M9_VERIFICATION.md).
+> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; packaging M9 implementato con verifiche locali. La prova su Windows pulito è rinviata alle versioni successive; il collaudo finale locale M9 è in corso. [Evidenze M9](docs/M9_VERIFICATION.md).
 
-Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
+Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e anche dalla UI desktop Windows.
 
 ## Ambito della prima versione
 
 - Una directory attiva alla volta, esplorata ricorsivamente, senza seguire symlink o junction.
 - Un file fisico = un documento. Conversione TXT/Markdown/PDF testuali in un CDM con contenuto testuale unico; nessun OCR.
 - Analyzer distinti per `filename` e `content`, corpus potenzialmente multilingue, positional inverted index costruito senza un motore IR esterno.
-- Snapshot dell'indice immutabili e persistenti, con attivazione atomica; testo estratto persistito per future anteprime/snippet.
+- Snapshot dell'indice immutabili e persistenti, con attivazione atomica; testo estratto persistito per le anteprime di testo completo.
 - Sincronizzazione incrementale con confronto **solo** di percorso, dimensione e `mtime_ns`, all'avvio, dopo nuova selezione e su richiesta manuale.
 - Indicizzazione asincrona, progresso misurabile per byte dei file completati, ricerca disponibile sullo snapshot precedente mentre la sincronizzazione è in corso.
 - Ricerca su entrambi i campi: l'intera query deve soddisfare **almeno un singolo campo**; termini non quotati con semantica AND, query tra virgolette come frase.
 
-Le caratteristiche elencate rappresentano **requisiti/decisioni**, non funzioni attualmente implementate.
+Le caratteristiche elencate sono implementate; le correzioni ID/FR-18 e il collaudo finale M9 sono in verifica.
 
 ## Repository
 

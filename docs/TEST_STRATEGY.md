@@ -68,7 +68,7 @@ Una funzionalità è completata solo se: contratto implementato, invarianti cope
 
 ## 8. Accettazione delle decisioni v1
 
-Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symlink reali e nomi distinti solo per case saltati su questo Windows; junction reale verificata). Le righe M4 sono coperte dalle fixture sintetiche e dalla pipeline multiformato ([evidenze](M4_VERIFICATION.md)); le righe M5 sono coperte con i limiti dei crash test documentati in [Verifica M5](M5_VERIFICATION.md). Le letture protette M5 sono verificate tramite acquisizioni esplicite nella stessa sessione; la concorrenza reale è verificata in M7. Le righe M6 sono verificate con i limiti in [Verifica M6](M6_VERIFICATION.md). Le righe M7 sono verificate con thread e processi reali su Windows ([evidenze](M7_VERIFICATION.md)); M8 è verificata con test Qt e smoke visivo, con i limiti di [Verifica M8](M8_VERIFICATION.md); M9 ha evidenze locali; Windows senza Python resta da verificare ([dettagli](M9_VERIFICATION.md)).
+Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symlink reali e nomi distinti solo per case saltati su questo Windows; junction reale verificata). Le righe M4 sono coperte dalle fixture sintetiche e dalla pipeline multiformato ([evidenze](M4_VERIFICATION.md)); le righe M5 sono coperte con i limiti dei crash test documentati in [Verifica M5](M5_VERIFICATION.md). Le letture protette M5 sono verificate tramite acquisizioni esplicite nella stessa sessione; la concorrenza reale è verificata in M7. Le righe M6 sono verificate con i limiti in [Verifica M6](M6_VERIFICATION.md). Le righe M7 sono verificate con thread e processi reali su Windows ([evidenze](M7_VERIFICATION.md)); M8 è verificata con test Qt e smoke visivo, con i limiti di [Verifica M8](M8_VERIFICATION.md); M9 ha evidenze locali in aggiornamento. La prova Windows pulito/account standard distinto è rinviata alle versioni successive ([dettagli](M9_VERIFICATION.md)).
 
 | Milestone | Scenario | Risultato atteso |
 |---|---|---|
@@ -106,7 +106,7 @@ Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symli
 | M8 | Query senza match / offset oltre il totale | Lista vuota e snapshot_id valido; totale 0 / totale effettivo; cambio versione applica comunque il ritorno alla prima pagina |
 | M8 | Apri file assente / anteprima versione rimossa | Messaggio e proposta Sync / invito a ripetere ricerca |
 | M8 | Build/query/anteprima sotto carico | UI utilizzabile, nessun lavoro pesante nel thread grafico |
-| M9 | ZIP su Windows 11 x64 pulito, account standard | Avvio senza Python, indicizzazione, ricerca, restart e pulizia funzionanti |
+| M9 | ZIP finale sul PC attuale, ambiente del processo isolato | Avvio, indicizzazione, ricerca, restart e pulizia funzionanti; account standard distinto e Windows pulito rinviati alle versioni successive per decisione del 2026-11-07 |
 
 ## 9. Misure e verifica della consegna
 

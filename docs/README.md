@@ -1,6 +1,6 @@
 # Indice documentazione
 
-**Specifiche di progetto (non implementazione).** Le decisioni v1 approvate sono distinte dall'implementazione assente e dalle esclusioni oltre v1.
+**Stato corrente:** M1–M8 implementate; correzioni ID e FR-18 in verifica, M9 in accettazione locale. Le decisioni approvate non sostituiscono i test.
 
 | Documento | Scopo |
 |---|---|
@@ -16,7 +16,7 @@
 | [SECURITY_AND_PRIVACY.md](SECURITY_AND_PRIVACY.md) | Trattamento locale di documenti e testo persistito |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | Registro OD-01…OD-23 risolte/escluse, limiti e rischi |
 | [ROADMAP.md](ROADMAP.md) | Sequenza M0–M9 con prerequisiti, attività, test e criteri di uscita |
-| [M0_VERIFICATION.md](M0_VERIFICATION.md) | Evidenze della verifica documentale M0 e limiti |
+| [M0](M0_VERIFICATION.md) · [M1](M1_VERIFICATION.md) · [M2](M2_VERIFICATION.md) · [M3](M3_VERIFICATION.md) · [M4](M4_VERIFICATION.md) · [M5](M5_VERIFICATION.md) · [M6](M6_VERIFICATION.md) · [M7](M7_VERIFICATION.md) · [M8](M8_VERIFICATION.md) · [M9](M9_VERIFICATION.md) | Evidenze datate e limiti di ciascuna milestone |
 | [adr/](adr/) | Architecture Decision Records approvati/proposti |
 | [homework-3/](homework-3/) | Conformità consegna, test delle query, template relazione |
 

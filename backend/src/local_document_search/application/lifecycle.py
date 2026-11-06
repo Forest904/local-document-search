@@ -37,6 +37,8 @@ class ApplicationLifecycle:
     def request(self, trigger="manual"):
         with self.jobs.lock:
             self.jobs.ensure_open()
+            if getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
+                raise InvalidInput("Dati precedenti: eseguire Elimina dati locali prima della sincronizzazione")
             if trigger not in ("manual", "startup", "select"):
                 raise InvalidInput("Trigger non valido")
             settings = self.settings.load()
@@ -84,13 +86,17 @@ class ApplicationLifecycle:
                 self.snapshots.select_directory(settings.active_directory)
             if settings.active_directory is None and self.snapshots.incompatible:
                 raise SnapshotUnavailable("Storage incompatibile senza directory salvata: selezionare la sorgente")
-            if settings.active_directory:
+            if settings.active_directory and not getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
                 self.request("startup")
+            elif getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
+                self.warning = "Dati precedenti: eseguire Elimina dati locali prima della sincronizzazione"
             return self.status()
 
     def select(self, directory):
         with self.jobs.lock:
             self._idle()
+            if getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
+                raise InvalidInput("Dati precedenti: eseguire Elimina dati locali prima della sincronizzazione")
             root = self.resolve_directory(directory)
             previous = self.settings.load()
             if root != previous.active_directory:

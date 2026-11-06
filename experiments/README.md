@@ -46,3 +46,19 @@ con PID, esito e picco memoria campionato ogni 100 ms. La durata della sessione 
 le attese dell'operatore: **non** è un tempo di build o query. Per la seconda istanza
 usare la stessa workspace; per uno storage indipendente usarne una nuova.
 [Evidenze e limiti M9](../docs/M9_VERIFICATION.md).
+
+## Fault injection separata dal pacchetto
+
+L'harness in `fault_harness.py` è un eseguibile di prova separato. Il runner usa
+storage temporaneo isolato, verifica recovery e riacquisizione del lock, e non modifica
+il pacchetto distribuito. Per la verifica sorgente:
+
+```powershell
+$env:PYTHONPATH='backend/src'
+backend/.venv/Scripts/python.exe experiments/run_fault_harness.py backend/.venv/Scripts/python.exe experiments/fault_harness.py
+```
+
+Per quella compilata, creare l'harness con l'interprete packaging e Nuitka 4.1.1,
+quindi passare `build/fault-harness/fault_harness.dist/fault_harness.exe` al runner.
+Le tre prove `race` terminano il processo in competizione con COMMIT: accettano soltanto
+uno snapshot vecchio o nuovo completo, senza attribuire il kill a un punto interno preciso.

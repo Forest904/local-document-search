@@ -94,8 +94,10 @@ def toolchain():
         raise RuntimeError("Richiesto Visual Studio 2022 Build Tools con C++ x64")
     instance = instances[0]
     vc = Path(instance["installationPath"]) / "VC/Tools/MSVC"
+    compilers = sorted(vc.glob("*/bin/Hostx64/x64/cl.exe"))
     return {"visual_studio": instance["installationVersion"],
-            "msvc_installed": sorted(p.name for p in vc.iterdir() if p.is_dir())}
+            "msvc_installed": sorted(p.name for p in vc.iterdir() if p.is_dir()),
+            "x64_compilers": [{"path": str(p), "sha256": sha256(p)} for p in compilers]}
 
 
 def build():

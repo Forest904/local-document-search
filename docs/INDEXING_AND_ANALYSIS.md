@@ -74,3 +74,7 @@ Frasi possono attraversare pagine/paragrafi; ordine PDF non garantisce fedeltà 
 Nessuna provenienza strutturale, snippet, highlighting o ranking nella v1.
 Il testo completo è disponibile tramite GetDocument.
 Test obbligatori e fixture: [Test Strategy](TEST_STRATEGY.md).
+
+## Identità nelle esclusioni (2026-11-07)
+
+INDEXED→EXCLUDED rimuove l'ID; EXCLUDED→INDEXED riceve un ID nuovo, mai uno già usato nella vita dell'indice persistente.

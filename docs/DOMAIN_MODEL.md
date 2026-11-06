@@ -85,3 +85,7 @@ field -> term -> document_id -> [position_0, position_1, ...]
 ## 7. Fuori dal dominio
 
 JobManager, status/progresso, UI spinner, scanner fisico, reader concreti, serializer e policy di retention appartengono ad Application/Infrastructure. Non introdurre Domain Entity `User`, `Workspace`, `Collection` o `DocumentPage` nella v1.
+
+## Chiarimento ID (2026-11-07)
+
+Nella composizione persistente la vita dell'indice termina solo con ClearLocalData riuscita. L'allocatore durevole è separato dagli snapshot: retention, rebuild, cambio directory e riavvio non consentono il riuso. Prenotazioni di candidati falliti possono lasciare buchi. La CLI volatile usa un contatore per sessione.

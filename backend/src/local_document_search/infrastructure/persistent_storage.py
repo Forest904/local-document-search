@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from .sqlite_snapshot_storage import SqliteSnapshotRepository, storage_directory
+from .id_allocator import SqliteDocumentIdAllocator
 
 
 class PersistentSnapshotRepository:
@@ -23,6 +24,9 @@ class PersistentSnapshotRepository:
         self._repo = None
         self.incompatible = False
         self.cleanup_diagnostic = None
+        existing_data = (settings.db.execute("SELECT 1 FROM owned LIMIT 1").fetchone() is not None
+                         or settings.db.execute("SELECT 1 FROM settings LIMIT 1").fetchone() is not None)
+        self.allocator = SqliteDocumentIdAllocator(self.directory, existing_data=existing_data)
         name = settings.selected()
         if name:
             self._validate_name(name)
@@ -65,6 +69,9 @@ class PersistentSnapshotRepository:
     def load_active(self):
         with self._condition:
             return self._repo.load_active() if self._repo else None
+
+    def reserve_document_ids(self, count):
+        return self.allocator.reserve_document_ids(count)
 
     @contextmanager
     def acquire(self, snapshot_id=None):
@@ -154,6 +161,7 @@ class PersistentSnapshotRepository:
                 if self.cleanup_diagnostic:
                     raise StorageFailure(self.cleanup_diagnostic)
                 self.settings.clear()
+                self.allocator.reset()
             finally:
                 self._blocked = False
 
@@ -172,4 +180,5 @@ class PersistentSnapshotRepository:
             if self._repo:
                 self._repo.close()
             self.settings.close()
+            self.allocator.close()
             self._closed = True

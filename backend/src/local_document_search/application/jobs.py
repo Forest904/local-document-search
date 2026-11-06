@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from threading import RLock
 from uuid import uuid4
 
-from .contracts import InvalidInput, JobPhase, JobRef, JobState, JobStatus
+from .contracts import InvalidInput, JobPhase, JobRef, JobState, JobStatus, JobReport, JobDiagnostic
 
 
 class IndexingJobManager:
@@ -56,8 +56,15 @@ class IndexingJobManager:
         try:
             result = operation(lambda **changes: self._update(key, **changes))
         except BaseException as exc:
+            prior = self.status(key)
+            report = prior.report or JobReport((JobDiagnostic(type(exc).__name__, prior.phase,
+                      prior.current_file, "Operazione fallita"),), complete=False)
+            if report.complete:
+                report = replace(report, complete=False, diagnostics=report.diagnostics + (
+                    JobDiagnostic(type(exc).__name__, prior.phase, prior.current_file,
+                                  "Aggiornamento dello stato operativo fallito"),))
             self._update(key, state=JobState.FAILED, error=type(exc).__name__,
-                         current_file=None, finished_at=datetime.now(timezone.utc))
+                         report=report, finished_at=datetime.now(timezone.utc))
             raise
         self._update(key, state=JobState.COMPLETED, current_file=None,
                      finished_at=datetime.now(timezone.utc))

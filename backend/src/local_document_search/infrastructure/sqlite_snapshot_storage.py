@@ -15,6 +15,7 @@ from local_document_search.domain.index import PositionalIndex, Posting
 from local_document_search.domain.snapshots import (
     DocumentCatalog, EntryOutcome, FileEntry, IndexManifest, IndexSnapshot,
 )
+from .id_allocator import SqliteDocumentIdAllocator
 
 
 SCHEMA = """
@@ -77,6 +78,7 @@ class SqliteSnapshotRepository:
         self._validated = False
         self._readers = {}
         self.cleanup_diagnostic = None
+        self._allocator = None
         try:
             self.directory.mkdir(parents=True, exist_ok=True)
             if Path(database_name).name != database_name:
@@ -118,6 +120,12 @@ class SqliteSnapshotRepository:
         if self._db is None:
             raise StorageFailure("Repository chiuso")
         return self._db
+
+    def reserve_document_ids(self, count):
+        if self._allocator is None:
+            self._allocator = SqliteDocumentIdAllocator(self.directory,
+                                                        existing_data=self._active is not None)
+        return self._allocator.reserve_document_ids(count)
 
     def load_active(self):
         with self._state_lock:
@@ -321,6 +329,8 @@ class SqliteSnapshotRepository:
                 self.discard_candidate(self._candidate.snapshot_id)
             self._db.close()
             self._db = None
+            if self._allocator is not None:
+                self._allocator.close()
 
     def __enter__(self):
         return self

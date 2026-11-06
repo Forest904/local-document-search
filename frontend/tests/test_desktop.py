@@ -13,7 +13,7 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from local_document_search.application.contracts import (
-    ApplicationState, JobPhase, JobRef, JobState, JobStatus, SearchResponse,
+    ApplicationState, JobDiagnostic, JobPhase, JobRef, JobReport, JobState, JobStatus, SearchResponse,
 )
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from local_document_search_desktop.composition import compose_desktop, open_document
@@ -82,6 +82,23 @@ def test_privacy_precedes_factory_and_enter_only(window):
     assert w.results.topLevelItemCount() == 0
     assert "0 risultati" in w.count.text()
     assert not w.next.isEnabled()
+
+
+def test_job_report_shows_relative_file_without_source_text(window, monkeypatch):
+    w, _ = window
+    start(w)
+    report = JobReport((JobDiagnostic("reader", JobPhase.EXTRACTING, "bad.txt",
+                    "File non decodificabile"),), complete=False)
+    job = JobStatus("test", JobState.FAILED, JobPhase.EXTRACTING,
+                    datetime.now(timezone.utc), error="ExtractionFailure", report=report)
+    w.apply_job(job)
+    assert w.job_details.isEnabled()
+    captured = {}
+    monkeypatch.setattr(QMessageBox, "exec", lambda self: captured.update(
+        title=self.windowTitle(), details=self.detailedText()))
+    w.show_job_report()
+    assert "bad.txt" in captured["details"]
+    assert "File non decodificabile" in captured["details"]
 
 
 def test_pagination_version_reset_and_stale_reset(window):

@@ -133,6 +133,10 @@ def test_failed_job_then_retry_and_async_error(corpus, monkeypatch):
             app._lifecycle.jobs.wait(job.job_id)
         failure = app.job_status.execute(job.job_id)
         assert failure.state == JobState.FAILED and failure.error == "ExtractionFailure"
+        assert not failure.report.complete
+        assert failure.report.published_snapshot_id is None
+        assert failure.report.diagnostics[0].relative_path == "bad.txt"
+        assert "\\xff" not in failure.report.diagnostics[0].reason
         assert failure.finished_at >= failure.started_at
         assert failure.progress != 1 and app.status.execute().active_snapshot_id == old
         (source / "bad.txt").unlink()
@@ -142,6 +146,23 @@ def test_failed_job_then_retry_and_async_error(corpus, monkeypatch):
         assert app.job_status.execute(job.job_id) == failure
         with pytest.raises(InvalidInput):
             app.search.submit(SearchRequest('"unfinished')).result(5)
+
+
+def test_reader_report_never_exposes_raw_exception_text(corpus, monkeypatch):
+    source, storage = corpus
+    with compose_persistent_application(storage) as app:
+        ready(app, source)
+        (source / "b.txt").write_text("bravo", encoding="utf-8")
+        def unsafe(_):
+            raise RuntimeError("secret query /absolute/private/path")
+        monkeypatch.setattr(app._lifecycle.synchronizer.reader, "read", unsafe)
+        job = app.request_synchronization.execute()
+        with pytest.raises(ExtractionFailure):
+            app._lifecycle.jobs.wait(job.job_id)
+        diagnostic = app.job_status.execute(job.job_id).report.diagnostics[-1]
+        assert diagnostic.relative_path == "b.txt"
+        assert "secret" not in diagnostic.reason
+        assert "/absolute/" not in diagnostic.reason
 
 
 @pytest.mark.parametrize("scenario", ["empty", "zero", "removals", "unchanged", "excluded"])
@@ -167,6 +188,9 @@ def test_progress_zero_work_and_exclusions(corpus, scenario):
         assert status.bytes_completed == status.bytes_total == result.processed_bytes
         if scenario == "excluded":
             assert result.excluded == 1 and status.files_completed == 1
+            assert status.report.excluded == 1
+            assert status.report.diagnostics[0].relative_path == "a.txt"
+            assert result.report == status.report
 
 
 def test_commit_failure_never_reports_success(corpus, monkeypatch):

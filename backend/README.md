@@ -14,7 +14,7 @@ python -m pip check
 python -m pytest
 ```
 
-Per riprodurre anche le versioni transitive dell'ambiente di sviluppo usare `python -m pip install -r requirements-dev.txt`. Su Linux attivare `.venv` con `source .venv/bin/activate`; gli altri comandi restano uguali. GitHub Actions crea una virtualenv isolata e usa esplicitamente il suo interprete per installazione, `pip check` e test su Windows/Linux, Python 3.12. Questo evita conflitti con pacchetti preinstallati sul runner, come `pipx`; non è stata verificata la CI remota in questa esecuzione.
+Per riprodurre anche le versioni transitive dell'ambiente di sviluppo usare `python -m pip install -r requirements-dev.txt`. Su Linux attivare `.venv` con `source .venv/bin/activate`; gli altri comandi restano uguali. GitHub Actions crea una virtualenv isolata e usa esplicitamente il suo interprete per installazione, `pip check` e test su Windows/Linux, Python 3.12. La CI della baseline `de93bab` è verde su entrambi i sistemi; la revisione finale richiede nuova verifica.
 
 ## Sessione console
 
@@ -102,7 +102,7 @@ with compose_persistent_application() as app:  # LOCALAPPDATA su Windows
     # app.clear_local_data.execute()          # rifiutato se un job è ancora attivo
 ```
 
-Questo esempio attende esplicitamente per uso da script. La futura UI userà polling dei job e
+Questo esempio attende esplicitamente per uso da script. La UI usa polling dei job e
 Future senza chiamare result finché non sono pronte. Ricerca e dettagli conservano anche execute
 bloccante; submit usa un worker separato dall'indicizzazione.
 

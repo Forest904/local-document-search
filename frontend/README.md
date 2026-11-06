@@ -17,7 +17,7 @@ local-document-search-desktop
 ```
 
 In alternativa: `python -m local_document_search_desktop.main`.
-La distribuzione senza Python e il congelamento delle versioni appartengono a M9.
+Packaging standalone e lock delle versioni sono implementati in M9; il nuovo collaudo locale finale è in corso.
 Ambiente verificato M8: Windows 11 x64, Python 3.12.2, PySide6 6.12.0.
 
 ## Uso
@@ -51,4 +51,4 @@ persistente e l'adapter di apertura file; nessun accesso UI allo storage o agli 
 [Verifica M8](../docs/M8_VERIFICATION.md) · [UX](../docs/UX_WINDOWS.md) · [Roadmap](../docs/ROADMAP.md)
 
 Distribuzione personale Windows standalone M9: [build e istruzioni](../scripts/package/README.md),
-[evidenze e criterio Windows pulito ancora aperto](../docs/M9_VERIFICATION.md).
+[evidenze e prova Windows pulito rinviata](../docs/M9_VERIFICATION.md).

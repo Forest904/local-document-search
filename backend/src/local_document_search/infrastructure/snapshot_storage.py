@@ -14,6 +14,12 @@ class InMemorySnapshotRepository:
         self._readers = {}
         self._previous = None
         self.cleanup_diagnostic = None
+        self._next_document_id = 0
+
+    def reserve_document_ids(self, count: int) -> int:
+        start = self._next_document_id
+        self._next_document_id += count
+        return start
 
     def load_active(self) -> IndexSnapshot | None:
         return self._active

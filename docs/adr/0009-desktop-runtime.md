@@ -1,6 +1,6 @@
 # ADR 0009 — Desktop Python in-process e distribuzione portabile
 
-- **Status:** Accepted, 2026-11-06; runtime M7 e desktop M8 verificati localmente; packaging M9 implementato, accettazione su Windows pulito aperta.
+- **Status:** Accepted, 2026-11-06; runtime M7 e desktop M8 verificati localmente; packaging M9 implementato, accettazione finale locale in corso.
 - **Context:** v1 personale Windows 11 x64 senza vincolo di stack né necessità di servizio separato.
 - **Decision:** PySide6 Qt Widgets e backend nello stesso processo, tramite contratti applicativi; un worker sync, query fuori dal thread UI. Una istanza sullo storage, chiusura attende job. ZIP standalone tramite pyside6-deploy, dipendenze incluse, nessun Python preinstallato.
 - **Alternatives considered:** WPF/WinUI con backend separato, IPC/HTTP, installer per utente.
@@ -18,6 +18,11 @@
   Per scelta dell'utente le prove riguardano il solo PC attuale: Windows 11 senza Python
   resta un criterio aperto, senza dichiarare M9 interamente verificata.
   [Evidenze e limiti M9](../M9_VERIFICATION.md), [build](../../scripts/package/README.md).
+
+- **Scope M9 aggiornato (2026-11-07, approvato):** per uso personale l'accettazione v1
+  viene eseguita sul PC attuale. La prova Windows pulito senza Python e con account standard
+  distinto è rinviata alle versioni successive; il collaudo locale non ne dimostra l'esito.
+  Le restanti verifiche sullo ZIP finale rimangono necessarie per chiudere M9.
 
 - **M8 implementation clarification (2026-11-06, approvata):** pacchetto Python separato in `frontend/`,
   dipendente dal backend e da PySide6, launcher `local-document-search-desktop`. Qt resta escluso
