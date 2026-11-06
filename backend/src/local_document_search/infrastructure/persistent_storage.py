@@ -16,6 +16,7 @@ class PersistentSnapshotRepository:
         self._condition = Condition()
         self._readers = 0
         self._blocked = False
+        self._closed = False
         self._retired = []
         self._candidate = None
         self._candidate_name = None
@@ -43,25 +44,27 @@ class PersistentSnapshotRepository:
             raise StorageFailure("Riferimento database non valido")
 
     def _cleanup(self):
-        if self._readers:
-            return
-        try:
-            for repo in self._retired:
-                repo.close()
-            self._retired.clear()
-            keep = {self.settings.selected(), self._candidate_name}
-            for (name,) in self.settings.db.execute("SELECT name FROM owned").fetchall():
-                self._validate_name(name)
-                if name not in keep:
-                    for suffix in ("", "-journal", "-wal", "-shm"):
-                        (self.directory / (name + suffix)).unlink(missing_ok=True)
-                    self.settings.db.execute("DELETE FROM owned WHERE name=?", (name,))
-            self.cleanup_diagnostic = None
-        except (OSError, sqlite3.Error, StorageFailure):
-            self.cleanup_diagnostic = "Pulizia database da riprovare"
+        with self._condition, self.settings.lock:
+            if self._readers:
+                return
+            try:
+                for repo in self._retired:
+                    repo.close()
+                self._retired.clear()
+                keep = {self.settings.selected(), self._candidate_name}
+                for (name,) in self.settings.db.execute("SELECT name FROM owned").fetchall():
+                    self._validate_name(name)
+                    if name not in keep:
+                        for suffix in ("", "-journal", "-wal", "-shm"):
+                            (self.directory / (name + suffix)).unlink(missing_ok=True)
+                        self.settings.db.execute("DELETE FROM owned WHERE name=?", (name,))
+                self.cleanup_diagnostic = None
+            except (OSError, sqlite3.Error, StorageFailure):
+                self.cleanup_diagnostic = "Pulizia database da riprovare"
 
     def load_active(self):
-        return self._repo.load_active() if self._repo else None
+        with self._condition:
+            return self._repo.load_active() if self._repo else None
 
     @contextmanager
     def acquire(self, snapshot_id=None):
@@ -101,8 +104,9 @@ class PersistentSnapshotRepository:
             self._repo.save_candidate(snapshot)
             return
         name = "snapshot-" + uuid4().hex + ".sqlite3"
-        self.settings.db.execute("INSERT INTO owned VALUES (?)", (name,))
-        self._candidate_name = name
+        with self._condition, self.settings.lock:
+            self.settings.db.execute("INSERT INTO owned VALUES (?)", (name,))
+            self._candidate_name = name
         self._candidate = SqliteSnapshotRepository(self.directory, source_directory=snapshot.root_directory,
                                                    database_name=name)
         self._candidate.save_candidate(snapshot)
@@ -115,10 +119,11 @@ class PersistentSnapshotRepository:
         repo.activate(key)
         if self._candidate:
             self.settings.select(self._candidate_name)
-            self._repo = repo
-            self._candidate = None
-            self._candidate_name = None
-            self.incompatible = False
+            with self._condition:
+                self._repo = repo
+                self._candidate = None
+                self._candidate_name = None
+                self.incompatible = False
         self._cleanup()
 
     def discard_candidate(self, key):
@@ -154,8 +159,11 @@ class PersistentSnapshotRepository:
 
     def close(self):
         with self._condition:
-            if self._readers:
-                raise StorageFailure("Letture in corso")
+            if self._closed:
+                return
+            self._blocked = True
+            while self._readers:
+                self._condition.wait()
             if self._candidate:
                 self._candidate.close()
                 self._candidate = None
@@ -164,3 +172,4 @@ class PersistentSnapshotRepository:
             if self._repo:
                 self._repo.close()
             self.settings.close()
+            self._closed = True

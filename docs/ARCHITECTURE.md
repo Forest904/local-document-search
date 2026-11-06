@@ -1,6 +1,6 @@
 # Architecture — Modular Monolith / Ports & Adapters
 
-**Stato:** architettura v1 approvata; adapter e runtime selezionati; implementazione non iniziata.
+**Stato:** backend M1–M7 implementato e verificato localmente; runtime concorrente e lock operativi. Desktop e distribuzione restano M8–M9; [evidenze M7](M7_VERIFICATION.md).
 
 ## 1. Principi
 
@@ -91,9 +91,11 @@ Nessuna architettura a microservizi; niente OCR o infrastrutture cloud; nessun f
 
 ## 10. Runtime v1 e primo incremento
 
-Un worker sync, query fuori dal thread UI, DTO trasferiti alla UI tramite il suo adapter.
+Un worker sync e un worker separato per ricerca/dettagli; execute rimane bloccante, submit restituisce Future.
+La futura UI riceverà i DTO tramite il proprio adapter; nessun callback grafico nel backend.
 Application non importa Qt; dominio non conosce thread, SQLite o reader.
-Lock OS esclusivo dello storage per l'intera sessione CLI/desktop; seconda istanza rifiutata.
+Lock OS esclusivo per tutta la sessione persistente; seconda istanza rifiutata prima di aprire i database.
+La CLI Homework usa soltanto memoria e non acquisisce il lock.
 Chiusura attende job e letture; arresto forzato gestito dal recovery.
 CLI M3 usa repository in memoria e build bloccante; M5/M6 introducono persistenza e diff
 senza duplicare il motore né richiedere funzionalità future per la consegna.

@@ -14,6 +14,20 @@ from local_document_search.infrastructure.snapshot_storage import InMemorySnapsh
 from local_document_search.interfaces.composition import compose_persistent_application
 
 
+def finish(app, state):
+    if state.job is not None:
+        app._lifecycle.jobs.wait(state.job.job_id)
+    return app.status.execute()
+
+
+def select(app, directory):
+    return finish(app, app.select_directory.execute(directory))
+
+
+def initialize(app):
+    return finish(app, app.initialize.execute())
+
+
 @pytest.fixture
 def roots(tmp_path):
     source = tmp_path / 'source'
@@ -65,13 +79,13 @@ def test_restart_no_change_and_accepted_fingerprint_limit(roots):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        state = app.select_directory.execute(str(source))
+        state = select(app, str(source))
         key = state.active_snapshot_id
     stat = (source / 'a.txt').stat()
     write(source, 'a.txt', 'bravo')
     os.utime(source / 'a.txt', ns=(stat.st_atime_ns, stat.st_mtime_ns))
     with compose_persistent_application(storage) as app:
-        state = app.initialize.execute()
+        state = initialize(app)
         assert state.active_snapshot_id == key
         assert state.last_sync_outcome == 'no_changes'
         assert results(app, 'alpha') == 1
@@ -82,10 +96,12 @@ def test_missing_source_keeps_search(roots):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
     source.rename(source.with_name('moved'))
     with compose_persistent_application(storage) as app:
-        state = app.initialize.execute()
+        with pytest.raises(SourceUnavailable):
+            initialize(app)
+        state = app.status.execute()
         assert state.search_available and state.warning == 'SourceUnavailable'
         assert results(app, 'alpha') == 1
 
@@ -97,18 +113,18 @@ def test_directory_switch_and_invalid_selection(roots):
     write(source, 'a.txt', 'alpha')
     write(other, 'b.txt', 'bravo')
     with compose_persistent_application(storage) as app:
-        a = app.select_directory.execute(str(source))
+        a = select(app, str(source))
         with pytest.raises(SourceUnavailable):
-            app.select_directory.execute(str(source / 'missing'))
+            select(app, str(source / 'missing'))
         assert results(app, 'alpha') == 1
         with app.snapshots.acquire() as held:
-            app.select_directory.execute(str(other))
+            select(app, str(other))
             assert held.snapshot_id == a.active_snapshot_id
             assert results(app, 'alpha') == 0
             with pytest.raises(SnapshotUnavailable):
                 with app.snapshots.acquire(a.active_snapshot_id):
                     pass
-        again = app.select_directory.execute(str(source))
+        again = select(app, str(source))
         assert again.active_snapshot_id != a.active_snapshot_id
         assert results(app, 'alpha') == 1
 
@@ -117,14 +133,14 @@ def test_failure_preserves_old_and_guard(roots):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        before = app.select_directory.execute(str(source))
+        before = select(app, str(source))
         lifecycle = app.synchronize.lifecycle
         original = lifecycle.synchronizer.reader.read
         def read(candidate):
             with pytest.raises(InvalidInput):
                 app.clear_local_data.execute()
             with pytest.raises(InvalidInput):
-                app.select_directory.execute(str(source))
+                select(app, str(source))
             return original(candidate)
         lifecycle.synchronizer.reader.read = read
         (source / 'bad.txt').write_bytes(b'\xff')
@@ -141,7 +157,7 @@ def test_incompatible_rebuild(roots, kind, fail):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        old = app.select_directory.execute(str(source)).active_snapshot_id
+        old = select(app, str(source)).active_snapshot_id
         name = app.snapshots.settings.selected()
     with closing(sqlite3.connect(storage / name)) as db:
         if kind == 'physical':
@@ -157,11 +173,11 @@ def test_incompatible_rebuild(roots, kind, fail):
             results(app, 'alpha')
         if fail:
             with pytest.raises(ExtractionFailure):
-                app.initialize.execute()
+                initialize(app)
             assert app.snapshots.settings.selected() == name
             assert (storage / name).exists()
         else:
-            state = app.initialize.execute()
+            state = initialize(app)
             assert state.active_snapshot_id != old and state.search_available
             assert results(app, 'alpha') == 1
             assert not (storage / name).exists()
@@ -170,7 +186,7 @@ def test_incompatible_rebuild(roots, kind, fail):
 def test_empty_and_removal_only(roots):
     source, storage = roots
     with compose_persistent_application(storage) as app:
-        first = app.select_directory.execute(str(source))
+        first = select(app, str(source))
         assert first.search_available
         assert not app.synchronize.execute().changed
         write(source, 'a.txt', 'alpha')
@@ -185,7 +201,7 @@ def test_clear_waits_for_reader_and_preserves_foreign_files(roots):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         write(storage, 'foreign.txt', 'keep')
         entered, release = Event(), Event()
         def reader():
@@ -215,7 +231,7 @@ def test_clear_waits_for_reader_and_preserves_foreign_files(roots):
         assert (source / 'a.txt').read_text() == 'alpha'
         assert (storage / 'foreign.txt').read_text() == 'keep'
         assert not list(storage.glob('snapshot-*.sqlite3'))
-        assert not app.initialize.execute().search_available
+        assert not initialize(app).search_available
 
 
 def test_excluded_reuse_and_transitions(roots):
@@ -254,21 +270,21 @@ def test_legacy_m5_storage(roots):
     with SqliteSnapshotRepository(storage) as repo:
         result = BuildIndex(DocumentFileDiscovery(), TextReader(), repo).execute(str(source))
     with compose_persistent_application(storage) as app:
-        assert app.initialize.execute().active_snapshot_id == result.snapshot_id
+        assert initialize(app).active_snapshot_id == result.snapshot_id
         assert app.snapshots.settings.selected() == 'snapshots.sqlite3'
 
 
 def test_incompatible_source_absent(roots):
     source, storage = roots
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         name = app.snapshots.settings.selected()
     with closing(sqlite3.connect(storage / name)) as db:
         db.execute('PRAGMA user_version=99')
     source.rmdir()
     with compose_persistent_application(storage) as app:
         with pytest.raises(SourceUnavailable):
-            app.initialize.execute()
+            initialize(app)
         assert (storage / name).exists()
         assert not app.status.execute().search_available
 
@@ -278,7 +294,7 @@ def test_clear_failure_is_retryable(roots, monkeypatch):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         unlink = Path.unlink
         def fail(path, *args, **kwargs):
             if path.name.startswith('snapshot-'):
@@ -300,7 +316,7 @@ def test_rebuild_process_crash(roots, phase):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        old = app.select_directory.execute(str(source)).active_snapshot_id
+        old = select(app, str(source)).active_snapshot_id
         name = app.snapshots.settings.selected()
     with closing(sqlite3.connect(storage / name)) as db:
         db.execute('PRAGMA user_version=99')
@@ -315,7 +331,8 @@ def crash(name):
         original(name)
     os._exit(77)
 settings.select = crash
-app.initialize.execute()
+state = app.initialize.execute()
+app._lifecycle.jobs.wait(state.job.job_id)
 '''
     process = subprocess.run([sys.executable, '-c', script, str(storage), phase], capture_output=True)
     assert process.returncode == 77, process.stderr
@@ -326,7 +343,7 @@ app.initialize.execute()
         else:
             assert app.snapshots.settings.selected() != name
             assert app.status.execute().search_available
-        state = app.initialize.execute()
+        state = initialize(app)
         assert state.active_snapshot_id != old
         assert results(app, 'alpha') == 1
         assert len(list(storage.glob('snapshot-*.sqlite3'))) == 1
@@ -336,7 +353,7 @@ def test_commit_failure_preserves_snapshot(roots, monkeypatch):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        old = app.select_directory.execute(str(source)).active_snapshot_id
+        old = select(app, str(source)).active_snapshot_id
         write(source, 'a.txt', 'new text')
         def fail():
             raise sqlite3.OperationalError('synthetic full disk')
@@ -350,7 +367,7 @@ def test_commit_failure_preserves_snapshot(roots, monkeypatch):
 def test_corrupt_storage_is_not_incompatibility(roots):
     source, storage = roots
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         name = app.snapshots.settings.selected()
     (storage / name).write_bytes(b'not a database')
     with pytest.raises(StorageFailure):
@@ -363,7 +380,7 @@ def test_unchanged_does_not_analyze(roots, monkeypatch):
     source, storage = roots
     write(source, 'a.txt', 'alpha')
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         def fail(*args):
             pytest.fail('analyzer invoked for unchanged document')
         monkeypatch.setattr(ContentAnalyzer, 'analyze', fail)
@@ -375,7 +392,7 @@ def test_unchanged_does_not_analyze(roots, monkeypatch):
 def test_selection_failure_preserves_incompatible_database(roots, monkeypatch):
     source, storage = roots
     with compose_persistent_application(storage) as app:
-        app.select_directory.execute(str(source))
+        select(app, str(source))
         name = app.snapshots.settings.selected()
     with closing(sqlite3.connect(storage / name)) as db:
         db.execute('PRAGMA user_version=99')
@@ -384,7 +401,7 @@ def test_selection_failure_preserves_incompatible_database(roots, monkeypatch):
             raise StorageFailure('synthetic selection failure')
         monkeypatch.setattr(app.snapshots.settings, 'select', fail)
         with pytest.raises(StorageFailure):
-            app.initialize.execute()
+            initialize(app)
         assert app.snapshots.settings.selected() == name
         assert not app.status.execute().search_available
         assert list(storage.glob('snapshot-*.sqlite3')) == [storage / name]
@@ -393,7 +410,7 @@ def test_selection_failure_preserves_incompatible_database(roots, monkeypatch):
 def test_fresh_start_and_corrupt_control(roots):
     _, storage = roots
     with compose_persistent_application(storage) as app:
-        assert app.initialize.execute().active_directory is None
+        assert initialize(app).active_directory is None
         with pytest.raises(InvalidInput):
             app.synchronize.execute()
     (storage / 'control.sqlite3').write_bytes(b'corrupt control')
@@ -411,6 +428,6 @@ def test_legacy_incompatible_without_settings_requires_source(roots):
         db.execute('PRAGMA user_version=99')
     with compose_persistent_application(storage) as app:
         with pytest.raises(SnapshotUnavailable, match='selezionare'):
-            app.initialize.execute()
+            initialize(app)
         assert (storage / 'snapshots.sqlite3').exists()
-        assert app.select_directory.execute(str(source)).search_available
+        assert select(app, str(source)).search_available

@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 from pathlib import Path
 import sqlite3
+from threading import RLock
 
 from local_document_search.application.errors import ResourceFailure, SnapshotUnavailable, StorageFailure
 from local_document_search.domain.documents import (
@@ -66,6 +67,10 @@ def _failure(exc):
 class SqliteSnapshotRepository:
     def __init__(self, directory=None, *, source_directory=None, database_name="snapshots.sqlite3"):
         self.directory = storage_directory(directory, source_directory=source_directory)
+        self._state_lock = RLock()
+        self._db_lock = RLock()
+        self._versions = {}
+        self._previous = None
         self._db = None
         self._active = None
         self._candidate = None
@@ -95,6 +100,11 @@ class SqliteSnapshotRepository:
                 raise ValueError("Riferimento attivo mancante")
             if row and row[0]:
                 self._active = self._read(row[0])
+                self._versions[row[0]] = self._active
+                previous = self._db.execute("SELECT previous FROM active WHERE singleton=1").fetchone()[0]
+                if previous:
+                    self._previous = previous
+                    self._versions[previous] = self._read(previous)
             self._cleanup()
         except BaseException as exc:
             if self._db is not None:
@@ -110,8 +120,9 @@ class SqliteSnapshotRepository:
         return self._db
 
     def load_active(self):
-        self._connection()
-        return self._active
+        with self._state_lock:
+            self._connection()
+            return self._active
 
     def _read(self, key):
         db = self._connection()
@@ -150,37 +161,38 @@ class SqliteSnapshotRepository:
                              IndexManifest(entries), DocumentCatalog(documents), *indexes)
 
     def save_candidate(self, snapshot):
-        db = self._connection()
-        if self._candidate is not None:
-            raise StorageFailure("Un candidato è già in costruzione")
-        storage_directory(self.directory, source_directory=snapshot.root_directory)
-        if (snapshot.schema_version, snapshot.processing_version) != ("1", "1"):
-            raise SnapshotUnavailable("Versione snapshot incompatibile")
-        try:
-            snapshot.__post_init__()
-            db.execute("BEGIN IMMEDIATE")
-            self._candidate = snapshot
-            self._validated = False
-            key = snapshot.snapshot_id
-            db.execute("INSERT INTO snapshots VALUES (?,?,?,?,?)", (key, snapshot.root_directory,
-                       snapshot.created_at.isoformat(), snapshot.schema_version, snapshot.processing_version))
-            db.executemany("INSERT INTO manifest VALUES (?,?,?,?,?,?,?,?,?)", (
-                (key, entry.metadata.relative_path.value, entry.metadata.filename,
-                 entry.metadata.format.value, entry.metadata.fingerprint.size_bytes,
-                 entry.metadata.fingerprint.mtime_ns, entry.outcome.value,
-                 entry.document_id.value if entry.document_id is not None else None, entry.reason)
-                for entry in snapshot.manifest.entries.values()))
-            db.executemany("INSERT INTO documents VALUES (?,?,?,?,?)", (
-                (key, identity.value, doc.extracted_text, doc.filename_token_count, doc.content_token_count)
-                for identity, doc in snapshot.catalog.documents.items()))
-            db.executemany("INSERT INTO positions VALUES (?,?,?,?,?)", (
-                (key, field, term, identity.value, position)
-                for field, index in (("filename", snapshot.filename_index), ("content", snapshot.content_index))
-                for term, postings in index.terms.items() for identity, posting in postings.items()
-                for position in posting.positions))
-        except (sqlite3.Error, ValueError, MemoryError, OverflowError) as exc:
-            self.discard_candidate(snapshot.snapshot_id)
-            raise _failure(exc) from exc
+        with self._db_lock:
+            db = self._connection()
+            if self._candidate is not None:
+                raise StorageFailure("Un candidato è già in costruzione")
+            storage_directory(self.directory, source_directory=snapshot.root_directory)
+            if (snapshot.schema_version, snapshot.processing_version) != ("1", "1"):
+                raise SnapshotUnavailable("Versione snapshot incompatibile")
+            try:
+                snapshot.__post_init__()
+                db.execute("BEGIN IMMEDIATE")
+                self._candidate = snapshot
+                self._validated = False
+                key = snapshot.snapshot_id
+                db.execute("INSERT INTO snapshots VALUES (?,?,?,?,?)", (key, snapshot.root_directory,
+                           snapshot.created_at.isoformat(), snapshot.schema_version, snapshot.processing_version))
+                db.executemany("INSERT INTO manifest VALUES (?,?,?,?,?,?,?,?,?)", (
+                    (key, entry.metadata.relative_path.value, entry.metadata.filename,
+                     entry.metadata.format.value, entry.metadata.fingerprint.size_bytes,
+                     entry.metadata.fingerprint.mtime_ns, entry.outcome.value,
+                     entry.document_id.value if entry.document_id is not None else None, entry.reason)
+                    for entry in snapshot.manifest.entries.values()))
+                db.executemany("INSERT INTO documents VALUES (?,?,?,?,?)", (
+                    (key, identity.value, doc.extracted_text, doc.filename_token_count, doc.content_token_count)
+                    for identity, doc in snapshot.catalog.documents.items()))
+                db.executemany("INSERT INTO positions VALUES (?,?,?,?,?)", (
+                    (key, field, term, identity.value, position)
+                    for field, index in (("filename", snapshot.filename_index), ("content", snapshot.content_index))
+                    for term, postings in index.terms.items() for identity, posting in postings.items()
+                    for position in posting.positions))
+            except (sqlite3.Error, ValueError, MemoryError, OverflowError) as exc:
+                self.discard_candidate(snapshot.snapshot_id)
+                raise _failure(exc) from exc
 
     def _require_candidate(self, key):
         self._connection()
@@ -189,65 +201,68 @@ class SqliteSnapshotRepository:
         return self._candidate
 
     def validate_candidate(self, snapshot_id):
-        candidate = self._require_candidate(snapshot_id)
-        try:
-            if self._connection().execute("PRAGMA foreign_key_check").fetchone() or self._read(snapshot_id) != candidate:
-                raise ValueError("Round-trip candidato non coerente")
-            self._validated = True
-        except (sqlite3.Error, ValueError, TypeError, MemoryError) as exc:
-            self._validated = False
-            raise _failure(exc) from exc
+        with self._db_lock:
+            candidate = self._require_candidate(snapshot_id)
+            try:
+                if self._connection().execute("PRAGMA foreign_key_check").fetchone() or self._read(snapshot_id) != candidate:
+                    raise ValueError("Round-trip candidato non coerente")
+                self._validated = True
+            except (sqlite3.Error, ValueError, TypeError, MemoryError) as exc:
+                self._validated = False
+                raise _failure(exc) from exc
 
     def _commit(self):
         self._connection().execute("COMMIT")
 
     def activate(self, snapshot_id):
-        candidate = self._require_candidate(snapshot_id)
-        if not self._validated:
-            raise StorageFailure("Candidato non validato")
-        previous = self._active.snapshot_id if self._active and self._active.root_directory == candidate.root_directory else None
-        try:
-            self._connection().execute("INSERT OR REPLACE INTO active VALUES (1,?,?)", (snapshot_id, previous))
-            self._commit()
-        except (sqlite3.Error, MemoryError) as exc:
-            self.discard_candidate(snapshot_id)
-            raise _failure(exc) from exc
-        self._active = candidate
-        self._candidate = None
-        self._validated = False
-        self._cleanup()
-
-    def discard_candidate(self, snapshot_id):
-        if self._candidate is not None and self._candidate.snapshot_id == snapshot_id:
+        with self._db_lock:
+            candidate = self._require_candidate(snapshot_id)
+            if not self._validated:
+                raise StorageFailure("Candidato non validato")
+            previous = self._active.snapshot_id if self._active and self._active.root_directory == candidate.root_directory else None
             try:
-                if self._connection().in_transaction:
-                    self._connection().execute("ROLLBACK")
-            except sqlite3.Error as exc:
+                self._connection().execute("INSERT OR REPLACE INTO active VALUES (1,?,?)", (snapshot_id, previous))
+                self._commit()
+            except (sqlite3.Error, MemoryError) as exc:
+                self.discard_candidate(snapshot_id)
                 raise _failure(exc) from exc
-            finally:
+            with self._state_lock:
+                self._previous = previous
+                self._versions[candidate.snapshot_id] = candidate
+                self._active = candidate
                 self._candidate = None
                 self._validated = False
+            self._cleanup()
+
+    def discard_candidate(self, snapshot_id):
+        with self._db_lock:
+            if self._candidate is not None and self._candidate.snapshot_id == snapshot_id:
+                try:
+                    if self._connection().in_transaction:
+                        self._connection().execute("ROLLBACK")
+                except sqlite3.Error as exc:
+                    raise _failure(exc) from exc
+                finally:
+                    self._candidate = None
+                    self._validated = False
 
     @contextmanager
     def acquire(self, snapshot_id=None):
-        self._connection()
-        key = snapshot_id if snapshot_id is not None else (self._active.snapshot_id if self._active else None)
-        try:
-            snapshot = self._active if self._active and self._active.snapshot_id == key else self._read(key)
-            if self._active is None or snapshot.root_directory != self._active.root_directory:
-                raise SnapshotUnavailable("Snapshot di directory non attiva")
-            # Lo staging non è una versione acquisibile.
-            if self._candidate is not None and key == self._candidate.snapshot_id:
-                raise SnapshotUnavailable("Snapshot non pubblicato")
+        # Le versioni pubblicate sono in RAM: mai leggere lo staging SQLite.
+        with self._state_lock:
+            self._connection()
+            key = snapshot_id if snapshot_id is not None else (self._active.snapshot_id if self._active else None)
+            snapshot = self._versions.get(key)
+            if snapshot is None or self._active is None or snapshot.root_directory != self._active.root_directory:
+                raise SnapshotUnavailable("Snapshot non disponibile")
             self._readers[key] = self._readers.get(key, 0) + 1
-        except (sqlite3.Error, ValueError, TypeError, MemoryError) as exc:
-            raise _failure(exc) from exc
         try:
             yield snapshot
         finally:
-            self._readers[key] -= 1
-            if not self._readers[key]:
-                del self._readers[key]
+            with self._state_lock:
+                self._readers[key] -= 1
+                if not self._readers[key]:
+                    del self._readers[key]
             self._cleanup()
 
     def _prune(self):
@@ -261,37 +276,51 @@ class SqliteSnapshotRepository:
                     db.execute("DELETE FROM snapshots WHERE id=?", (key,))
 
     def _cleanup(self):
-        if self._candidate is not None:
+        # Un rilascio non deve attendere il writer né entrare nella sua transazione.
+        if not self._db_lock.acquire(blocking=False):
             return
         try:
-            self._prune()
-            self.cleanup_diagnostic = None
-        except (sqlite3.Error, OSError, MemoryError, StorageFailure):
-            self.cleanup_diagnostic = "Pulizia snapshot da riprovare"
+            if self._candidate is not None:
+                return
+            with self._state_lock:
+                try:
+                    self._prune()
+                    keep = {self._active.snapshot_id if self._active else None, self._previous}
+                    self._versions = {key: value for key, value in self._versions.items()
+                                      if key in keep or self._readers.get(key, 0)}
+                    self.cleanup_diagnostic = None
+                except (sqlite3.Error, OSError, MemoryError, StorageFailure):
+                    self.cleanup_diagnostic = "Pulizia snapshot da riprovare"
+        finally:
+            self._db_lock.release()
 
     def clear(self):
-        db = self._connection()
-        if self._candidate is not None or any(self._readers.values()):
-            raise StorageFailure("Candidato o letture in corso")
-        try:
-            with db:
-                db.execute("BEGIN IMMEDIATE")
-                db.execute("DELETE FROM active")
-                db.execute("DELETE FROM snapshots")
-            self._active = None
-            self.cleanup_diagnostic = None
-        except sqlite3.Error as exc:
-            raise _failure(exc) from exc
+        with self._db_lock, self._state_lock:
+            db = self._connection()
+            if self._candidate is not None or any(self._readers.values()):
+                raise StorageFailure("Candidato o letture in corso")
+            try:
+                with db:
+                    db.execute("BEGIN IMMEDIATE")
+                    db.execute("DELETE FROM active")
+                    db.execute("DELETE FROM snapshots")
+                self._active = None
+                self._versions.clear()
+                self._previous = None
+                self.cleanup_diagnostic = None
+            except sqlite3.Error as exc:
+                raise _failure(exc) from exc
 
     def close(self):
-        if self._db is None:
-            return
-        if any(self._readers.values()):
-            raise StorageFailure("Letture in corso")
-        if self._candidate is not None:
-            self.discard_candidate(self._candidate.snapshot_id)
-        self._db.close()
-        self._db = None
+        with self._db_lock, self._state_lock:
+            if self._db is None:
+                return
+            if any(self._readers.values()):
+                raise StorageFailure("Letture in corso")
+            if self._candidate is not None:
+                self.discard_candidate(self._candidate.snapshot_id)
+            self._db.close()
+            self._db = None
 
     def __enter__(self):
         return self

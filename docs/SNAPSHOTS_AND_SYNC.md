@@ -1,6 +1,6 @@
 # Snapshots & Incremental Synchronization v1
 
-**Stato:** persistenza, recovery e retention M5 implementate nel backend ([evidenze](M5_VERIFICATION.md)); diff/lifecycle/rebuild M6 implementati in modalità bloccante ([evidenze](M6_VERIFICATION.md)); coordinamento dei job e lock M7 da implementare. CLI invariata in memoria; [ADR 0008](adr/0008-sqlite-snapshots.md).
+**Stato:** persistenza, recovery e retention M5 implementate nel backend ([evidenze](M5_VERIFICATION.md)); diff/lifecycle/rebuild M6 implementati in modalità bloccante ([evidenze](M6_VERIFICATION.md)); coordinamento dei job, letture concorrenti e lock M7 implementati ([evidenze](M7_VERIFICATION.md)). CLI invariata in memoria; [ADR 0008](adr/0008-sqlite-snapshots.md).
 
 ## 1. Rappresentazione e memoria
 
@@ -69,12 +69,18 @@ pubblicano candidato e riferimento attivo nella singola transazione del database
 
 ## 6. Job, progresso e accesso esclusivo
 
-Un worker sync; modalità CLI bloccante e async usano IndexSynchronizer.
+Un worker sync; RunSynchronization bloccante e RequestSynchronization async usano IndexSynchronizer.
+Un worker separato esegue ricerca/dettagli tramite submit; execute resta disponibile.
+Le versioni attiva, precedente e ancora acquisite sono mantenute in RAM; al riavvio vengono caricate
+attiva e precedente. Acquisizione e matching non leggono SQLite durante una transazione candidata.
+Il lock database serializza writer e retention, separato dal lock delle versioni pubblicate;
+la pulizia al rilascio viene differita se il writer occupa il database.
 Trigger sovrapposti restituiscono stesso job_id, reused=true; nessun secondo writer.
 SCANNING: totale byte sconosciuto; dopo discovery conteggiare byte dei nuovi/modificati completati.
 Sole cancellazioni: fase esplicita senza divisione per zero; 100% solo dopo commit o NO_CHANGES.
 Ricerche non leggono filesystem e non usano il candidato.
-CLI e desktop acquisiscono un lock OS esclusivo per tutta la sessione sullo storage condiviso;
+Le sessioni persistenti acquisiscono un lock OS esclusivo per tutta la sessione sullo storage condiviso;
+la CLI Homework volatile non accede allo storage e non acquisisce il lock;
 il crash rilascia il lock, senza affidarsi alla mera presenza di un file sentinel.
 Seconda istanza: errore osservabile, niente apertura concorrente dello storage.
 Chiusura normale attende job/letture e rilascia risorse; nessun cancel v1.

@@ -2,7 +2,7 @@
 
 **Prodotto:** Local Document Search
 **Versione specifica:** v1 (progettazione)
-**Stato:** requisiti concordati; M1–M6 implementate, CLI TXT/Markdown/PDF operativa con snapshot in memoria; persistenza SQLite disponibile nel backend. Sync e lifecycle bloccante disponibili nel backend; job asincroni e desktop da implementare; [evidenze M6](M6_VERIFICATION.md).
+**Stato:** requisiti concordati; M1–M7 implementate, CLI TXT/Markdown/PDF operativa con snapshot in memoria; persistenza SQLite disponibile nel backend. Sync, lifecycle asincrono, ricerca concorrente e lock di sessione disponibili nel backend; desktop da implementare; [evidenze M7](M7_VERIFICATION.md).
 **Target:** applicazione desktop locale Windows con backend Python indipendente dalla UI
 **Relazione con il corso:** la CLI per TXT, due campi e phrase queries deve soddisfare l'Homework 3; PDF/Markdown e UI sono estensioni.
 

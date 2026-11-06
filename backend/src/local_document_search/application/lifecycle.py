@@ -1,10 +1,11 @@
-"""Lifecycle bloccante M6; worker e job asincroni restano in M7."""
+"""Lifecycle persistente: ammissione serializzata, lavoro fuori dal chiamante."""
 from datetime import datetime, timezone
 from .contracts import ApplicationState, InvalidInput
-from .errors import SourceUnavailable, SnapshotUnavailable
+from .errors import SnapshotUnavailable
 from .ports import (Settings, LastCheck, SyncOutcome, SettingsRepositoryPort,
                     LifecycleSnapshotRepositoryPort, DirectoryResolverPort)
 from .synchronization import IndexSynchronizer
+from .jobs import IndexingJobManager
 
 
 class ApplicationLifecycle:
@@ -14,36 +15,54 @@ class ApplicationLifecycle:
         self.snapshots = snapshots
         self.synchronizer = synchronizer
         self.resolve_directory = resolve_directory
-        self.running = False
+        self.jobs = IndexingJobManager()
         self.warning = None
 
     def _idle(self):
-        if self.running:
+        self.jobs.ensure_open()
+        if self.jobs.active:
             raise InvalidInput("Operazione di sincronizzazione in corso")
 
     def status(self):
-        settings = self.settings.load()
-        snapshot = self.snapshots.load_active()
-        available = snapshot is not None and snapshot.root_directory == settings.active_directory
-        return ApplicationState(settings.active_directory, snapshot.snapshot_id if available else None,
-                                available, self.warning,
-                                settings.last_check.outcome.value if settings.last_check else None)
+        with self.jobs.lock:
+            self.jobs.ensure_open()
+            settings = self.settings.load()
+            snapshot = self.snapshots.load_active()
+            available = snapshot is not None and snapshot.root_directory == settings.active_directory
+            return ApplicationState(settings.active_directory, snapshot.snapshot_id if available else None,
+                                    available, self.warning,
+                                    settings.last_check.outcome.value if settings.last_check else None,
+                                    self.jobs.current())
+
+    def request(self, trigger="manual"):
+        with self.jobs.lock:
+            self.jobs.ensure_open()
+            if trigger not in ("manual", "startup", "select"):
+                raise InvalidInput("Trigger non valido")
+            settings = self.settings.load()
+            if settings.active_directory is None:
+                raise InvalidInput("Nessuna directory selezionata")
+            job = self.jobs.request(lambda progress: self._synchronize(settings, progress))
+            if not job.reused:
+                self.warning = None
+            return job
 
     def synchronize(self, trigger="manual"):
-        self._idle()
-        settings = self.settings.load()
-        if settings.active_directory is None:
-            raise InvalidInput("Nessuna directory selezionata")
-        self.running = True
-        self.warning = None
+        job = self.request(trigger)
+        return self.jobs.wait(job.job_id)
+
+    def _synchronize(self, settings, progress):
+        with self.jobs.lock:
+            self.warning = None
         try:
-            result = self.synchronizer.execute(settings.active_directory)
+            result = self.synchronizer.execute(settings.active_directory, progress)
             outcome = SyncOutcome.UPDATED if result.changed else SyncOutcome.NO_CHANGES
             self.settings.save(Settings(settings.active_directory,
                                LastCheck(datetime.now(timezone.utc), outcome)))
             return result
         except Exception as exc:
-            self.warning = type(exc).__name__
+            with self.jobs.lock:
+                self.warning = type(exc).__name__
             try:
                 self.settings.save(Settings(settings.active_directory,
                                    LastCheck(datetime.now(timezone.utc), SyncOutcome.FAILED,
@@ -51,44 +70,42 @@ class ApplicationLifecycle:
             except Exception as diagnostic_error:
                 exc.add_note(f"Salvataggio diagnostica fallito: {diagnostic_error}")
             raise
-        finally:
-            self.running = False
 
     def initialize(self):
-        self._idle()
-        settings = self.settings.load()
-        snapshot = self.snapshots.load_active()
-        # Storage M5 non aveva settings: recuperare la directory dal manifest.
-        if settings.active_directory is None and snapshot is not None:
-            settings = Settings(snapshot.root_directory)
-            self.settings.save(settings)
-        if snapshot and snapshot.root_directory != settings.active_directory:
-            self.snapshots.select_directory(settings.active_directory)
-        if settings.active_directory is None and self.snapshots.incompatible:
-            raise SnapshotUnavailable("Storage incompatibile senza directory salvata: selezionare la sorgente")
-        if settings.active_directory:
-            try:
-                self.synchronize("startup")
-            except SourceUnavailable:
-                if self.snapshots.incompatible:
-                    raise
-        return self.status()
+        with self.jobs.lock:
+            self._idle()
+            settings = self.settings.load()
+            snapshot = self.snapshots.load_active()
+            # Storage M5 non aveva settings: recuperare la directory dal manifest.
+            if settings.active_directory is None and snapshot is not None:
+                settings = Settings(snapshot.root_directory)
+                self.settings.save(settings)
+            if snapshot and snapshot.root_directory != settings.active_directory:
+                self.snapshots.select_directory(settings.active_directory)
+            if settings.active_directory is None and self.snapshots.incompatible:
+                raise SnapshotUnavailable("Storage incompatibile senza directory salvata: selezionare la sorgente")
+            if settings.active_directory:
+                self.request("startup")
+            return self.status()
 
     def select(self, directory):
-        self._idle()
-        root = self.resolve_directory(directory)
-        previous = self.settings.load()
-        if root != previous.active_directory:
-            self.snapshots.select_directory(root)
-            self.settings.save(Settings(root))
-        self.synchronize("select")
-        return self.status()
+        with self.jobs.lock:
+            self._idle()
+            root = self.resolve_directory(directory)
+            previous = self.settings.load()
+            if root != previous.active_directory:
+                self.snapshots.select_directory(root)
+                self.settings.save(Settings(root))
+            self.request("select")
+            return self.status()
 
     def clear(self):
-        self._idle()
-        self.snapshots.clear()
-        self.warning = None
-        return self.status()
+        with self.jobs.lock:
+            self._idle()
+            self.snapshots.clear()
+            self.warning = None
+            self.jobs.forget_current()
+            return self.status()
 
 
 class InitializeApplication:

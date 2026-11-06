@@ -1,4 +1,4 @@
-# Backend — CLI multiformato e persistenza M5
+# Backend — CLI multiformato e runtime persistente M7
 
 Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/M4_VERIFICATION.md).
 
@@ -51,7 +51,7 @@ Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argome
 - Infrastructure: discovery, reader TXT/Markdown/PDF, `InMemorySnapshotRepository` e `SqliteSnapshotRepository`.
 - Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
 
-Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff, job asincroni e UI sono rinviati. SQLite usa la standard library; PySide6 non viene installato.
+Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; UI rinviata a M8. SQLite usa la standard library; PySide6 non viene installato.
 
 Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
 
@@ -83,23 +83,31 @@ with SqliteSnapshotRepository(source_directory=root) as snapshots:
 
 L’esempio costruisce solo TXT; i reader multiformato esistenti possono essere iniettati nello stesso `BuildIndex`. Non esegue sync o controllo dei cambiamenti. La riapertura del repository non richiede i sorgenti; `resolve_directory` nell’esempio serve alla scelta iniziale della radice.
 
-Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild e ClearLocalData sono disponibili nella composizione M6 seguente; lock e worker restano M7. [Verifica M5](../docs/M5_VERIFICATION.md).
+Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild e ClearLocalData sono disponibili nella composizione M6 seguente; lock e worker sono disponibili nella composizione M7. [Verifica M5](../docs/M5_VERIFICATION.md).
 
-## Sessione persistente M6
+## Sessione persistente M7
 
 ```python
 from local_document_search.interfaces.composition import compose_persistent_application
 from local_document_search.application.contracts import SearchRequest
 
 with compose_persistent_application() as app:  # LOCALAPPDATA su Windows
-    state = app.initialize.execute()          # ripristino + sync bloccante
+    state = app.initialize.execute()          # ripristino + avvio sync asincrono
     if state.active_directory is None:
-        state = app.select_directory.execute(r"C:\Documenti")
-    response = app.search.execute(SearchRequest("machine learning"))
-    report = app.synchronize.execute()        # invariati non riletti
-    # app.clear_local_data.execute()          # elimina solo dati applicativi
+        state = app.select_directory.execute("C:/Documenti")
+    report = app.synchronize.execute()        # attende il job attivo, o avvia un controllo
+    response = app.search.submit(SearchRequest("machine learning")).result()
+    job = app.request_synchronization.execute()
+    status = app.job_status.execute(job.job_id)
+    # app.clear_local_data.execute()          # rifiutato se un job è ancora attivo
 ```
 
+Questo esempio attende esplicitamente per uso da script. La futura UI userà polling dei job e
+Future senza chiamare result finché non sono pronte. Ricerca e dettagli conservano anche execute
+bloccante; submit usa un worker separato dall'indicizzazione.
+
 Nei test e sui sistemi non Windows passare una directory storage esplicita esterna ai sorgenti
-e al repository. Gestire le eccezioni operative nelle interfacce chiamanti. Una sessione proprietaria,
-nessun worker o lock fra processi; CLI invariata. [Verifica M6](../docs/M6_VERIFICATION.md).
+e al repository. Il lock OS viene acquisito prima dei database; una seconda sessione sullo stesso
+storage riceve StorageFailure. Il context manager attende job e letture prima di rilasciare le risorse.
+Gli errori dei job asincroni sono esposti da job_status e dallo stato applicativo; synchronize li solleva.
+CLI Homework invariata, nessun Qt o dipendenza aggiunta. [Verifica M7](../docs/M7_VERIFICATION.md).

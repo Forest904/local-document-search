@@ -1,6 +1,7 @@
 """Catalogo di controllo stabile: settings e selezione atomica del database dati."""
 from datetime import datetime
 import sqlite3
+from threading import RLock
 
 from local_document_search.application.ports import Settings, LastCheck, SyncOutcome
 from local_document_search.application.errors import StorageFailure
@@ -10,6 +11,7 @@ from .sqlite_snapshot_storage import storage_directory, _failure
 class SqliteSettingsRepository:
     def __init__(self, directory):
         self.directory = storage_directory(directory)
+        self.lock = RLock()
         self.db = None
         try:
             self.directory.mkdir(parents=True, exist_ok=True)
@@ -42,43 +44,49 @@ class SqliteSettingsRepository:
             raise
 
     def load(self):
-        try:
-            row = self.db.execute("SELECT root,checked,outcome,diagnostic FROM settings").fetchone()
-            if row is None:
-                return Settings()
-            check = LastCheck(datetime.fromisoformat(row[1]), SyncOutcome(row[2]), row[3]) if row[1] else None
-            return Settings(row[0], check)
-        except (sqlite3.Error, ValueError) as exc:
-            raise _failure(exc) from exc
+        with self.lock:
+            try:
+                row = self.db.execute("SELECT root,checked,outcome,diagnostic FROM settings").fetchone()
+                if row is None:
+                    return Settings()
+                check = LastCheck(datetime.fromisoformat(row[1]), SyncOutcome(row[2]), row[3]) if row[1] else None
+                return Settings(row[0], check)
+            except (sqlite3.Error, ValueError) as exc:
+                raise _failure(exc) from exc
 
     def save(self, settings):
-        check = settings.last_check
-        try:
-            self.db.execute("INSERT OR REPLACE INTO settings VALUES (1,?,?,?,?)", (
-                settings.active_directory, check.checked_at.isoformat() if check else None,
-                check.outcome.value if check else None, check.diagnostic if check else None))
-        except sqlite3.Error as exc:
-            raise _failure(exc) from exc
+        with self.lock:
+            check = settings.last_check
+            try:
+                self.db.execute("INSERT OR REPLACE INTO settings VALUES (1,?,?,?,?)", (
+                    settings.active_directory, check.checked_at.isoformat() if check else None,
+                    check.outcome.value if check else None, check.diagnostic if check else None))
+            except sqlite3.Error as exc:
+                raise _failure(exc) from exc
 
     def clear(self):
-        try:
-            self.db.execute("DELETE FROM settings")
-        except sqlite3.Error as exc:
-            raise _failure(exc) from exc
+        with self.lock:
+            try:
+                self.db.execute("DELETE FROM settings")
+            except sqlite3.Error as exc:
+                raise _failure(exc) from exc
 
     def selected(self):
-        row = self.db.execute("SELECT name FROM selection WHERE singleton=1").fetchone()
-        return row[0] if row else None
+        with self.lock:
+            row = self.db.execute("SELECT name FROM selection WHERE singleton=1").fetchone()
+            return row[0] if row else None
 
     def select(self, name):
-        try:
-            with self.db:
-                self.db.execute("BEGIN IMMEDIATE")
-                self.db.execute("DELETE FROM selection")
-                if name is not None:
-                    self.db.execute("INSERT INTO selection VALUES (1,?)", (name,))
-        except sqlite3.Error as exc:
-            raise _failure(exc) from exc
+        with self.lock:
+            try:
+                with self.db:
+                    self.db.execute("BEGIN IMMEDIATE")
+                    self.db.execute("DELETE FROM selection")
+                    if name is not None:
+                        self.db.execute("INSERT INTO selection VALUES (1,?)", (name,))
+            except sqlite3.Error as exc:
+                raise _failure(exc) from exc
 
     def close(self):
-        self.db.close()
+        with self.lock:
+            self.db.close()

@@ -1,5 +1,7 @@
 """DTO pubblici di ricerca e build completo M3."""
 from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
 
 from local_document_search.domain.documents import (
     DocumentId, DocumentMetadata, DocumentFormat, RelativePath, require_nonnegative,
@@ -98,3 +100,50 @@ class ApplicationState:
     search_available: bool
     warning: str | None = None
     last_sync_outcome: str | None = None
+    job: "JobRef | None" = None
+
+
+class JobState(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class JobPhase(str, Enum):
+    SCANNING = "SCANNING"
+    EXTRACTING = "EXTRACTING"
+    ANALYZING = "ANALYZING"
+    BUILDING = "BUILDING"
+    COMMITTING = "COMMITTING"
+
+
+@dataclass(frozen=True)
+class JobRef:
+    job_id: str
+    status: JobState
+    reused: bool = False
+
+
+@dataclass(frozen=True)
+class JobStatus:
+    job_id: str
+    state: JobState
+    phase: JobPhase
+    started_at: datetime
+    files_total: int | None = None
+    files_completed: int = 0
+    bytes_total: int | None = None
+    bytes_completed: int = 0
+    current_file: str | None = None
+    finished_at: datetime | None = None
+    error: str | None = None
+
+    @property
+    def progress(self) -> float | None:
+        """I byte misurano il lavoro, il completamento richiede il successo."""
+        if self.state == JobState.COMPLETED:
+            return 1.0
+        if not self.bytes_total:
+            return None
+        return min(self.bytes_completed / self.bytes_total, 0.99)

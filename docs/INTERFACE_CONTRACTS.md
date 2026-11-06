@@ -1,6 +1,6 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). M5 implementa persistenza SQLite, acquisizioni protette e `GetDocument` ([evidenze](M5_VERIFICATION.md)). M6 implementa lifecycle e sync bloccanti; job e API asincrone restano M7.
+**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). M5 implementa persistenza SQLite, acquisizioni protette e `GetDocument` ([evidenze](M5_VERIFICATION.md)). M6 introduce lifecycle e sync; M7 implementa job, progresso, ricerca asincrona e lock di sessione ([evidenze](M7_VERIFICATION.md)). La superficie corrente è descritta nella sezione 9; la sezione 8 documenta la precedente API bloccante M6.
 
 Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). M6 implementa persistenza dei settings e lifecycle nella composizione persistente separata dalla CLI.
 
@@ -98,7 +98,7 @@ M5 aggiunge `acquire(snapshot_id: str | None = None) -> AbstractContextManager[I
 
 `GetDocument.execute(document_id: DocumentId, snapshot_id: str) -> DocumentDetails` restituisce metadati e testo della versione richiesta, senza sorgenti o fallback; documento assente → `SnapshotUnavailable`.
 
-`SqliteSnapshotRepository(directory=None, *, source_directory=None)` risolve lo storage per utente o esplicito. Il costruttore carica l’attivo compatibile e riprova la retention. `close()` rifiuta letture attive, scarta eventuale staging e chiude la connessione; è disponibile anche come context manager. `clear()` rifiuta candidato/letture attive ed elimina transazionalmente le righe possedute, preservando schema, sorgenti e file estranei. Non è ancora ClearLocalData. `cleanup_diagnostic` espone un errore di retention riprovabile, senza contenuti o percorsi personali. Nessuna garanzia di accesso multithread/multiprocesso M5; lock e worker restano M7.
+`SqliteSnapshotRepository(directory=None, *, source_directory=None)` risolve lo storage per utente o esplicito. Il costruttore carica l’attivo compatibile e riprova la retention. `close()` rifiuta letture attive, scarta eventuale staging e chiude la connessione; è disponibile anche come context manager. `clear()` rifiuta candidato/letture attive ed elimina transazionalmente le righe possedute, preservando schema, sorgenti e file estranei. Non è ancora ClearLocalData. `cleanup_diagnostic` espone un errore di retention riprovabile, senza contenuti o percorsi personali. M7 serializza le operazioni SQLite e protegge separatamente versioni pubblicate e acquisizioni in RAM; matching senza lock del repository. Il lock multiprocesso appartiene alla composizione persistente, non al singolo adapter diretto.
 
 **Contratto di consistenza:** `Activate` cambia il riferimento attivo soltanto quando candidato e manifest sono completi e validi. `LoadActive` non restituisce mai una versione parziale. Candidato fallito/non completato non sostituisce l'ultimo attivo.
 
@@ -176,3 +176,51 @@ Sorgente assente all'avvio: ApplicationState espone warning SourceUnavailable e 
 compatibile; se lo storage è incompatibile l'errore viene propagato. Gli altri errori operativi
 restano eccezioni. Un errore di salvataggio LastCheck dopo commit non annulla il commit già riuscito.
 ClearLocalData restituisce lo stato senza directory; un errore richiede un nuovo tentativo.
+
+
+## 9. Superficie operativa M7
+
+La composizione persistente conserva i casi d'uso M6 e aggiunge `request_synchronization`
+(`RequestSynchronization`) e `job_status` (`GetJobStatus`). InitializeApplication e SelectDirectory
+restituiscono subito `ApplicationState` con `job: JobRef | None`; non attendono il sync.
+GetIndexStatus restituisce lo stesso DTO. La selezione e ClearLocalData sono rifiutati con InvalidInput
+se un job è PENDING/RUNNING. Il backend non crea né importa una UI.
+
+`RequestSynchronization.execute(trigger="manual") -> JobRef` accetta startup/select/manual.
+Un trigger sovrapposto restituisce lo stesso ID con reused=true. `RunSynchronization.execute`
+usa la stessa ammissione e attende il medesimo lavoro, restituendo SyncResult o sollevando l'errore.
+Un trigger successivo a un job terminato crea un nuovo ID. Nessun secondo writer e nessun cancel dei job.
+
+`GetJobStatus.execute(job_id) -> JobStatus` restituisce un DTO immutabile; ID sconosciuto → InvalidInput.
+Gli stati PENDING/RUNNING/COMPLETED/FAILED, le fasi e la diagnostica restano consultabili per la sessione.
+ApplicationState.job indica il job più recente; ClearLocalData lo azzera insieme allo stato operativo,
+ma conserva la consultabilità dei precedenti JobStatus fino alla chiusura.
+Errori di scansione/estrazione/commit dello startup asincrono compaiono nel job e in warning/LastCheck;
+una sorgente assente conserva la ricerca sullo snapshot compatibile. Validazione della selezione ed
+errori preliminari di startup restano sincroni. RunSynchronization propaga anche gli errori asincroni.
+
+SCANNING ha files_total e bytes_total sconosciuti. Dopo discovery entrambi contano solo file
+aggiunti/modificati; completati include anche esclusioni intenzionali, senza contare rimozioni o invariati.
+current_file è un percorso relativo durante estrazione/analisi. `progress` è None quando il totale
+byte è ignoto o zero; altrimenti è il rapporto dei byte, limitato a 0.99 finché il job non riesce.
+COMPLETED espone 1.0, anche per NO_CHANGES/corpus vuoto/sole rimozioni. Nessun ETA.
+Un errore di salvataggio LastCheck dopo commit produce un job FAILED, senza annullare lo snapshot pubblicato.
+
+`SearchDocuments.submit(request) -> Future[SearchResponse]` e
+`GetDocument.submit(document_id, snapshot_id) -> Future[DocumentDetails]` sono disponibili nella
+composizione persistente. Condividono un worker letture distinto dal worker sync. `execute` rimane
+bloccante; entrambe le vie usano lo stesso caso d'uso. Lo snapshot viene acquisito all'inizio
+**dell'esecuzione**, non all'accodamento della richiesta, e resta protetto fino al termine.
+Le Future trasportano gli errori; il frontend dovrà gestire risposte obsolete in M8.
+La CLI volatile mantiene execute; submit senza runtime configurato solleva InvalidInput.
+
+Il lock OS esclusivo viene acquisito prima dell'apertura di control.sqlite3 e dei database dati;
+una seconda sessione sul medesimo storage fallisce con StorageFailure. Windows usa msvcrt.locking,
+POSIX flock. Il file session.lock può restare vuoto dopo uscita/crash: non è un sentinel e non viene
+rimosso da ClearLocalData. Nessun lock per la CLI Homework, che non apre lo storage.
+Gli adapter SQLite diretti richiedono un unico proprietario esterno: usare la composizione per una sessione.
+
+close è idempotente: chiude l'ammissione, attende job e letture accettate (anche execute sincrone),
+chiude repository/executor e rilascia il lock. Nuove richieste operative durante/dopo chiusura → InvalidInput.
+Le acquisizioni già aperte completano anche durante cambio directory o pulizia; nuove acquisizioni
+durante ClearLocalData sono rifiutate con SnapshotUnavailable. Nessun controllo dei file sorgenti nelle query.

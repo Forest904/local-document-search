@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
 
-from .contracts import BuildResult, SyncResult
+from .contracts import BuildResult, SyncResult, JobPhase
 from .errors import ExtractionFailure, ResourceFailure, StorageFailure
 from .ports import DocumentReaderPort, Extracted, Excluded, FileDiscoveryPort, SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
@@ -16,13 +16,15 @@ class IndexSynchronizer:
     def __init__(self, discovery, reader, snapshots):
         self.discovery, self.reader, self.snapshots = discovery, reader, snapshots
 
-    def execute(self, root_directory: str) -> SyncResult:
+    def execute(self, root_directory: str, progress=None) -> SyncResult:
+        notify = progress if progress is not None else lambda **changes: None
         started = perf_counter()
         key = uuid4().hex
         try:
             old = self.snapshots.load_active()
             if old is not None and old.root_directory != root_directory:
                 old = None
+            notify(phase=JobPhase.SCANNING)
             candidates = self.discovery.discover(root_directory)
             before = old.manifest.entries if old else {}
             after = {c.metadata.relative_path: c for c in candidates}
@@ -31,6 +33,9 @@ class IndexSynchronizer:
             modified = {p for p in after.keys() & before.keys()
                         if after[p].metadata.fingerprint != before[p].metadata.fingerprint}
             unchanged = (after.keys() & before.keys()) - modified
+            work = added | modified
+            notify(phase=JobPhase.BUILDING, files_total=len(work),
+                   bytes_total=sum(after[p].metadata.fingerprint.size_bytes for p in work))
             if old is not None and not (added or removed or modified):
                 return SyncResult(old.snapshot_id, False, 0, 0, 0, len(unchanged),
                                   sum(e.document_id is None for e in before.values()),
@@ -46,14 +51,16 @@ class IndexSynchronizer:
             for path in removed:
                 builder.remove(path)
             processed = 0
-            for path in sorted(added | modified, key=lambda p: p.value):
+            for completed, path in enumerate(sorted(work, key=lambda p: p.value), start=1):
                 candidate = after[path]
+                notify(phase=JobPhase.EXTRACTING, current_file=path.value)
                 try:
                     result = self.reader.read(candidate)
                 except MemoryError:
                     raise
                 except Exception as exc:
                     raise ExtractionFailure(f"{path.value}: estrazione fallita") from exc
+                notify(phase=JobPhase.ANALYZING)
                 if isinstance(result, Extracted):
                     identity = before[path].document_id if path in before else None
                     if identity is None:
@@ -66,10 +73,13 @@ class IndexSynchronizer:
                 else:
                     raise ExtractionFailure(result.reason)
                 processed += candidate.metadata.fingerprint.size_bytes
+                notify(files_completed=completed, bytes_completed=processed)
+            notify(phase=JobPhase.BUILDING, current_file=None)
             snapshot = draft.freeze(snapshot_id=key, root_directory=root_directory,
                                     created_at=datetime.now(timezone.utc),
                                     schema_version="1", processing_version="1")
             try:
+                notify(phase=JobPhase.COMMITTING)
                 self.snapshots.save_candidate(snapshot)
                 self.snapshots.validate_candidate(key)
                 self.snapshots.activate(key)

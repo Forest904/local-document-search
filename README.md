@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: M1–M6 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente bloccante. Job asincroni e UI restano nelle milestone successive. [Evidenze M6](docs/M6_VERIFICATION.md).
+> **Stato: M1–M7 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; UI e distribuzione restano M8–M9. [Evidenze M7](docs/M7_VERIFICATION.md).
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -43,7 +43,7 @@ local-document-search "C:\percorso\documenti"
 
 Esempi di query: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. Senza prefisso si cerca in entrambi i campi; l'intera query deve essere soddisfatta da un singolo campo. EOF o Ctrl+C chiudono la sessione. Tutti i risultati vengono stampati, ordinati per percorso. L'indice è ricostruito in RAM a ogni avvio.
 
-Suite locale: 268 test superati, 5 skip; [limiti della verifica](docs/M5_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
+Suite locale M7: risultati e cinque skip di piattaforma in [Verifica M7](docs/M7_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
 
 ## Da dove partire
 
@@ -55,7 +55,7 @@ Suite locale: 268 test superati, 5 skip; [limiti della verifica](docs/M5_VERIFIC
 
 ## Repository pubblico e dati locali
 
-Repository: https://github.com/Forest904/local-document-search. Le modifiche M5 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
+Repository: https://github.com/Forest904/local-document-search. Le modifiche M7 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
 
 ## Conformità all'Homework 3
 

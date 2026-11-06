@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** M1–M6 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Persistenza, sync incrementale e lifecycle bloccante disponibili nel backend; job concorrenti e desktop restano nelle milestone successive.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7–M9 restano da implementare e verificare.
+**Stato:** M1–M7 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Persistenza, sync incrementale, job asincroni, ricerca concorrente e lock di sessione disponibili nel backend; desktop e distribuzione restano M8–M9.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -24,7 +24,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | M4 | Ingestione multiformato | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M5 | Snapshot persistenti | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M6 | Sync e lifecycle | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M7 | Job e concorrenza | Da implementare |
+| M7 | Job e concorrenza | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M8 | Desktop completo | Da implementare |
 | M9 | Distribuzione e accettazione v1 | Da implementare |
 
@@ -176,7 +176,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 1. Aggiungere JobManager con un worker e stesso algoritmo sync/async.
 2. Esporre progresso e indicazione esplicita di job riutilizzato.
 3. Eseguire ricerche su snapshot acquisito fuori dal futuro thread UI.
-4. Integrare lock storage tra CLI/desktop e chiusura che attende il job.
+4. Integrare lock per tutte le sessioni persistenti e chiusura che attende job/letture; CLI Homework volatile invariata.
 
 **Confini:** Coordinamento applicativo; primitive esterne negli adapter; nessun Qt nel core.
 
@@ -187,6 +187,8 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 - Chiusura normale attende; arresto forzato lascia recovery valido.
 
 **Riferimenti:** [Architettura](ARCHITECTURE.md), [Contratti](INTERFACE_CONTRACTS.md).
+
+**Evidenze M7:** 314 test superati, 5 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Runtime con un worker sync e un worker letture, riuso dei job, progresso, snapshot protetti, lock OS e chiusura con attesa verificati con thread e processi reali. [Verifica M7](M7_VERIFICATION.md). CLI invariata; nessuna verifica Qt o del pacchetto.
 
 ## M8 — Desktop completo
 
