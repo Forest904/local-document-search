@@ -1,6 +1,6 @@
 # Snapshots & Incremental Synchronization v1
 
-**Stato:** specifica approvata, non implementata; [ADR 0008](adr/0008-sqlite-snapshots.md).
+**Stato:** persistenza, recovery e retention M5 implementate nel backend ([evidenze](M5_VERIFICATION.md)); diff/lifecycle/rebuild e coordinamento concorrente M6–M7 da implementare. CLI invariata in memoria; [ADR 0008](adr/0008-sqlite-snapshots.md).
 
 ## 1. Rappresentazione e memoria
 

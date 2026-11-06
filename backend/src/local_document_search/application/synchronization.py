@@ -55,7 +55,7 @@ class BuildIndex:
                 self.snapshots.save_candidate(snapshot)
                 self.snapshots.validate_candidate(snapshot_id)
                 self.snapshots.activate(snapshot_id)
-            except MemoryError:
+            except (MemoryError, ResourceFailure):
                 raise
             except Exception as exc:
                 raise StorageFailure(f"Pubblicazione fallita: {exc}") from exc

@@ -268,10 +268,11 @@ def test_search_acquires_active_once(tmp_path):
     snapshot = repo.load_active()
     class SingleReadRepository:
         calls = 0
-        def load_active(self):
+        def acquire(self, snapshot_id=None):
+            from contextlib import nullcontext
             self.calls += 1
             assert self.calls == 1
-            return snapshot
+            return nullcontext(snapshot)
     response = SearchDocuments(SingleReadRepository()).execute(SearchRequest("roma"))
     assert response.snapshot_id == snapshot.snapshot_id
     assert response.total_matches == 1

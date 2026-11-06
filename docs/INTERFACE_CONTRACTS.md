@@ -1,6 +1,6 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). Lifecycle, job, `GetDocument` e persistenza restano nelle milestone successive.
+**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). M5 implementa persistenza SQLite, acquisizioni protette e `GetDocument` ([evidenze](M5_VERIFICATION.md)). Lifecycle e job restano nelle milestone successive.
 
 Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). Sono tipi di scambio, senza persistenza o lifecycle implementati.
 
@@ -92,7 +92,13 @@ Un cambio query, campo o directory rende obsolete le risposte precedenti, compre
 
 ### `SnapshotRepositoryPort`
 
-**Operazioni logiche:** `LoadActive`, `SaveCandidate`, `ValidateCandidate`, `Activate`, `DiscardCandidate`.
+**Operazioni logiche:** `LoadActive`, `SaveCandidate`, `ValidateCandidate`, `Activate`, `DiscardCandidate`, acquisizione/rilascio della versione.
+
+M5 aggiunge `acquire(snapshot_id: str | None = None) -> AbstractContextManager[IndexSnapshot]`: senza ID acquisisce l’attivo, con ID esattamente quella versione pubblicata della directory corrente. Il contesto protegge la versione fino all’uscita, anche in caso di eccezione. Candidato, versione rimossa/incompatibile o di un’altra directory → `SnapshotUnavailable`. `load_active()` resta disponibile, ma non prenota la retention; ricerca e dettagli usano `acquire`.
+
+`GetDocument.execute(document_id: DocumentId, snapshot_id: str) -> DocumentDetails` restituisce metadati e testo della versione richiesta, senza sorgenti o fallback; documento assente → `SnapshotUnavailable`.
+
+`SqliteSnapshotRepository(directory=None, *, source_directory=None)` risolve lo storage per utente o esplicito. Il costruttore carica l’attivo compatibile e riprova la retention. `close()` rifiuta letture attive, scarta eventuale staging e chiude la connessione; è disponibile anche come context manager. `clear()` rifiuta candidato/letture attive ed elimina transazionalmente le righe possedute, preservando schema, sorgenti e file estranei. Non è ancora ClearLocalData. `cleanup_diagnostic` espone un errore di retention riprovabile, senza contenuti o percorsi personali. Nessuna garanzia di accesso multithread/multiprocesso M5; lock e worker restano M7.
 
 **Contratto di consistenza:** `Activate` cambia il riferimento attivo soltanto quando candidato e manifest sono completi e validi. `LoadActive` non restituisce mai una versione parziale. Candidato fallito/non completato non sostituisce l'ultimo attivo.
 

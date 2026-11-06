@@ -1,4 +1,4 @@
-# Backend — CLI multiformato M4
+# Backend — CLI multiformato e persistenza M5
 
 Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/M4_VERIFICATION.md).
 
@@ -48,9 +48,39 @@ Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argome
 
 - Domain: analyzer, parser, builder e matching puri, snapshot immutabili.
 - Application: `BuildIndex`, `BuildResult`, `SearchDocuments`, DTO e porte.
-- Infrastructure: discovery, reader TXT/Markdown/PDF e `InMemorySnapshotRepository`.
+- Infrastructure: discovery, reader TXT/Markdown/PDF, `InMemorySnapshotRepository` e `SqliteSnapshotRepository`.
 - Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
 
-Ogni sessione usa una directory e un writer sincrono. Nessuna persistenza o rilettura dei file durante le query; i risultati riflettono il build iniziale. Settings, diff, job asincroni e UI sono rinviati. SQLite e PySide6 non vengono installati.
+Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff, job asincroni e UI sono rinviati. SQLite usa la standard library; PySide6 non viene installato.
 
 Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
+
+
+## Backend persistente M5
+
+Il testo estratto viene conservato localmente anche se il sorgente viene eliminato: scegliere uno storage privato dell’account, esterno al repository e alla directory indicizzata. Nessuna cifratura applicativa aggiuntiva. La CLI Homework resta volatile; l’uso persistente è esplicito nel backend:
+
+```python
+from local_document_search.application.contracts import SearchRequest
+from local_document_search.application.search import GetDocument, SearchDocuments
+from local_document_search.application.synchronization import BuildIndex
+from local_document_search.infrastructure.filesystem import TextFileDiscovery, resolve_directory
+from local_document_search.infrastructure.readers.text import TextReader
+from local_document_search.infrastructure.sqlite_snapshot_storage import SqliteSnapshotRepository
+
+root = resolve_directory("C:/documenti")
+# Default Windows: %LOCALAPPDATA%/LocalDocumentSearch.
+# Su altri sistemi passare una directory applicativa esplicita come primo argomento.
+with SqliteSnapshotRepository(source_directory=root) as snapshots:
+    if snapshots.load_active() is None:
+        BuildIndex(TextFileDiscovery(), TextReader(), snapshots).execute(root)
+    elif snapshots.load_active().root_directory != root:
+        raise ValueError("Usare soltanto la directory dello snapshot attivo")
+    result = SearchDocuments(snapshots).execute(SearchRequest("roma"))
+    if result.results:
+        details = GetDocument(snapshots).execute(result.results[0].document_id, result.snapshot_id)
+```
+
+L’esempio costruisce solo TXT; i reader multiformato esistenti possono essere iniettati nello stesso `BuildIndex`. Non esegue sync o controllo dei cambiamenti. La riapertura del repository non richiede i sorgenti; `resolve_directory` nell’esempio serve alla scelta iniziale della radice.
+
+Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Lock, settings, rebuild e ClearLocalData completo sono rinviati a M6–M7. [Verifica M5](../docs/M5_VERIFICATION.md).

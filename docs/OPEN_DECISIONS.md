@@ -3,7 +3,7 @@
 **Stato:** OD-01…OD-23 risolte per la v1 o escluse esplicitamente; fondazioni M1 verificate localmente ([evidenze](M1_VERIFICATION.md)). Le verifiche operative assegnate alle milestone successive restano aperte.
 Le decisioni sono approvate il 6 novembre 2026. Accepted significa progettato, non verificato nel codice.
 
-M2 verifica OD-08/09, semantica query OD-10 e ordine OD-17. M3 verifica UTF-8/BOM OD-07 per TXT, prefissi CLI OD-10 e identità per percorso OD-12, con i limiti di piattaforma in [Verifica M3](M3_VERIFICATION.md). M4 verifica OD-05/06/21 e UTF-8/BOM Markdown OD-07: [evidenze e limiti](M4_VERIFICATION.md). Sync, UI e altre verifiche restano aperte.
+M2 verifica OD-08/09, semantica query OD-10 e ordine OD-17. M3 verifica UTF-8/BOM OD-07 per TXT, prefissi CLI OD-10 e identità per percorso OD-12, con i limiti di piattaforma in [Verifica M3](M3_VERIFICATION.md). M4 verifica OD-05/06/21 e UTF-8/BOM Markdown OD-07: [evidenze e limiti](M4_VERIFICATION.md). M5 verifica OD-01/02, retention e acquisizioni esplicite OD-03, errori di risorse intercettabili OD-04 e serializzazione completa OD-11: [evidenze e limiti](M5_VERIFICATION.md). Restano aperti concorrenza/lock M7, sync/lifecycle M6, UI e misure M9.
 
 Avvio CLI e build iniziale M3 concordati il 6 novembre 2026: directory come argomento, sessione fino a EOF/Ctrl+C, tutte le pagine stampate; [ADR 0006](adr/0006-application-interfaces.md) e [contratti M3](INTERFACE_CONTRACTS.md#7-superficie-operativa-m3).
 Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confronto con l'utente.

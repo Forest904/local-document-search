@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: M1–M4 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza, sync e UI restano nelle milestone successive. [Evidenze M4](docs/M4_VERIFICATION.md).
+> **Stato: M1–M5 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync e UI restano nelle milestone successive. [Evidenze M5](docs/M5_VERIFICATION.md).
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -43,7 +43,7 @@ local-document-search "C:\percorso\documenti"
 
 Esempi di query: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. Senza prefisso si cerca in entrambi i campi; l'intera query deve essere soddisfatta da un singolo campo. EOF o Ctrl+C chiudono la sessione. Tutti i risultati vengono stampati, ordinati per percorso. L'indice è ricostruito in RAM a ogni avvio.
 
-Suite locale: 234 test superati, 5 skip; [limiti della verifica](docs/M4_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
+Suite locale: 268 test superati, 5 skip; [limiti della verifica](docs/M5_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
 
 ## Da dove partire
 
@@ -55,7 +55,7 @@ Suite locale: 234 test superati, 5 skip; [limiti della verifica](docs/M4_VERIFIC
 
 ## Repository pubblico e dati locali
 
-Repository: https://github.com/Forest904/local-document-search. Le modifiche M4 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
+Repository: https://github.com/Forest904/local-document-search. Le modifiche M5 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
 
 ## Conformità all'Homework 3
 
@@ -63,4 +63,4 @@ L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), qu
 
 ## Stato delle decisioni
 
-Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. pypdf e markdown-it-py sono operativi in M4; SQLite e PySide6 restano tecnologie selezionate da implementare. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.
+Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. pypdf e markdown-it-py sono operativi in M4; SQLite è operativo nel backend M5 tramite standard library; PySide6 resta da implementare. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.

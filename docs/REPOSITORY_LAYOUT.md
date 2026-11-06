@@ -22,7 +22,7 @@ local-document-search/
 └── docs/                  # PRD, architecture, ADR, assignment, roadmap
 ```
 
-M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. Il frontend contiene soltanto un README.
+M1 implementa modelli di dominio, DTO di ricerca, porte e `interfaces/composition.py`, con test eseguibili. M2 implementa analyzer, parser, matching e costruzione degli snapshot. M3 aggiunge build completo e ricerca applicativi, discovery TXT, reader UTF-8, repository in memoria e CLI operativa. M4 aggiunge reader Markdown/PDF, dispatcher per formato e discovery multiformato. M5 aggiunge `infrastructure/sqlite_snapshot_storage.py`, acquisizioni protette e `GetDocument`; la CLI conserva il repository volatile. Il frontend contiene soltanto un README.
 
 ## 2. Matrice di dipendenza
 
@@ -51,7 +51,7 @@ Il punto di composizione minimo in `interfaces/composition.py` riceve esplicitam
 - `application/search.py`: ricerca/recupero di documenti.
 - `infrastructure/filesystem.py`: discovery e metadati sorgente.
 - `infrastructure/readers/`: estrazione specifica per formato.
-- `infrastructure/snapshot_storage.py`: staging, validazione e attivazione in memoria M3; persistenza in M5.
+- `infrastructure/snapshot_storage.py`: repository in memoria con staging e retention. `infrastructure/sqlite_snapshot_storage.py`: persistenza transazionale, recovery e retention M5.
 - `infrastructure/settings_storage.py`: directory ricordata.
 - `interfaces/cli.py`: sessione query dell'Homework 3 e codici d'uscita.
 

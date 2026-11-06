@@ -1,5 +1,6 @@
 """Confini infrastrutturali, senza adapter o orchestrazione anticipati."""
 from collections.abc import Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -55,6 +56,10 @@ class DocumentReaderPort(Protocol):
 
 class SnapshotRepositoryPort(Protocol):
     def load_active(self) -> IndexSnapshot | None: ...
+
+    def acquire(self, snapshot_id: str | None = None) -> AbstractContextManager[IndexSnapshot]:
+        """Protegge la versione richiesta (o attiva) fino al rilascio."""
+        ...
 
     def save_candidate(self, snapshot: IndexSnapshot) -> None:
         """Avvia lo staging; nessun commit intermedio fino ad activate."""
