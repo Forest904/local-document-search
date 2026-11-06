@@ -1,0 +1,26 @@
+Local Document Search 0.1.0 - Windows 11 x64
+
+Estrarre l'intera cartella dallo ZIP e aprire LocalDocumentSearch.exe.
+Non spostare il solo eseguibile: DLL e plugin adiacenti sono necessari.
+Non occorre installare Python. Avviare come utente normale.
+
+Leggere l'informativa, premere Continua e selezionare una cartella.
+Formati: TXT e Markdown UTF-8, PDF con testo (nessun OCR).
+Inserire termini o frasi tra virgolette, scegliere il campo e premere Invio.
+I termini sono in AND; in Entrambi l'intera query deve corrispondere
+nel nome oppure nel contenuto. La lista usa pagine da 50 risultati.
+Selezionare un risultato per il testo estratto; Apri file usa l'app associata.
+Sync rileva aggiunte, modifiche e rimozioni. Nessun controllo continuo.
+Modifiche che conservano dimensione e data del file possono non essere rilevate.
+
+Database e testo estratto restano in %LOCALAPPDATA%/LocalDocumentSearch,
+anche se lo ZIP viene spostato o eliminato. Pulisci dati locali li rimuove
+a lavoro fermo senza modificare gli originali. Nessuna cifratura aggiuntiva.
+Una sola istanza puo accedere allo storage. Chiudere l'altra prima di riaprire.
+La chiusura attende i lavori in corso. Un errore di lettura conserva lo snapshot
+precedente: correggere il file indicato e ripetere Sync.
+
+Uso personale; nessuna licenza del codice del progetto e stata scelta.
+Avvisi dei componenti: THIRD_PARTY_NOTICES.txt e cartella licenses.
+Versioni e provenienza build: BUILD-MANIFEST.json.
+Verifica locale M9: non equivale a certificazione su un Windows pulito.

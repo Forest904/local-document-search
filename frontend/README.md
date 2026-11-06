@@ -49,3 +49,6 @@ Widget/controller dipendono dai contratti applicativi. Solo `composition.py` col
 persistente e l'adapter di apertura file; nessun accesso UI allo storage o agli indici.
 
 [Verifica M8](../docs/M8_VERIFICATION.md) · [UX](../docs/UX_WINDOWS.md) · [Roadmap](../docs/ROADMAP.md)
+
+Distribuzione personale Windows standalone M9: [build e istruzioni](../scripts/package/README.md),
+[evidenze e criterio Windows pulito ancora aperto](../docs/M9_VERIFICATION.md).

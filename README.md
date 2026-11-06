@@ -1,6 +1,6 @@
 # Local Document Search
 
-> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; distribuzione standalone ancora M9. [Evidenze M8](docs/M8_VERIFICATION.md).
+> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; packaging M9 implementato con verifiche locali. Windows senza Python resta da verificare. [Evidenze M9](docs/M9_VERIFICATION.md).
 
 Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e successivamente da una UI desktop Windows.
 
@@ -47,6 +47,9 @@ Suite locale M7: risultati e cinque skip di piattaforma in [Verifica M7](docs/M7
 
 ## Desktop M8
 
+Per lo ZIP personale Windows standalone M9: [build e istruzioni](scripts/package/README.md).
+L'artefatto viene generato in `dist/`; [misure, verifiche e limiti](docs/M9_VERIFICATION.md).
+
 Da VS Code su Windows: **Terminal → Run Task → Local Document Search: avvia / riavvia**.
 Il task prepara automaticamente il virtualenv e le dipendenze anche da una clone pulita,
 salta installazioni già valide e riavvia l'app eventualmente aperta.
@@ -82,4 +85,4 @@ L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), qu
 
 ## Stato delle decisioni
 
-Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. pypdf e markdown-it-py sono operativi in M4; SQLite è operativo nel backend M5 tramite standard library; PySide6 resta da implementare. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.
+Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. pypdf e markdown-it-py sono operativi in M4; SQLite è operativo nel backend M5 tramite standard library; PySide6 è operativo in M8 e il packaging M9 è disponibile per uso personale. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.

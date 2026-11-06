@@ -63,6 +63,11 @@ arresto e avvio desktop. `.vscode/tasks.json` è versionato; gli altri file pers
 ignorati. Il lock dipendenze di sviluppo è distinto dalla distribuzione M9. PID e log di avvio
 restano in `runtime/`, fuori da Git. [Uso e verifiche](../scripts/dev/README.md).
 
+`scripts/package/` possiede launcher e configurazione standalone M9, lock separato, build e
+licenze. Output in `build/` e `dist/`, esclusi da Git. `experiments/` contiene generatore e runner
+M9; corpus/risultati in `experiments/results/`, storage di prova esterno al repository.
+[Packaging](../scripts/package/README.md), [evidenze M9](M9_VERIFICATION.md).
+
 Gli snapshot del motore, i contenuti estratti dagli utenti, i database runtime e la configurazione personale devono restare **fuori dal repository**, in `%LOCALAPPDATA%/LocalDocumentSearch` su Windows. La `.gitignore` include convenzioni per prevenire commit accidentali, ma non garantisce protezione di file posizionati arbitrariamente.
 
 Il repository non include un file LICENSE perché la licenza non è stata scelta. GitHub Actions esegue installazione, `pip check` e pytest su Windows/Linux con Python 3.12. Il workflow è configurato; l'esecuzione remota resta da verificare. Il test AST controlla import assoluti, relativi e sotto `TYPE_CHECKING` nei moduli domain/application, vietando anche SQLite nel core. Non è una sandbox contro import dinamici o I/O arbitrario.

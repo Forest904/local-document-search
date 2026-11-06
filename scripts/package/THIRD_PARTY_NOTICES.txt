@@ -1,0 +1,37 @@
+Local Document Search - avvisi dei componenti di terze parti
+
+Questo archivio e destinato all'uso personale. Nessuna licenza del codice
+del progetto e stata scelta; le licenze seguenti riguardano i componenti
+indicati, non attribuiscono una licenza al progetto.
+
+Python 3.12.2 e librerie incorporate: vedere licenses/Python.txt (PSF e avvisi
+dei componenti). SQLite e incluso dal runtime Python.
+OpenSSL 3.0.13: Apache-2.0, testo originale in licenses/upstream/OpenSSL-3.0.13.txt.
+markdown-it-py 4.2.0, mdurl 0.1.2: MIT; pypdf 7.0.0: BSD-3-Clause.
+Testi e copyright originali nelle rispettive cartelle sotto licenses/.
+
+PySide6, Shiboken6 e Qt 6.12.0: componenti open source, LGPLv3 e alternative
+indicate nei METADATA originali. Qt Core, Gui e Widgets sono caricati come DLL
+separate. Il testo LGPLv3 e GPLv3 e incluso in licenses/upstream/.
+Le DLL compatibili possono essere sostituite mantenendo nomi e struttura.
+Non viene imposta alcuna restrizione aggiuntiva al reverse engineering
+necessario al debug di modifiche dei componenti LGPL.
+I METADATA delle wheel possono includere anche un avviso commerciale:
+questo pacchetto non dichiara ne concede una licenza commerciale Qt.
+Sorgenti delle versioni originali:
+https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/
+https://code.qt.io/cgit/pyside/pyside-setup.git/?h=v6.12.0
+Avvisi QtBase e relativi componenti terzi sono inclusi integralmente da
+LICENSES e src/3rdparty dell'archivio QtBase, con provenienza in SOURCES.json.
+L'inventario contiene anche componenti non usati da questa applicazione.
+
+Nuitka 4.1.1 compila l'applicazione; avvisi originali in licenses/Nuitka.
+Le versioni degli strumenti di build non implicano che tutti i relativi
+pacchetti siano distribuiti: BUILD-MANIFEST.json elenca i file effettivi.
+Runtime Microsoft Visual C++: eventuali DLL sono componenti Microsoft,
+redistribuiti insieme al runtime Python/Qt. Copyright Microsoft Corporation.
+Il programma richiede Windows 11 x64 e non include un installer di sistema.
+
+Non sono state modificate le librerie Qt. Nessuna pubblicazione esterna e
+stata effettuata; questo archivio non e una dichiarazione di conformita
+per una futura release pubblica.

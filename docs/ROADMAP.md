@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** M1–M8 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Desktop PySide6 con backend persistente, sync, ricerca e anteprima asincroni disponibile; distribuzione standalone ancora M9. [Evidenze M8](M8_VERIFICATION.md).
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8 verificata localmente il 6 novembre 2026: [evidenze e limiti](M8_VERIFICATION.md). M9 resta da implementare e verificare.
+**Stato:** M1–M8 implementate e verificate localmente; CLI TXT/Markdown/PDF invariata. Desktop PySide6 con backend persistente, sync, ricerca e anteprima asincroni disponibile; packaging M9 implementato e misure locali registrate; accettazione Windows pulito ancora aperta. [Evidenze M9](M9_VERIFICATION.md).
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8 verificata localmente il 6 novembre 2026: [evidenze e limiti](M8_VERIFICATION.md). M9: packaging implementato; verifiche locali e limiti in [Verifica M9](M9_VERIFICATION.md). Windows senza Python resta da verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -26,7 +26,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | M6 | Sync e lifecycle | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M7 | Job e concorrenza | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M8 | Desktop completo | Verificata localmente (2026-11-06); CI remota da verificare |
-| M9 | Distribuzione e accettazione v1 | Da implementare |
+| M9 | Distribuzione e accettazione v1 | Implementata e collaudata localmente (2026-11-06); Windows pulito aperto ([evidenze](M9_VERIFICATION.md)) |
 
 ## M0 — Specifica eseguibile
 
@@ -233,7 +233,9 @@ frontend: 24 test superati. Verifica visiva Windows su 56 documenti sintetici. I
 - Hardware, memoria massima, tempi build/riapertura/sync/query riportati.
 - V1 pronta solo dopo evidenze; nessuna soglia prestazionale inventata.
 
-**Riferimenti:** [Test](TEST_STRATEGY.md), [UX](UX_WINDOWS.md), [ADR desktop](adr/0009-desktop-runtime.md).
+**Evidenze M9:** build standalone e lock dedicato, ZIP con runtime/licenze e manifest, corpus sintetico di 3.000 documenti e circa 30 MB di testo. Backend: 314 passed e 5 skipped; frontend: 24 passed; script: 17 passed. Misure e prove sul pacchetto in [Verifica M9](M9_VERIFICATION.md). Solo uso personale e PC attuale: nessuna pubblicazione; Windows senza Python e account standard distinto ancora da verificare. M9 non è dichiarata completamente accettata.
+
+**Riferimenti:** [Test](TEST_STRATEGY.md), [UX](UX_WINDOWS.md), [ADR desktop](adr/0009-desktop-runtime.md), [Packaging](../scripts/package/README.md).
 
 ## Vincoli di consegna
 
