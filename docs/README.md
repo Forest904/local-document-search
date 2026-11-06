@@ -1,6 +1,6 @@
 # Indice documentazione
 
-**Specifiche di progetto (non implementazione).** Le decisioni utente approvate sono distinte dalle proposte e dalle questioni aperte.
+**Specifiche di progetto (non implementazione).** Le decisioni v1 approvate sono distinte dall'implementazione assente e dalle esclusioni oltre v1.
 
 | Documento | Scopo |
 |---|---|
@@ -14,8 +14,8 @@
 | [TEST_STRATEGY.md](TEST_STRATEGY.md) | Verifiche, edge case, benchmark e accettazione |
 | [REPOSITORY_LAYOUT.md](REPOSITORY_LAYOUT.md) | Ownership e dipendenze tra cartelle |
 | [SECURITY_AND_PRIVACY.md](SECURITY_AND_PRIVACY.md) | Trattamento locale di documenti e testo persistito |
-| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | Limiti, scelte tecniche non ancora definite e rischi |
-| [ROADMAP.md](ROADMAP.md) | Milestone orientate ai requisiti |
+| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | Registro OD-01…OD-23 risolte/escluse, limiti e rischi |
+| [ROADMAP.md](ROADMAP.md) | Sequenza M0–M9 con prerequisiti, attività, test e criteri di uscita |
 | [adr/](adr/) | Architecture Decision Records approvati/proposti |
 | [homework-3/](homework-3/) | Conformità consegna, test delle query, template relazione |
 

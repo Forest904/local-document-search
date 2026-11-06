@@ -1,75 +1,76 @@
-# Indexing Pipeline & Text Analysis
+# Indexing Pipeline & Text Analysis v1
 
-**Obiettivo:** separare lettura del formato, normalizzazione testuale e costruzione del positional inverted index.
+**Stato:** specifica approvata, non implementata; [ADR 0007](adr/0007-analysis-and-readers.md).
 
-## 1. Pipeline
+## 1. Pipeline e responsabilità
 
-```mermaid
-flowchart LR
-  C[FileCandidate] --> N[FilenameAnalyzer]
-  C --> R[DocumentReader]
-  R --> CDM[CanonicalDocument: content]
-  CDM --> A[ContentAnalyzer]
-  N --> B[IndexBuilder draft]
-  A --> B
-  B --> S[Candidate Snapshot]
-```
+Discovery → reader → testo canonico → analyzer per campo → posting nel draft.
+I reader non assegnano DocumentId né costruiscono posting. Application associa testo e descriptor.
+Un documento contiene un solo content: str; nessun offset strutturale di pagina/sezione.
+Nome e contenuto hanno analyzer distinti, indipendenti dal formato del reader.
 
-I reader producono **testo puro**, non token. Gli analyzer conoscono il **campo**, non il tipo di file. Il builder riceve token e posizioni e aggiorna entrambi gli indici.
+## 2. Discovery e reader
 
-## 2. Discovery e lettura
+Scansione ricorsiva ordinata per percorso relativo, suffissi .txt/.md/.pdf riconosciuti senza distinzione maiuscole.
+Non seguire symlink, junction o altri reparse point di directory/file; una radice selezionata che sia un link è rifiutata.
+M3 abilita solo TXT, M4 tutti i formati. Errori di scansione/lettura fanno fallire il job.
+Nessuna lettura di URL, nessun OCR.
 
-| Formato | Trasformazione richiesta | Limiti |
-|---|---|---|
-| `.txt` | Decodifica in testo; nessuna struttura documentale | Encoding invalido → errore; eventuali encoding alternativi TBD |
-| `.md` | Estrazione di testo visibile; **blocchi di codice esclusi** | Trattamento di link, immagini, tabelle, HTML inline e front matter TBD |
-| `.pdf` | Estrazione del testo digitale presente | Nessun OCR; PDF senza testo esclusi; ordine colonne/tabelle imperfetto |
+| Formato | Regole |
+|---|---|
+| TXT | UTF-8 strict, BOM iniziale ammesso e rimosso; nessun fallback o sostituzione di caratteri |
+| Markdown | Stessa decodifica; markdown-it-py CommonMark con tabelle abilitate, estrazione dai token |
+| PDF | pypdf, extract_text standard per pagina nell'ordine del documento, pagine separate da newline |
 
-Un file canonico ha **un unico `content: str`**, privo di pagine, segmenti o offsets strutturali del formato. L'output dei reader non viene sottoposto a stemming o case folding: sono compiti degli analyzer.
+Markdown include titoli, paragrafi, liste, celle di tabelle, etichette link, alt immagini e codice inline.
+Esclude blocchi di codice fenced/indentati, front matter iniziale delimitato da righe --- e token HTML grezzi.
+Il front matter è rimosso solo se delimitato e chiuso; senza chiusura si tratta come Markdown normale.
+HTML non viene eseguito/renderizzato: token raw HTML scartati, normali token testuali conservati.
+Destinazioni dei link/immagini non aggiunte al testo; nessun accesso esterno.
+Separare blocchi/celle e contenuti esclusi con whitespace, senza fondere parole adiacenti.
+Testo estratto conservato prima della normalizzazione degli analyzer.
 
-## 3. Analyzer: regole definite e dettagli proposti
+PDF misti: pagine immagine non contribuiscono; se il testo totale è vuoto o solo whitespace → Excluded.
+PDF illeggibili/corrotti o che richiedono password → ExtractionFailed; nessun prompt password.
+Un PDF con testo non-whitespace ma senza token ricercabili resta indicizzato per nome.
+TXT/Markdown vuoti sono documenti validi con zero token contenuto.
+Encoding invalido o errore reader → job FAILED e nessun commit.
 
-**Definito:** due analyzer distinti, uno per nome e uno per contenuto; indipendenza dal formato; stesso analyzer per indicizzazione e query; supporto a corpus multilingue; posizioni per phrase query.
+## 3. Analyzer
 
-**Baseline da confermare durante la specifica del tokenizer** (non considerarla vincolante finché non è testata):
+1. Per il filename sorgente rimuovere solo il suffisso finale supportato; non applicarlo alla query.
+2. Nel campo filename dividere confini minuscola→maiuscola, acronimo→parola e lettera↔cifra prima del casefold.
+3. Applicare NFC, casefold e NFC al testo; mantenere gli accenti.
+4. Tokenizzare sequenze Unicode di lettere/numeri e segni combinanti associati; segni isolati non sono token.
+5. Punteggiatura, apostrofi, underscore, trattini, punti ed emoji separano; posizioni consecutive da zero.
+6. Nessuno stemming o filtro stop word. Contenuto non suddiviso per CamelCase o lettera/cifra.
 
-- Unicode NFC, case folding, tokenizzazione Unicode per lettere/numeri/segni combinanti;
-- mantenere gli accenti; **nessuno** stemming e **nessuna** rimozione stop words (evita complicazioni nelle phrase query multilingue);
-- filename: delimitatori (`_`, `-`, `.`) e possibile separazione CamelCase / lettere-numeri;
-- contenuto: punteggiatura come separatore e posizioni per ogni token;
-- gestione di apostrofi, numeri, acronimi, emoji e testi CJK da definire precisamente;
-- decisione se includere il suffisso `.txt`/`.md`/`.pdf` nel filename index ancora aperta.
+Esempi: l'acqua → l, acqua; Report2026Finale.txt → report, 2026, finale;
+HTTPServer.md → http, server; caffè e caffe restano distinti.
+La query Report2026Finale usa lo stesso split filename; la query txt non trova automaticamente tutti i TXT.
+Focus italiano/lingue latine; nessuna segmentazione dedicata per lingue senza separatori.
 
-La compatibilità tra tokenizzazione di nome e contenuto non è richiesta; **la compatibilità fra fase di indicizzazione e fase di ricerca per lo stesso campo sì**.
+## 4. Query e posting
 
-## 4. Postings e posizioni
+Il parser produce clausole di termini o frasi, poi ogni campo applica il proprio analyzer.
+Clausole non quotate: tutti i token richiesti in AND. Clausole quotate: adiacenza e ordine.
+Tutte le clausole devono corrispondere in filename oppure tutte in content; BOTH unisce i documenti, senza duplicati.
+Esempio: machine "deep learning" richiede machine e la frase deep learning nel medesimo campo.
+Una frase t0…tk richiede posizioni p…p+k: termini ripetuti usano occorrenze distinte.
+Posting: term → document_id → posizioni ordinate, strettamente crescenti e zero-based.
+Non condividere contatori di posizione tra campi; interrogare solo snapshot immutabili.
+Grammatica ed errori: [Contratti](INTERFACE_CONTRACTS.md).
 
-```text
-content_index:
-  "roma" -> {doc42: [0, 7], doc51: [3]}
-  "tre"  -> {doc42: [1, 8], doc51: [9]}
-```
+## 5. Aggiornamenti
 
-Query `"roma tre"`: doc42 corrisponde (0→1 o 7→8), doc51 no (3→9). Per una frase `t0,...,tk-1` esiste un match nel documento d se c'è una posizione p con `p+i` nella posting di `ti` per **ogni i**. I termini ripetuti devono usare occorrenze distinte; la semplice intersezione dei documenti non è sufficiente.
+Nuovo: assegnare ID e aggiungere catalogo/posting; modificato: sostituire entrambi i campi preservando ID.
+Rimosso: eliminare manifest, catalogo e posting; invariato: riutilizzare senza rileggere contenuto.
+Escluso: solo manifest, nessun documento/posting. Modifiche solo sul draft.
+Dettagli di persistenza in [Snapshot](SNAPSHOTS_AND_SYNC.md).
 
-Per termini non quotati, l'AND opera sui **docID** di un singolo campo. Con `BOTH`, si esegue la query completa indipendentemente su filename e content e si uniscono i docID risultanti.
+## 6. Limiti e verifica
 
-## 5. Aggiornamento dei documenti
-
-- Nuovo: assegnare ID, generare posting nome + contenuto, aggiungere catalogo e manifest.
-- Modificato (stesso path): rimuovere vecchie posting da **entrambi** i campi, poi aggiungere nuove posting e testo persistito coerenti.
-- Eliminato: rimuovere posting, documento dal catalogo ed entry dal manifest nuovo.
-- Invariato: riutilizzare la rappresentazione già indicizzata senza rileggere il contenuto.
-- Escluso: registrare nel manifest, senza IndexedDocument né posting.
-
-Queste operazioni modificano solo uno **SnapshotDraft**, mai lo snapshot attivo.
-
-## 6. Perdita intenzionale d'informazione
-
-Non conserva pagine PDF, sezioni Markdown o coordinate. Le phrase queries possono attraversare confini di pagina o paragrafo e possono produrre falsi match da artefatti di estrazione (es. colonne unite nell'ordine errato). È un limite accettato del modello semplificato.
-
-Il testo estratto completo è persistito; eventuali snippet e highlighting potranno essere creati a posteriori. Offset token→testo e strategia di ranking/snippet restano da definire.
-
-## 7. Test di specifica da scrivere
-
-Unicode e case folding, accenti, CamelCase, apostrofi, termini ripetuti, frase assente con parole lontane, documenti con nomi identici in sotto-cartelle, PDF non testuali, Markdown con blocchi codice, file vuoti. Vedi [TEST_STRATEGY](TEST_STRATEGY.md).
+Frasi possono attraversare pagine/paragrafi; ordine PDF non garantisce fedeltà al layout visivo.
+Nessuna provenienza strutturale, snippet, highlighting o ranking nella v1.
+Il testo completo è disponibile tramite GetDocument.
+Test obbligatori e fixture: [Test Strategy](TEST_STRATEGY.md).

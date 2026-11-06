@@ -4,7 +4,7 @@
 
 ## 1. Identità del documento
 
-**Un file fisico = un documento logico**. `DocumentId` è opaco, univoco in uno snapshot; proposta implementativa: intero progressivo preservato per file con stesso percorso relativo. I file con identico basename in sottodirectory differenti restano distinti.
+**Un file fisico = un documento logico**. `DocumentId` è opaco, univoco in uno snapshot; intero progressivo preservato per file invariati/modificati sullo stesso percorso e non riciclato durante la vita dell'indice. I file con identico basename in sottodirectory differenti restano distinti.
 
 | Tipo | Campi concettuali | Note |
 |---|---|---|
@@ -12,10 +12,10 @@
 | `RelativePath` | percorso sotto `root_directory` | Identifica la sorgente nel manifest |
 | `FileFingerprint` | `size_bytes`, `mtime_ns` | Value object; **nessun hash** |
 | `DocumentDescriptor` | ID, relative path, filename, format, fingerprint | Metadati sorgente |
-| `CanonicalDocument` | descriptor, `content: string` | Transitorio dopo la lettura; nessuna pagina/segmento |
+| `CanonicalDocument` | metadati sorgente senza ID, `content: string` | Output transitorio del reader; application associa il DocumentId, nessuna pagina/segmento |
 | `IndexedDocument` | descriptor, `extracted_text`, token counts | Persistito nel catalogo |
 
-**Attenzione ai path:** la politica di normalizzazione Unicode/case sensitivity e gestione degli alias Windows è aperta; non assumere che due stringhe diverse rappresentino sempre file distinti.
+**Path:** identità legata alla directory selezionata e al percorso relativo riportato dalla discovery. Preservare case e Unicode, senza casefold o normalizzazione distruttiva; serializzare i separatori come `/`. Risolvere la radice assoluta in infrastructure tramite filesystem, senza normalizzare il testo dei nomi. Non deduplicare per contenuto o hard link; alias non riconosciuti come stessa radice comportano nuova selezione/reindicizzazione. Rename = rimozione + aggiunta. Ordine lessicografico per percorso preservato, indipendente dalla locale.
 
 ## 2. Manifest e catalogo
 
@@ -61,8 +61,8 @@ field -> term -> document_id -> [position_0, position_1, ...]
 ## 5. Ricerca
 
 - `SearchField`: `FILENAME`, `CONTENT`, `BOTH`.
-- `MatchMode`: `ALL_TERMS`, `EXACT_PHRASE`.
-- `SearchQuery`: ricerca interpretata, termini normalizzati e campi.
+- `QueryClause`: clausola non quotata (termini AND) oppure frase (sequenza posizionale).
+- `SearchQuery`: lista non vuota di clausole in AND e campo richiesto; analisi separata per campo prima del matching. Nessun MatchMode globale esclusivo.
 - `SearchMatch`: documento e campo/i che soddisfano **interamente** la query.
 
 `BOTH` ha semantica `match(filename, q) OR match(content, q)`, dove la **query completa** (non i singoli termini separatamente) deve essere soddisfatta in uno dei due campi.

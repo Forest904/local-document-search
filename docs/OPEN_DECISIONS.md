@@ -1,64 +1,58 @@
-# Open Decisions, Implementation Limits & Risks
+# Registro decisioni v1 e limiti
 
-**Documento di controllo:** ciò che segue **non è stato approvato o implementato**. Non colmare i vuoti con assunzioni nascoste. Quando una scelta sarà presa, registrarla in un ADR e aggiornare la documentazione coinvolta.
+**Stato:** OD-01…OD-23 risolte per la v1 o escluse esplicitamente; implementazione non iniziata.
+Le decisioni sono approvate il 6 novembre 2026. Accepted significa progettato, non verificato nel codice.
+Nuove scelte che cambiano comportamento, contratti o dipendenze richiedono confronto con l'utente.
 
-## 1. Decisioni approvate (non riaprire implicitamente)
+## Tracciabilità
 
-Un file = un documento; una directory attiva, scansione ricorsiva; TXT/MD/PDF testuali; Markdown code blocks esclusi; nessun OCR e PDF privi di testo esclusi; encoding non valido = errore e niente commit; no symlink/junction né file symlink; nessun limite di dimensione prefissato; due positional inverted indexes proprietari; testo estratto persistito; snapshot immutabili, sync incrementale con solo path+size+mtime, single-writer, ricerca sullo snapshot precedente durante sync, progresso a byte indicativo, niente watcher continuo, query BOTH soddisfatta integralmente da un campo.
-
-## 2. Critici per implementare la v1 backend
-
-| ID | Argomento | Opzioni da valutare / domanda | Impatto |
+| ID | Decisione v1 | Specifica / ADR | Verifica |
 |---|---|---|---|
-| OD-01 | **Storage fisico** | JSON, SQLite o formato custom? Come separare manifest/testo/posting e attivare atomicamente? | Alto |
-| OD-02 | **Recovery e durability** | Staging directory, pointer swap, fsync, recovery dei candidati rimasti dopo crash? | Alto |
-| OD-03 | **Retention snapshot** | Quante versioni conservare, quando raccoglierle, come gestire `GetDocument(snapshot_id)`? | Alto |
-| OD-04 | **Memoria e file enormi** | Build tutto in RAM o pipeline streaming/spill-to-disk? Che cosa fare in caso di ResourceFailure? | Alto |
-| OD-05 | **PDF extraction** | Libreria, ordine di lettura, errori PDF protetti/corrotti, file misti testo+immagini. | Alto |
-| OD-06 | **Markdown extraction** | Parser e policy precisa per heading, tabelle, link, immagini, HTML inline, front matter. | Alto |
-| OD-07 | **Encoding** | UTF-8 strict, BOM, fallback automatico? Come segnalare character set non riconosciuto senza perdere dati? | Alto |
-| OD-08 | **Tokenizer multilingue** | Regole esatte Unicode, NFC/casefold, apostrofi, accents, CamelCase, numeri, CJK; stop words/stemming. | Alto |
-| OD-09 | **Filename analyzer** | Indicizzare estensione? Segmentazione CamelCase e confini lettera-cifra? | Medio |
-| OD-10 | **Query grammar** | Sintassi per campo/virgolette, gestione errori, default AND, combinazioni consentite e stringhe vuote. | Alto |
-| OD-11 | **Incremental storage** | Snapshot completo scritto ogni volta vs riuso fisico dei segmenti invariati; garbage collection. | Alto |
-| OD-12 | **Identità paths Windows** | Case-insensitivity, Unicode, separatori, nomi duplicati, directory spostata, reparse points. | Alto |
-| OD-13 | **Versioning/migration** | Come interpretare modifiche a schema o processing rules e quando forzare rebuild? | Alto |
-| OD-14 | **No-change sync** | Come registrare ultimo controllo riuscito senza creare un nuovo snapshot? Stato operativo separato? | Medio |
+| OD-01 | SQLite, snapshot completi; niente full-text SQL | [ADR 0008](adr/0008-sqlite-snapshots.md) | M5 |
+| OD-02 | Candidato, validazione e riferimento attivo nella stessa transazione; recovery SQLite | [Snapshot](SNAPSHOTS_AND_SYNC.md) | M5 |
+| OD-03 | Attivo e precedente; letture in corso protette; nessuna cache di altre directory | [Snapshot](SNAPSHOTS_AND_SYNC.md) | M5–M7 |
+| OD-04 | Indici/draft in RAM, no spill; ResourceFailure quando intercettabile, nessun commit parziale | [ADR 0008](adr/0008-sqlite-snapshots.md) | M5, M9 |
+| OD-05 | pypdf, testo in ordine di pagina, no OCR; password necessaria/errore → FAILED | [Analisi](INDEXING_AND_ANALYSIS.md) | M4 |
+| OD-06 | markdown-it-py; testo visibile e inline code, esclusi code block/front matter/HTML grezzo | [Analisi](INDEXING_AND_ANALYSIS.md) | M4 |
+| OD-07 | UTF-8 strict con BOM ammesso; nessun fallback | [ADR 0007](adr/0007-analysis-and-readers.md) | M3–M4 |
+| OD-08 | NFC+casefold, accenti mantenuti, niente stemming/stop word; focus lingue latine | [Analisi](INDEXING_AND_ANALYSIS.md) | M2 |
+| OD-09 | Filename senza suffisso, separazione CamelCase e lettere/cifre | [Analisi](INDEXING_AND_ANALYSIS.md) | M2 |
+| OD-10 | Clausole termini/frasi in AND; prefissi CLI nome/contenuto/entrambi | [Contratti](INTERFACE_CONTRACTS.md) | M2–M3 |
+| OD-11 | Riuso logico degli invariati, serializzazione di snapshot completi | [Snapshot](SNAPSHOTS_AND_SYNC.md) | M5–M6 |
+| OD-12 | Path relativi preservati; nessun casefold/normalizzazione Unicode distruttiva; rename remove+add | [Dominio](DOMAIN_MODEL.md) | M3, M6 |
+| OD-13 | Schema/processing incompatibili → rebuild, niente migrazione né ricerca incompatibile | [Snapshot](SNAPSHOTS_AND_SYNC.md) | M6 |
+| OD-14 | Esito/ultimo controllo in stato operativo separato; no-change non crea snapshot | [Snapshot](SNAPSHOTS_AND_SYNC.md) | M6 |
+| OD-15 | PySide6 Qt Widgets; Windows 11 x64, ZIP portabile pyside6-deploy standalone | [ADR 0009](adr/0009-desktop-runtime.md) | M8–M9 |
+| OD-16 | Chiamate in-process ai contratti; niente IPC/HTTP; una istanza sullo storage | [Architettura](ARCHITECTURE.md) | M7–M9 |
+| OD-17 | Ordine lessicografico per percorso relativo preservato; niente scoring | [Contratti](INTERFACE_CONTRACTS.md) | M2, M8 |
+| OD-18 | Testo completo e apertura file; snippet/highlighting fuori v1 | [UX](UX_WINDOWS.md) | M8 |
+| OD-19 | Ricerca con Invio; polling 200 ms; check 1,5 s; pagine da 50 | [UX](UX_WINDOWS.md) | M8 |
+| OD-20 | LOCALAPPDATA, protezioni account, niente cifratura aggiuntiva; ClearLocalData | [Privacy](SECURITY_AND_PRIVACY.md) | M6, M8–M9 |
+| OD-21 | PDF senza caratteri non-whitespace escluso; misti indicizzati per testo disponibile | [Analisi](INDEXING_AND_ANALYSIS.md) | M4 |
+| OD-22 | Sync sovrapposto restituisce stesso job_id con reused=true | [Contratti](INTERFACE_CONTRACTS.md) | M7 |
+| OD-23 | Cancel, watcher, OR/NOT, fuzzy, scoring e OCR esclusi | [PRD](PRD.md) | M0, M9 |
 
-## 3. Rimandabili alla UI Windows / future release
+## Limiti accettati, non bug
 
-| ID | Argomento | Da decidere |
-|---|---|---|
-| OD-15 | Windows frontend | WPF, WinUI 3, altro stack; desktop packaging |
-| OD-16 | Trasporto | IPC named pipes, API loopback, processo integrato; autenticazione locale |
-| OD-17 | Ranking e ordine | Ordinamento per path per la v1 (proposto) oppure un punteggio minimale |
-| OD-18 | Snippet/highlighting | Offset token→testo, troncamento, gestione frammenti PDF |
-| OD-19 | Progresso UI | Frequenza eventi, debounce e durata check completamento |
-| OD-20 | Privacy/retention | Storage per-utente, permessi, eventuale crittografia, cancellazione dei dati |
-| OD-21 | Corpi di testo vuoti | Politica per PDF con solo spazi/artefatti o pagine parzialmente testuali |
-| OD-22 | Richieste sovrapposte | Quando un secondo Sync chiede il job esistente, indicare che nessun nuovo avvio è avvenuto |
-| OD-23 | Requisiti non richiesti | Cancellation, watcher continuo, OR/NOT, fuzzy matching, scoring, OCR: **non inclusi in v1** |
+- Size e mtime_ns invariati possono nascondere modifiche; nessun hash dei sorgenti.
+- Risultati potenzialmente obsoleti fino al sync; nessuna verifica filesystem per query.
+- Un file è un documento: niente pagine/sezioni o coordinate di provenienza.
+- Le frasi possono attraversare confini di pagina/paragrafo dopo l'estrazione.
+- Ordine PDF imperfetto; nessuna segmentazione linguistica dedicata CJK.
+- Byte completati misurano avanzamento, non ETA.
+- Sorgenti statiche durante il job; nessuna protezione da modifiche concomitanti.
+- Nessun limite applicativo alla dimensione, ma RAM/disco finiti; possibile terminazione del processo.
 
-## 4. Limitazioni accettate — non bug
+## Rischi e verifiche assegnate
 
-1. **Rilevazione modifiche non perfetta:** size e `mtime_ns` possono rimanere uguali nonostante contenuto cambiato.
-2. **Ricerca stantia:** dopo eliminazione/modifica, un risultato resta possibile fino al successivo snapshot; non si verifica il filesystem per ogni query.
-3. **Nessuna provenienza pagine:** risultati restituiscono file, non pagina PDF o sezione Markdown.
-4. **Phrase queries dopo estrazione:** token adiacenti per artefatti di layout possono corrispondere erroneamente.
-5. **Progress approssimativo:** byte/file ≠ costo di elaborazione o ETA.
-6. **Static source assumption:** la directory non cambia **durante** il job; il sistema non protegge da mutazioni concomitanti dei sorgenti.
-7. **Niente OCR:** PDF immagini non indicizzati e registrati come esclusi.
-8. **Nessun limite applicativo di file size:** resta possibile memoria/spazio insufficiente; errori devono essere espliciti.
+- Memoria: snapshot attivo più draft; misurare corpus personale contenuto in M9.
+- PDF/Markdown: fixture di layout ed esclusioni in M4; documentare perdite intenzionali.
+- Commit: fault injection e riavvio in M5, ripetuti sul pacchetto in M9.
+- Path: nomi distinti, alias e rename in M3/M6; non fondere documenti tramite normalizzazione.
+- Consegna: M3 indipendente dalle estensioni, come in [Roadmap](ROADMAP.md).
+- Responsività: worker non garantisce da solo assenza di rallentamenti; verificare UI sotto carico in M8/M9.
 
-## 5. Rischi prioritari
+## Governance
 
-- **R1: Snapshot troppo grandi.** Conserviamo sia testo sia posting → misurare storage e memoria prima di ottimizzare.
-- **R2: PDF complessi.** Ordine di lettura scorretto → test con multi-colonna; documentare precisione limitata.
-- **R3: Reader Markdown.** Eliminare markup o codice senza cancellare parole adiacenti involontariamente → test specifici.
-- **R4: Crash durante commit.** Snapshot candidato mai visibile prima della validazione; protocollo concreto da testare.
-- **R5: Path normalization.** Duplicati o falsi 'removed/added' su Windows → definire canonical path policy.
-- **R6: Time-to-homework.** Mantenere una CLI TXT + due indici + phrase queries come primo incremento completo, senza bloccarlo dietro la futura UI.
-
-## 6. Regola di governance
-
-Ogni scelta risolta deve aggiornare: (1) ADR, (2) questo registro, (3) i contratti o PRD interessati, (4) test di accettazione corrispondenti.
+Per nuove decisioni aggiornare ADR, questo registro, specifiche interessate e test di accettazione.
+I dettagli interni possono essere affinati senza riaprire requisiti o introdurre funzionalità fuori scope.

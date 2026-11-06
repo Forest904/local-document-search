@@ -41,7 +41,7 @@ Il package Python contiene moduli con **sole docstring descrittive**; non esisto
 
 1. Leggere [docs/PRD.md](docs/PRD.md) e [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 2. Esaminare [docs/DOMAIN_MODEL.md](docs/DOMAIN_MODEL.md), [docs/INTERFACE_CONTRACTS.md](docs/INTERFACE_CONTRACTS.md) e [docs/INDEXING_AND_ANALYSIS.md](docs/INDEXING_AND_ANALYSIS.md).
-3. Prima di implementare, risolvere le questioni prioritarie indicate in [docs/OPEN_DECISIONS.md](docs/OPEN_DECISIONS.md).
+3. Consultare le decisioni v1 e le milestone di verifica in [docs/OPEN_DECISIONS.md](docs/OPEN_DECISIONS.md).
 4. Seguire [docs/ROADMAP.md](docs/ROADMAP.md) e il [piano di verifica](docs/TEST_STRATEGY.md).
 5. Per il perimetro minimo del corso, vedere [docs/homework-3/ASSIGNMENT_ALIGNMENT.md](docs/homework-3/ASSIGNMENT_ALIGNMENT.md).
 
@@ -67,4 +67,4 @@ L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), qu
 
 ## Stato delle decisioni
 
-Gli ADR in [docs/adr](docs/adr/) distinguono le decisioni accettate dai dettagli implementativi **non ancora stabiliti**. Non confondere la progettazione approvata con una tecnologia già selezionata (es. formato dello storage, libreria di estrazione PDF o framework Windows).
+Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. Tecnologie selezionate, **non implementate**. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.

@@ -1,6 +1,6 @@
 # Architecture — Modular Monolith / Ports & Adapters
 
-**Stato:** architettura v1 approvata; tecnologia degli adapter ancora da definire.
+**Stato:** architettura v1 approvata; adapter e runtime selezionati; implementazione non iniziata.
 
 ## 1. Principi
 
@@ -14,7 +14,7 @@
 
 ```mermaid
 flowchart TB
-  UI[Windows frontend futuro] --> API[Application API / transport adapter]
+  UI[Windows frontend futuro] --> API[Application API in-process]
   CLI[CLI] --> API
   API --> APP[Application services + use cases]
   APP --> DOM[Domain: documents, analyzers, indexes, queries]
@@ -25,7 +25,7 @@ flowchart TB
 
 Le frecce tratteggiate descrivono contratti/runtime. Il Domain **non importa** Application o Infrastructure; gli adapter concreti **dipendono** dalle astrazioni interne.
 
-Nessun server HTTP è implementato o obbligatorio nella v1. Il trasporto della futura UI Windows (IPC, API locale, processo integrato) resta aperto.
+PySide6 Qt Widgets e backend nello stesso processo mediante contratti applicativi; nessun HTTP o IPC. CLI e UI hanno composition root dedicati che assemblano gli stessi servizi.
 
 ## 3. Flusso di indicizzazione
 
@@ -43,7 +43,7 @@ flowchart LR
   T --> P[Persist + atomic activate]
 ```
 
-I file invariati possono riutilizzare informazioni dello snapshot precedente; i documenti rimossi devono sparire sia dal catalogo sia dai due indici. La modalità fisica di riutilizzo e serializzazione è **TBD**.
+I file invariati possono riutilizzare informazioni dello snapshot precedente; i documenti rimossi devono sparire sia dal catalogo sia dai due indici. Riuso logico degli invariati, senza rilettura; serializzazione completa in SQLite, indici/draft in RAM.
 
 ## 4. Flusso della ricerca
 
@@ -79,7 +79,7 @@ L'`IndexSnapshot` è un **aggregate boundary logico**, non implica un singolo fi
 
 ## 7. Installazione e distribuzione
 
-Il backend è un package Python indipendente dal sistema operativo. `frontend/` è un segnaposto .NET/Windows, non ancora un progetto operativo. Il meccanismo d'avvio/distribuzione del backend e del canale verso la UI è ancora aperto.
+Il backend è un package Python con dominio indipendente dal sistema operativo. `frontend/` ospiterà PySide6 Qt Widgets. Target Windows 11 x64: ZIP portabile pyside6-deploy standalone, senza Python preinstallato. Versioni/configurazione riproducibili e verifica su ambiente pulito in M9; nessun frontend operativo nello scaffold.
 
 ## 8. Confini intenzionalmente esclusi
 
@@ -88,3 +88,12 @@ Nessuna architettura a microservizi; niente OCR o infrastrutture cloud; nessun f
 ## 9. Documenti collegati
 
 [DOMAIN_MODEL](DOMAIN_MODEL.md) · [INTERFACE_CONTRACTS](INTERFACE_CONTRACTS.md) · [SNAPSHOTS_AND_SYNC](SNAPSHOTS_AND_SYNC.md) · [REPOSITORY_LAYOUT](REPOSITORY_LAYOUT.md)
+
+## 10. Runtime v1 e primo incremento
+
+Un worker sync, query fuori dal thread UI, DTO trasferiti alla UI tramite il suo adapter.
+Application non importa Qt; dominio non conosce thread, SQLite o reader.
+Lock OS esclusivo dello storage per l'intera sessione CLI/desktop; seconda istanza rifiutata.
+Chiusura attende job e letture; arresto forzato gestito dal recovery.
+CLI M3 usa repository in memoria e build bloccante; M5/M6 introducono persistenza e diff
+senza duplicare il motore né richiedere funzionalità future per la consegna.

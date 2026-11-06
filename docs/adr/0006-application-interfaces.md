@@ -5,5 +5,5 @@
 - **Decision:** use cases `InitializeApplication`, `SelectDirectory`, `Request/RunSynchronization`, `SearchDocuments`, `GetIndexStatus`, `GetJobStatus`, `GetDocument`; porte `FileDiscoveryPort`, `DocumentReaderPort`, `SnapshotRepositoryPort`, `SettingsRepositoryPort`. `IndexingJobManager` separato da `IndexSynchronizer`, un job attivo alla volta, progress indipendente dalla UI, supporto esecuzione sync/async dello stesso algoritmo.
 - **Alternatives considered:** accoppiare comandi UI direttamente a reader/index, metodi duplicati per CLI/UI, progress grafico dentro il core.
 - **Consequences:** testabilità e portabilità, DTO espliciti, più file di struttura ma responsabilità nette.
-- **Open implementation details:** protocollo reale, thread/process model, lifecycle della connessione, schema esatto DTO, errori di trasporto.
+- **v1 clarification (2026-11-06):** in-process, worker sync e query fuori thread UI, lock storage e attesa alla chiusura in [ADR 0009](0009-desktop-runtime.md). Contratti estesi con ClearLocalData, JobRef.reused e paginazione; nessun trasporto remoto.
 - **Related:** [Interface Contracts](../INTERFACE_CONTRACTS.md), [UX Windows](../UX_WINDOWS.md).

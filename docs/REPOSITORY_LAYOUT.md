@@ -32,9 +32,9 @@ Ogni package Python è rappresentato da un `__init__.py` e da **moduli con docst
 | `application` | Domain, proprie porte | Adattatori concreti, librerie GUI |
 | `infrastructure` | Application ports, Domain | Frontend Windows |
 | `interfaces` | Application + composition root | Strutture mutabili dell'indice dall'esterno |
-| `frontend` | API pubbliche / trasporto | Domain Python interno, filesystem di storage diretto |
+| `frontend` | API pubbliche application, PySide6 | Domain Python interno, filesystem di storage diretto |
 
-I componenti vengono collegati da un piccolo **composition root** da introdurre quando sarà scelto il meccanismo d'esecuzione. Evitare un generico `shared/` che diventi una dipendenza circolare.
+I componenti vengono collegati da un piccolo **composition root** da introdurre con la CLI e poi con il frontend in-process. Evitare un generico `shared/` che diventi una dipendenza circolare.
 
 ## 3. Responsabilità dei moduli
 
@@ -57,6 +57,6 @@ I componenti vengono collegati da un piccolo **composition root** da introdurre 
 
 ## 4. File operativi e Git
 
-Gli snapshot del motore, i contenuti estratti dagli utenti, i database runtime e la configurazione personale devono restare **fuori dal repository**, in uno storage applicativo locale da definire. La `.gitignore` include convenzioni per prevenire commit accidentali, ma non garantisce protezione di file posizionati arbitrariamente.
+Gli snapshot del motore, i contenuti estratti dagli utenti, i database runtime e la configurazione personale devono restare **fuori dal repository**, in `%LOCALAPPDATA%/LocalDocumentSearch` su Windows. La `.gitignore` include convenzioni per prevenire commit accidentali, ma non garantisce protezione di file posizionati arbitrariamente.
 
 Il repository non include un file LICENSE perché la licenza non è stata scelta. Nessun servizio CI è configurato perché non esistono test eseguibili; saranno aggiunti durante l'implementazione.

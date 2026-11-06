@@ -1,26 +1,37 @@
-# Security & Privacy (baseline)
+# Security & Privacy v1
 
-## 1. Natura dei dati
+**Stato:** policy approvata, controlli da implementare e verificare.
 
-Il backend potrà processare documenti personali presenti in cartelle locali. **Il testo estratto viene persistito** nello snapshot: ciò può includere informazioni sensibili anche quando il file sorgente non è più accessibile. L'utente deve esserne informato nella futura UI.
+## Dati e storage
 
-## 2. Decisioni già definite
+Elaborazione locale, nessun upload, OCR o accesso web dei reader.
+Testo estratto persistito: può restare anche quando il sorgente non è accessibile.
+UI e istruzioni devono informare l'utente prima dell'indicizzazione persistente.
+Su Windows usare %LOCALAPPDATA%/LocalDocumentSearch, fuori dal repository e dalla directory indicizzata.
+Usare protezioni standard dell'account; nessuna cifratura applicativa aggiuntiva nella v1.
+Per backend/test su altri sistemi iniettare una directory applicativa/temporanea esplicita,
+senza portare dipendenze Windows nel dominio.
 
-- Elaborazione locale; nessun requisito di upload cloud.
-- Nessun OCR e nessun accesso al web per i reader.
-- Non seguire symlink/junction o link simbolici a file: evitare scansioni esterne alla directory selezionata.
-- Ricerca su snapshot eventualmente obsoleto tra due sincronizzazioni; la UI deve comunicarlo.
-- Non effettuare commit di corpus utente, snapshot o testo estratto in Git.
+## Retention e pulizia
 
-## 3. Controlli ancora da progettare
+Attivo e precedente della sola directory corrente, con letture già iniziate protette.
+Cambio directory elimina vecchia cache quando non in uso; dettagli in [Snapshot](SNAPSHOTS_AND_SYNC.md).
+ClearLocalData disponibile a job fermo, con conferma UI dell'eliminazione dei dati applicativi.
+Blocca nuove letture, attende quelle in corso e rimuove dati/settings/log/temporanei dell'app.
+Non tocca documenti sorgente e non promette cancellazione forense dei blocchi di disco.
+Se la pulizia fallisce, riportare errore e consentire ripetizione, senza dichiarare completamento.
 
-- Percorso di salvataggio degli snapshot e permessi filesystem per utente Windows.
-- Cifratura at-rest o uso delle protezioni standard dell'account: nessuna decisione presa.
-- Comportamento di cancellazione sicura e retention degli snapshot vecchi.
-- Politiche di logging: evitare testo estratto, query personali e percorsi assoluti nei log condivisibili.
-- API locale/IPC: se esisterà un processo server, limitare accesso al dispositivo e non esporre automaticamente la porta alla rete.
-- Validazione dei parser esterni per input non fidati e gestione robusta di PDF/Markdown corrotti.
+## Accesso e diagnostica
 
-## 4. Implicazione progettuale
+Lock OS esclusivo dello storage tra CLI/desktop; nessun server HTTP/IPC o porta di rete.
+Non seguire symlink/junction/reparse point durante discovery.
+Log senza testo, query personali o percorsi assoluti; diagnostica con categorie e percorsi relativi.
+Errori mostrati localmente non devono riversare contenuti sensibili nei log condivisibili.
+Mai committare corpus personali, snapshot o testo estratto; fixture sintetiche.
+Parser trattano documenti come input non fidati: test per file corrotti e risorse insufficienti.
 
-Il salvataggio del testo estratto è una funzione confermata, ma rende prioritario definire storage per-utente, ciclo di vita e privacy notice prima del rilascio Windows.
+## Distribuzione
+
+Pacchetto per account standard Windows 11 x64, senza privilegi amministrativi o Python installato.
+Includere avvisi/licenze delle dipendenze; nessun cloud, telemetry o updater introdotto implicitamente.
+Verifica operativa e pulizia del pacchetto in M9; [Roadmap](ROADMAP.md).

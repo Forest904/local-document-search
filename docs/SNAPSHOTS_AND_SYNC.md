@@ -1,91 +1,87 @@
-# Snapshots & Incremental Synchronization
+# Snapshots & Incremental Synchronization v1
 
-**Stato:** semantica approvata; rappresentazione fisica e ottimizzazione dello storage TBD.
+**Stato:** specifica approvata, non implementata; [ADR 0008](adr/0008-sqlite-snapshots.md).
 
-## 1. Definizioni
+## 1. Rappresentazione e memoria
 
-- **Active Snapshot:** indice completo, persistito, immutabile e interrogabile.
-- **Building Snapshot:** candidato privato del job; non è visibile alla ricerca.
-- **File Manifest:** elenco sorgenti elaborate con percorso relativo, `size_bytes`, `mtime_ns`, formato ed esito.
-- **Sync:** osservazione puntuale della directory + confronto al manifest + eventuale nuovo snapshot.
+Snapshot completo: versioni schema/processing, directory, manifest, catalogo con testo, due indici proprietari.
+SQLite persiste snapshot completi separati logicamente per snapshot_id e un riferimento attivo.
+Nessun full-text SQL; matching in domain. In RAM: versione attiva e draft, letture delle vecchie versioni finché in uso.
+Riuso degli invariati logico, senza rilettura/analisi sorgenti; scrittura completa del candidato.
+Nessuno spill/streaming generale. Memoria/disco insufficienti → ResourceFailure se intercettabile.
+Se il sistema termina il processo, recovery al riavvio; nessuna promessa di file arbitrariamente grandi.
 
-Lo snapshot **non** è una copia dei file binari originali. Contiene gli indici, il catalogo, i metadati e il **testo estratto** dei documenti indicizzati.
+## 2. Identità e diff
 
-## 2. Trigger
+Directory selezionata + percorso relativo preservato identificano il documento; [Dominio](DOMAIN_MODEL.md).
+Fingerprint: size_bytes e mtime_ns, senza hash o controllo contenuto.
+ADDED → lettura/analisi; MODIFIED → sostituzione di catalogo e posting, ID preservato.
+REMOVED → eliminazione; UNCHANGED → riuso senza leggere il contenuto, anche per EXCLUDED.
+Rename, compreso cambio del percorso riportato dalla discovery, è REMOVED+ADDED.
+Nessuna differenza e versioni compatibili → NO_CHANGES, nessun nuovo snapshot.
+Ultimo controllo riuscito/esito/diagnostica risiedono nello stato operativo, non nell'aggregato immutabile.
 
-1. Selezione di nuova directory → primo snapshot/nuova sorgente.
-2. Avvio app con directory salvata → carica snapshot precedente, effettua scansione e sync automatico.
-3. Pulsante Sync → controllo/sync manuale.
+## 3. Transazione di pubblicazione
 
-Non esiste un watcher continuo: i cambiamenti successivi possono lasciare risultati obsoleti fino al prossimo trigger.
+Adapter SQLite tramite standard library; foreign keys abilitate, journal DELETE e synchronous FULL.
+Schema fisico interno versionato; niente pickle o esecuzione di dati serializzati.
+1. Costruire e validare invarianti del draft in RAM.
+2. Aprire una transazione, inserire l'intero candidato con manifest/catalogo/testo/posting.
+3. Validare la rappresentazione persistita nella transazione e aggiornare il riferimento attivo.
+4. Eseguire COMMIT; soltanto dopo pubblicare il riferimento immutabile in memoria.
+5. Dichiarare successo; eseguire pulizia retention separatamente, senza invalidare il commit riuscito.
 
-## 3. Algoritmo di diff (astratto)
+SaveCandidate/ValidateCandidate/Activate sono fasi dello stesso confine transazionale, non commit separati.
+Errore prima del commit → rollback, vecchio attivo della stessa directory preservato.
+Crash durante commit → recovery SQLite: stato vecchio o nuovo completo, mai un mix.
+Crash dopo commit prima della pubblicazione in RAM → riavvio carica il nuovo riferimento persistito.
+Un errore di pulizia è diagnostica riprovabile, non trasforma un commit riuscito in indice fallito.
+Non ricostruire posting leggendo i sorgenti durante LoadActive.
 
-Per ogni percorso relativo del filesystem e del manifest:
+## 4. Retention e letture
 
-| Condizione | Categoria | Azione |
-|---|---|---|
-| Nuovo percorso | ADDED | Reader + analyzer + nuova entry/posting |
-| Stesso path, fingerprint diverso | MODIFIED | Reader + analyzer; sostituire catalogo/posting |
-| Path esistente solo nel manifest | REMOVED | Eliminare record e posting |
-| Stesso path e fingerprint | UNCHANGED | Riutilizzare record e posting, senza leggere contenuto |
+Conservare snapshot attivo e precedente della directory corrente.
+Ogni ricerca acquisisce una versione immutabile e la mantiene fino al completamento.
+La pulizia differisce la rimozione delle versioni in uso; riprova al rilascio e al riavvio.
+GetDocument(document_id, snapshot_id) usa esattamente quella versione, mai un fallback alla corrente.
+Versione rimossa → SnapshotUnavailable; il chiamante può ripetere la ricerca.
+Una versione presente ma incompatibile non è consultabile.
+Dopo crash non restano lettori attivi: recovery completa anche la pulizia pendente.
 
-**Fingerprint = (`size_bytes`, `mtime_ns`).** Nessun hash, nessuna comparazione dei byte: è una decisione di prodotto. Se il contenuto cambia senza modificare entrambi i metadati, la differenza non viene rilevata.
+## 5. Lifecycle, directory e compatibilità
 
-Un rename è REMOVED + ADDED. Gli ID dei file modificati sullo stesso percorso possono essere preservati; lo schema concreto di allocazione è da definire.
+Startup carica settings e snapshot compatibile, poi richiede sync automatico.
+Se la sorgente manca, conserva settings/snapshot e consenti ricerca compatibile con avviso di obsolescenza.
+SelectDirectory valida la nuova radice, è rifiutata durante job e disabilita risultati della vecchia.
+Nessuna cache multi-directory: vecchi dati rimossi appena non in uso; ritorno alla cartella richiede indicizzazione.
+Il cambio invalida le nuove richieste di dettaglio della precedente directory; le letture già iniziate completano.
 
-Se nessuna differenza e nessuna incompatibilità di versione viene rilevata → **non creare un nuovo snapshot**.
+schema_version o processing_version incompatibili → rebuild automatico dai sorgenti, non migrazione.
+Durante rebuild la versione incompatibile non è ricercabile; dati vecchi conservati fino al successo.
+Per schema fisico incompatibile usare un database candidato separato, mantenendo l'originale.
+Il catalogo di attivazione stabile seleziona il database solo dopo commit/validazione riusciti;
+aggiornare questo riferimento transazionalmente nello storage di controllo.
+Crash fra preparazione e selezione lascia il precedente riferimento; candidati non referenziati vengono ripuliti.
+Se sorgenti indisponibili, segnalare errore e preservare dati; non simulare compatibilità.
+Il catalogo di controllo usa formato stabile v1, separato dagli schemi versionati dei dati.
+Questa selezione fra database riguarda solo il rebuild di schema fisico: i normali sync
+pubblicano candidato e riferimento attivo nella singola transazione del database corrente.
 
-## 4. Costruzione e commit
+## 6. Job, progresso e accesso esclusivo
 
-```mermaid
-stateDiagram-v2
-  [*] --> SCANNING
-  SCANNING --> DIFF
-  DIFF --> READY: niente differenze
-  DIFF --> BUILDING: differenze o versione non compatibile
-  BUILDING --> VALIDATING
-  VALIDATING --> COMMITTING
-  COMMITTING --> READY: attivazione atomica
-  SCANNING --> FAILED: errore
-  BUILDING --> FAILED: errore
-  VALIDATING --> FAILED: errore
-  COMMITTING --> FAILED: errore
-```
+Un worker sync; modalità CLI bloccante e async usano IndexSynchronizer.
+Trigger sovrapposti restituiscono stesso job_id, reused=true; nessun secondo writer.
+SCANNING: totale byte sconosciuto; dopo discovery conteggiare byte dei nuovi/modificati completati.
+Sole cancellazioni: fase esplicita senza divisione per zero; 100% solo dopo commit o NO_CHANGES.
+Ricerche non leggono filesystem e non usano il candidato.
+CLI e desktop acquisiscono un lock OS esclusivo per tutta la sessione sullo storage condiviso;
+il crash rilascia il lock, senza affidarsi alla mera presenza di un file sentinel.
+Seconda istanza: errore osservabile, niente apertura concorrente dello storage.
+Chiusura normale attende job/letture e rilascia risorse; nessun cancel v1.
 
-Il commit segue il protocollo logico:
+## 7. Pulizia e verifica
 
-1. Comporre il candidato con dati invariati e modifiche.
-2. Verificare che manifest, catalogo, testo e posting soddisfino gli invarianti.
-3. Salvare completamente il candidato (durability secondo la tecnologia da definire).
-4. **Attivare** con un'operazione atomica di aggiornamento del riferimento attivo.
-5. Solo dopo il successo dichiarare COMPLETED e mostrare il check.
-
-Se il job fallisce, il precedente snapshot della **stessa directory** rimane attivo. I file temporanei del candidato saranno recuperati/scartati da un protocollo di recovery ancora da definire.
-
-## 5. Ricerca e concorrenza
-
-Un singolo scrittore, molte letture possibili sullo snapshot attivo. Una ricerca inizia su versione N e continua su N anche se N+1 diventa attivo. Non deve interrogare il candidato né mescolare le due versioni.
-
-`SearchResponse` include uno `snapshot_id`. `GetDocument` riceve tale ID per recuperare il testo della versione corretta. Il periodo di mantenimento delle versioni precedenti e il caso di uno snapshot già rimosso sono ancora da decidere.
-
-**Nuova directory:** non servire risultati della directory precedente; la ricerca è indisponibile finché manca uno snapshot valido della nuova.
-
-**Sorgente indisponibile all'avvio:** non eliminare snapshot o directory salvata automaticamente; segnalare impossibilità di sincronizzare. La ricerca sullo snapshot locale precedente può essere consentita mostrando lo stato obsoleto se resta la stessa directory.
-
-## 6. Progresso
-
-- SCANNING: totale byte non ancora noto → stato indeterminato.
-- EXTRACT/ANALYZE/BUILD: `processed_bytes / total_bytes` calcolato sulle dimensioni dei file **nuovi/modificati completati**, non su letture byte reali continue. È un'approssimazione, non ETA.
-- REMOVED-only o solo COMMIT: barra indeterminata o fase esplicita, evitando divisione per zero.
-- **100% e check** soltanto dopo commit/attivazione (oppure esito NO_CHANGES riuscito).
-
-Il progresso è gestito dal JobManager; il frontend decide come visualizzarlo.
-
-## 7. Esclusioni ed errori
-
-PDF senza testo: entry EXCLUDED, fingerprint salvato per evitare tentativi inutili se invariato. Encoding invalido, file illeggibile non previsto, errore di storage: FAILED, **nessun commit parziale**. Symlink/junction ignorati in discovery, non persistiti come esclusioni.
-
-## 8. Questioni ancora aperte
-
-Serializzazione, struttura fisica snapshot, staging/atomic switch, fsync e recovery, gestione spazio disco/garbage collection, strategia di riuso delle posting invarianti, caching, grandi documenti. Vedi [OPEN_DECISIONS](OPEN_DECISIONS.md).
+ClearLocalData richiede assenza di job, impedisce nuove letture e attende quelle in corso.
+Elimina snapshot, settings, stato operativo, temporanei e log dell'app; torna allo stato senza directory.
+Non elimina sorgenti; non promette cancellazione forense. Dettagli in [Privacy](SECURITY_AND_PRIVACY.md).
+Test: [Test Strategy](TEST_STRATEGY.md), milestone M5–M7 e M9 in [Roadmap](ROADMAP.md).

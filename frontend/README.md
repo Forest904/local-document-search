@@ -1,7 +1,8 @@
-# Windows frontend — futuro
+# Frontend Windows — pianificato
 
-Non esiste ancora un progetto UI. Il frontend Windows consumerà i contratti applicativi del backend (direttamente tramite adapter oppure tramite un canale locale da scegliere). Non può importare le strutture interne del positional index.
-
-Esperienza prevista: selezione cartella, scansione e indicizzazione in background, progress bar, ricerca stile Google, pulsante Sync con spinner/check temporaneo, visualizzazione dei file e degli eventuali risultati obsoleti mentre un aggiornamento procede.
-
-**Aperto:** WPF vs WinUI 3 o altro framework; trasporto API locale/IPC; distribuzione e avvio del backend; policy di gestione dei processi. Vedi [UX_WINDOWS.md](../docs/UX_WINDOWS.md) e [OPEN_DECISIONS.md](../docs/OPEN_DECISIONS.md).
+PySide6 con Qt Widgets, Windows 11 x64; nessuna UI implementata.
+Consuma i contratti applicativi del backend Python nello stesso processo; non accede direttamente agli indici o allo storage.
+Sync e ricerche fuori dal thread UI; un'istanza sullo storage; chiusura attende il job.
+Lista ordinata, testo completo, apertura file, Sync e pulizia dati secondo [UX](../docs/UX_WINDOWS.md).
+Distribuzione ZIP standalone tramite pyside6-deploy, senza Python preinstallato.
+Implementazione M8 e distribuzione M9: [Roadmap](../docs/ROADMAP.md), [ADR 0009](../docs/adr/0009-desktop-runtime.md).

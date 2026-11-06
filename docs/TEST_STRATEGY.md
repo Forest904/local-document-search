@@ -14,7 +14,7 @@
 
 ## 2. Casi unitari obbligatori
 
-- **Tokenization:** Unicode, accenti, punteggiatura, underscore, apostrofi, CamelCase se approvato; input vuoto; token ripetuti.
+- **Tokenization:** Unicode, accenti, punteggiatura, underscore, apostrofi, CamelCase e lettere/cifre nel filename; input vuoto; token ripetuti.
 - **Positioning:** zero-based, posizioni crescenti, stesso termine ripetuto, nessun offset tra nome e contenuto.
 - **AND:** tutte le parole nello stesso campo, ordine non vincolante, documenti con una sola parola.
 - **Phrase:** `"roma tre"` trova `Roma Tre` ma non `Roma ... tre`; gestire `"data data"`, frase più lunga del documento.
@@ -25,7 +25,7 @@
 ## 3. Reader fixtures
 
 - TXT UTF-8 valido, contenuto vuoto, encoding errato → FAILED.
-- Markdown titolo/paragrafo, code fence escluso, link/tabelle nei termini definiti dal contratto finale.
+- Markdown titolo/paragrafo, code fence escluso, link/tabelle/alt immagini/codice inline inclusi, HTML grezzo e front matter esclusi.
 - PDF digitale con testo estraibile; PDF solo immagine → EXCLUDED; PDF corrotto/protetto non leggibile → FAILED.
 - File TXT/MD/PDF identici per nome in sottodirectory; file symlink e directory junction → esclusi dalla discovery.
 
@@ -44,7 +44,7 @@ Usare file sintetici di dimensioni minime, idealmente con permesso di redistribu
 | Modifica con stesso size + mtime | Non rilevata (limitazione accettata) |
 | PDF senza testo | Manifest EXCLUDED, assente dai due indici |
 | Errore encoding | FAILED, precedente attivo preservato |
-| Crash prima di activate | Precedente attivo preservato (verifica dipendente dalla scelta storage) |
+| Crash prima di activate | Precedente preservato prima del commit; durante commit SQLite espone solo vecchio o nuovo completo |
 | Due richieste sync concorrenti | Un solo writer/job |
 | Ricerca durante build | Risultato completo della versione N, non mix N/N+1 |
 
@@ -65,3 +65,50 @@ La prima consegna richiede il numero di file indicizzati, tempi e ~10 query: [QU
 ## 7. Definition of Done
 
 Una funzionalità è completata solo se: contratto implementato, invarianti coperti, test automatici verdi, errori osservabili, documentazione e ADR aggiornati. Lo scaffold presente non soddisfa ancora questa DoD.
+
+## 8. Accettazione delle decisioni v1
+
+Questi sono test da implementare nelle milestone, non risultati già ottenuti.
+
+| Milestone | Scenario | Risultato atteso |
+|---|---|---|
+| M0 | OD-01…OD-23, link, prerequisiti | Copertura completa, nessun link locale rotto o dipendenza futura |
+| M1 | Import domain/application | Nessun import di Qt, SQLite o parser; violazioni intercettate dal controllo |
+| M2 | Report2026Finale.txt, HTTPServer.md | Token nome report/2026/finale e http/server; nessun suffisso indicizzato |
+| M2 | l'acqua, caffè, caffe | Apostrofo separatore; accenti preservati; nessuna stop word rimossa |
+| M2 | machine "deep learning" in content | Match se machine e frase adiacente sono nello stesso campo |
+| M2 | machine nel nome, deep learning nel contenuto | Nessun match BOTH della query mista |
+| M2 | Query vuota, "", sola punteggiatura, virgolette aperte | InvalidInput, nessuna clausola silenziosamente scartata |
+| M2 | Query txt su Report.txt con contenuto vuoto | Nessun match nome per la sola estensione |
+| M3 | UTF-8 con BOM / byte non validi | BOM rimosso / job fallito senza candidato parziale |
+| M3 | Basename duplicati, case/Unicode distinti, hard link | Identità per percorso, nessuna fusione distruttiva |
+| M3 | Root link, file symlink, junction/reparse point | Radice link rifiutata; discovery non attraversa i link |
+| M4 | Markdown vuoto dopo esclusioni | Documento valido, ricercabile per nome |
+| M4 | Front matter chiuso/non chiuso e token HTML | Esclusione secondo policy, nessuna esecuzione HTML o accesso URL |
+| M4 | PDF misto, whitespace-only, con password necessaria | Testo disponibile / EXCLUDED / FAILED |
+| M5 | Round-trip catalogo/testo/posting | Stessi contenuti e risultati, nessuna rilettura sorgenti |
+| M5 | Arresto prima/durante/dopo commit | Vecchio o nuovo snapshot completo; RAM riallineata al persistito al restart |
+| M5 | Errore scrittura, disco pieno, ResourceFailure simulato | Nessun riferimento a candidato parziale |
+| M5–M7 | Tre versioni e lettura ancora su N | N protetta fino al rilascio; poi SnapshotUnavailable se eliminata |
+| M6 | NO_CHANGES | Stesso snapshot_id; ultimo controllo operativo aggiornato |
+| M6 | Schema/processing incompatibile, sorgente presente/assente | Rebuild / errore; mai ricerca incompatibile, vecchi dati preservati fino al successo |
+| M6 | Crash durante rebuild di schema fisico | Vecchio database preservato finché il riferimento non seleziona quello nuovo completo |
+| M6 | Cambio A→B→A | Nessun risultato della directory errata, A reindicizzata al ritorno |
+| M6 | ClearLocalData, anche con errore di cancellazione | Solo dati app rimossi; errore osservabile e ripetibile, sorgenti intatti |
+| M7 | Sync sovrapposti / seconda istanza | Stesso job_id e reused=true / rifiuto accesso storage |
+| M7 | Chiusura normale / kill durante job | Attesa del job / recovery e lock rilasciato dal sistema |
+| M8 | Query lenta seguita da altra query/cambio cartella | Risposta superata non sovrascrive lo stato corrente |
+| M8 | Invio, paginazione, polling, check | Ricerca esplicita, pagine 50, polling 200 ms, check 1,5 s |
+| M8 | Apri file assente / anteprima versione rimossa | Messaggio e proposta Sync / invito a ripetere ricerca |
+| M8 | Build/query/anteprima sotto carico | UI utilizzabile, nessun lavoro pesante nel thread grafico |
+| M9 | ZIP su Windows 11 x64 pulito, account standard | Avvio senza Python, indicizzazione, ricerca, restart e pulizia funzionanti |
+
+## 9. Misure e verifica della consegna
+
+Generare un corpus sintetico deterministico di alcune migliaia di documenti e decine di MB di testo;
+registrare seed/configurazione, formati, dimensioni, hardware e versioni. Nessun dato personale.
+Misurare memoria massima del processo, tempo build iniziale, caricamento, no-change sync,
+sync incrementale e query. Distinguere tempi di estrazione, analisi e commit dove misurabili.
+Nessuna soglia quantitativa prestazionale è stata approvata; pubblicare risultati e limiti reali.
+Ripetere i percorsi di accettazione sul pacchetto distribuito; conservare log sintetici e istruzioni.
+La verifica documentale non sostituisce questi test. Non segnare M1–M9 complete prima delle evidenze.

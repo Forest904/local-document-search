@@ -47,9 +47,9 @@ La query interroga uno snapshot immutabile. I termini non quotati seguono AND; l
 | FR-04 | Estrarre PDF con testo selezionabile; escludere interamente PDF senza testo; non eseguire OCR | Approvato |
 | FR-05 | Estrarre Markdown come testo, escludendo i blocchi di codice | Approvato |
 | FR-06 | Trattare i problemi di decodifica come errore, senza pubblicare uno snapshot incompleto | Approvato |
-| FR-07 | Gestire file senza un limite applicativo di dimensione prefissato | Approvato; strategia di memoria aperta |
+| FR-07 | Gestire file senza un limite applicativo di dimensione prefissato | Approvato; indici/draft in RAM, ResourceFailure esplicito |
 | FR-08 | Analizzare nome e contenuto con analyzer distinti e indice posizionale proprietario per campo | Approvato |
-| FR-09 | Supportare termini AND, phrase queries e ricerca per campo / entrambi | Approvato; sintassi esatta da dettagliare |
+| FR-09 | Supportare termini AND, phrase queries e ricerca per campo / entrambi | Approvato; clausole termini/frasi in AND |
 | FR-10 | Persistenza degli snapshot e del testo estratto | Approvato |
 | FR-11 | Individuare differenze con percorso relativo, dimensione e `mtime_ns`, senza hash del contenuto | Approvato |
 | FR-12 | Sincronizzare all'apertura con directory salvata, su nuova selezione e su Sync manuale | Approvato |
@@ -74,7 +74,7 @@ La query interroga uno snapshot immutabile. I termini non quotati seguono AND; l
 
 ## 5. Non-obiettivi v1
 
-OCR; motore IR esterno; ricerca cloud; multiutente; più directory attive; crawler di rete; monitoraggio filesystem continuo; aggiornamenti di file durante il job (esclusi per ipotesi); pausa/cancel job; indicizzazione di pagine PDF come documenti separati; ranking avanzato; full-text SQL; microservizi.
+OCR; motore IR esterno; ricerca cloud; multiutente; più directory attive; crawler di rete; monitoraggio filesystem continuo; aggiornamenti di file durante il job (esclusi per ipotesi); pausa/cancel job; indicizzazione di pagine PDF come documenti separati; ranking e scoring; snippet/highlighting; full-text SQL; microservizi.
 
 ## 6. Criteri di accettazione
 
@@ -96,4 +96,15 @@ OCR; motore IR esterno; ricerca cloud; multiutente; più directory attive; crawl
 - La percentuale basata sui byte dei file elaborati non è una previsione del tempo residuo.
 - File estremamente grandi possono esaurire le risorse: il limite applicativo è assente ma le risorse fisiche no.
 
-Vedere [OPEN_DECISIONS.md](OPEN_DECISIONS.md) per i vincoli di implementazione ancora non risolti.
+Vedere [OPEN_DECISIONS.md](OPEN_DECISIONS.md) per decisioni risolte, esclusioni e verifiche assegnate.
+
+## 8. Baseline di consegna v1
+
+Prima CLI TXT/Homework; poi altri reader, persistenza, sync e desktop.
+V1 Windows 11 x64: PySide6 Qt Widgets in-process, ZIP senza Python preinstallato.
+SQLite persiste snapshot completi; indici proprietari in RAM, niente full-text SQL.
+Query miste come machine "deep learning", interamente soddisfatte da un campo.
+Lista ordinata per percorso, testo completo e apertura file; Invio e pagine da 50.
+ClearLocalData elimina soli dati applicativi a job fermo; storage per utente, nessuna cifratura aggiuntiva.
+Attivo/precedente della sola directory corrente, nessuna cache multi-directory.
+Dettagli in [Contratti](INTERFACE_CONTRACTS.md), [UX](UX_WINDOWS.md), [Roadmap](ROADMAP.md).
