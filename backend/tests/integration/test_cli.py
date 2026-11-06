@@ -11,11 +11,11 @@ from local_document_search.domain.queries import SearchField
 from local_document_search.interfaces import cli
 
 
-def run_cli(args, queries=""):
+def run_cli(args, queries="", *, cwd=None):
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
     return subprocess.run(
         [sys.executable, "-m", "local_document_search.interfaces.cli", *args],
-        input=queries, capture_output=True, text=True, encoding="utf-8", env=env,
+        input=queries, capture_output=True, text=True, encoding="utf-8", env=env, cwd=cwd,
     )
 
 
@@ -80,9 +80,9 @@ def test_console_argument_errors_and_missing_directory(tmp_path):
 
 
 def test_console_relative_directory_and_eof(tmp_path):
-    relative = os.path.relpath(tmp_path)
-    result = run_cli([relative])
-    assert result.returncode == 0
+    # Repository e directory temporanea possono risiedere su unità diverse.
+    result = run_cli([tmp_path.name], cwd=tmp_path.parent)
+    assert result.returncode == 0, result.stderr
     assert "indicizzati: 0" in result.stdout
 
 
