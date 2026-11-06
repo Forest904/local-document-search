@@ -1,1 +1,1 @@
-"""Reader TXT operativo; Markdown e PDF restano segnaposto per M4."""
+"""Reader TXT, Markdown e PDF attraverso DocumentReaderPort."""

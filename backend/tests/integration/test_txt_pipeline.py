@@ -15,7 +15,7 @@ from local_document_search.application.ports import Excluded, ExtractionFailed
 from local_document_search.application.search import SearchDocuments
 from local_document_search.application.synchronization import BuildIndex
 from local_document_search.infrastructure import filesystem
-from local_document_search.infrastructure.filesystem import TextFileDiscovery, resolve_directory
+from local_document_search.infrastructure.filesystem import DocumentFileDiscovery, TextFileDiscovery, resolve_directory
 from local_document_search.infrastructure.readers.text import TextReader
 from local_document_search.infrastructure.snapshot_storage import InMemorySnapshotRepository
 from local_document_search.interfaces.composition import compose_cli
@@ -58,7 +58,8 @@ def test_hard_links_have_distinct_document_ids(tmp_path):
 
 
 @pytest.mark.parametrize("kind", ["file", "directory"])
-def test_symlinks_are_skipped_and_root_links_rejected(tmp_path, kind):
+@pytest.mark.parametrize("discovery_class", [TextFileDiscovery, DocumentFileDiscovery])
+def test_symlinks_are_skipped_and_root_links_rejected(tmp_path, discovery_class, kind):
     source = tmp_path / "source"
     source.mkdir()
     file = write(source, "a.txt")
@@ -69,7 +70,7 @@ def test_symlinks_are_skipped_and_root_links_rejected(tmp_path, kind):
         link.symlink_to(file if kind == "file" else source, target_is_directory=kind == "directory")
     except OSError as exc:
         pytest.skip(f"Creazione symlink non consentita: {exc}")
-    assert TextFileDiscovery().discover(str(root)) == ()
+    assert discovery_class().discover(str(root)) == ()
     with pytest.raises(InvalidInput):
         resolve_directory(str(link))
     if kind == "directory":
@@ -78,7 +79,8 @@ def test_symlinks_are_skipped_and_root_links_rejected(tmp_path, kind):
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Junction specifica di Windows")
-def test_junction_is_skipped_and_cannot_be_root(tmp_path):
+@pytest.mark.parametrize("discovery_class", [TextFileDiscovery, DocumentFileDiscovery])
+def test_junction_is_skipped_and_cannot_be_root(tmp_path, discovery_class):
     source = tmp_path / "source"
     source.mkdir()
     write(source, "a.txt")
@@ -93,7 +95,7 @@ def test_junction_is_skipped_and_cannot_be_root(tmp_path):
     if result.returncode:
         pytest.skip(f"Junction non disponibile: {result.stderr}")
     try:
-        assert TextFileDiscovery().discover(str(root)) == ()
+        assert discovery_class().discover(str(root)) == ()
         with pytest.raises(InvalidInput):
             resolve_directory(str(link))
     finally:
@@ -280,7 +282,8 @@ def test_search_acquires_active_once(tmp_path):
     (stat.S_IFDIR, stat.FILE_ATTRIBUTE_REPARSE_POINT),
     (stat.S_IFREG, stat.FILE_ATTRIBUTE_REPARSE_POINT),
 ])
-def test_discovery_skips_link_entries_without_traversal(tmp_path, monkeypatch, mode, attributes):
+@pytest.mark.parametrize("discovery_class", [TextFileDiscovery, DocumentFileDiscovery])
+def test_discovery_skips_link_entries_without_traversal(tmp_path, discovery_class, monkeypatch, mode, attributes):
     from contextlib import nullcontext
     entry = SimpleNamespace(stat=lambda **kwargs: SimpleNamespace(
         st_mode=mode, st_file_attributes=attributes,
@@ -290,7 +293,7 @@ def test_discovery_skips_link_entries_without_traversal(tmp_path, monkeypatch, m
         calls.append(path)
         return nullcontext(iter([entry]))
     monkeypatch.setattr(filesystem.os, "scandir", scan)
-    assert TextFileDiscovery().discover(str(tmp_path)) == ()
+    assert discovery_class().discover(str(tmp_path)) == ()
     assert calls == [tmp_path]
 
 

@@ -1,7 +1,7 @@
 # Roadmap — Dallo scaffold alla v1 desktop
 
-**Stato:** M1–M3 implementate e verificate localmente; CLI TXT operativa. Persistenza, sync, altri reader e desktop restano nelle milestone successive.
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4–M9 restano da implementare e verificare.
+**Stato:** M1–M4 implementate e verificate localmente; CLI TXT/Markdown/PDF operativa. Persistenza, sync e desktop restano nelle milestone successive.
+M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI remota da verificare. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5–M9 restano da implementare e verificare.
 Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
 Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
 
@@ -21,7 +21,7 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 | M1 | Fondazioni verificabili | Verificata localmente (2026-11-06); CI remota da verificare |
 | M2 | Motore di ricerca puro | Verificata localmente (2026-11-06); CI remota da verificare |
 | M3 | CLI TXT e Homework 3 | Verificata localmente (2026-11-06); 3 test saltati, CI remota da verificare |
-| M4 | Ingestione multiformato | Da implementare |
+| M4 | Ingestione multiformato | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
 | M5 | Snapshot persistenti | Da implementare |
 | M6 | Sync e lifecycle | Da implementare |
 | M7 | Job e concorrenza | Da implementare |
@@ -123,6 +123,8 @@ Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python pr
 - PDF: testuale/misto, immagini, spazi, protetto e corrotto; TXT/MD vuoti ricercabili per nome.
 
 **Riferimenti:** [Analisi](INDEXING_AND_ANALYSIS.md), [Contratti](INTERFACE_CONTRACTS.md).
+
+**Evidenze M4:** 234 test superati, 5 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Reader Markdown/PDF, discovery multiformato, CLI e conservazione dello snapshot precedente verificati con fixture sintetiche. [Verifica M4](M4_VERIFICATION.md). CI remota non verificata.
 
 ## M5 — Snapshot persistenti
 

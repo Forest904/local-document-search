@@ -1,4 +1,4 @@
-"""Sessione console TXT; nessun algoritmo di indicizzazione nell'interfaccia."""
+"""Sessione console multiformato; nessun algoritmo di indicizzazione nell'interfaccia."""
 import argparse
 import sys
 
@@ -21,8 +21,8 @@ def parse_input(line: str) -> SearchRequest:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Ricerca locale nei file TXT")
-    parser.add_argument("directory", help="Directory TXT da indicizzare ricorsivamente")
+    parser = argparse.ArgumentParser(description="Ricerca locale nei file TXT, Markdown e PDF")
+    parser.add_argument("directory", help="Directory TXT/Markdown/PDF da indicizzare ricorsivamente")
     args = parser.parse_args(argv)
     try:
         app = compose_cli(args.directory)

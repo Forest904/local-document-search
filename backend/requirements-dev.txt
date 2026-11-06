@@ -1,4 +1,4 @@
-# Ambiente M1 Python 3.12; include dipendenze transitive e build.
+# Ambiente M4 Python 3.12; include dipendenze transitive e build.
 pip==25.0.1
 setuptools==75.8.0
 wheel==0.45.1
@@ -7,4 +7,7 @@ iniconfig==2.0.0
 packaging==24.2
 pluggy==1.5.0
 colorama==0.4.6; sys_platform == "win32"
+markdown-it-py==4.2.0
+mdurl==0.1.2
+pypdf==7.0.0
 -e .[dev]

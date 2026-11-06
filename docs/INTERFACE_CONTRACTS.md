@@ -1,6 +1,6 @@
 # Interface Contracts — Application API e porte infrastrutturali
 
-**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. Lifecycle, job, `GetDocument` e persistenza restano nelle milestone successive.
+**Stato:** contratti logici in-process. M1 implementa i DTO di ricerca e le quattro porte; M3 implementa `BuildIndex.execute(root_directory) -> BuildResult`, `SearchDocuments.execute(SearchRequest) -> SearchResponse`, discovery TXT, reader e repository volatile. M4 estende la stessa CLI a Markdown/PDF con discovery multiformato e dispatcher dei reader; firme delle porte e DTO invariati ([evidenze](M4_VERIFICATION.md)). Lifecycle, job, `GetDocument` e persistenza restano nelle milestone successive.
 
 Le porte usano nomi Python snake_case: `discover`, `read`, `load_active`, `save_candidate`, `validate_candidate`, `activate`, `discard_candidate`; settings usa `load`, `save`, `clear`. `FileCandidate` contiene radice e `DocumentMetadata`; il reader restituisce `Extracted`, `Excluded` o `ExtractionFailed`. `Settings` contiene directory e ultimo controllo opzionali (`LastCheck`, con esito `SyncOutcome`). Sono tipi di scambio, senza persistenza o lifecycle implementati.
 
@@ -76,7 +76,7 @@ Un cambio query, campo o directory rende obsolete le risposte precedenti, compre
 **In:** directory assoluta valida.  
 **Out:** sequenza ordinata di `FileCandidate(relative_path, format, size_bytes, mtime_ns, ...)` oppure errore esplicito di scansione.
 
-**Garantisce:** visita ricorsiva, soli suffissi `.txt`, `.md`, `.pdf`, nessun attraversamento di symlink/junction di directory, nessuna indicizzazione di symlink a file. Path preservati secondo [Dominio](DOMAIN_MODEL.md), nessun casefold dei percorsi. M3 limita la discovery ai TXT.
+**Garantisce:** visita ricorsiva, soli suffissi `.txt`, `.md`, `.pdf`, nessun attraversamento di symlink/junction di directory, nessuna indicizzazione di symlink a file. Path preservati secondo [Dominio](DOMAIN_MODEL.md), nessun casefold dei percorsi. La CLI M4 usa `DocumentFileDiscovery` per tutti i formati; `TextFileDiscovery` conserva il filtro TXT per gli utilizzatori esistenti.
 
 **Non fa:** diff, lettura del contenuto, decisione su validità di uno snapshot.
 

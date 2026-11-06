@@ -1,4 +1,4 @@
-"""Discovery TXT ordinata senza attraversare link o reparse point."""
+"""Discovery multiformato ordinata senza attraversare link o reparse point."""
 import os
 from pathlib import Path
 import stat
@@ -34,7 +34,9 @@ def resolve_directory(directory: str) -> str:
         raise SourceUnavailable(f"Directory non disponibile: {directory}: {exc}") from exc
 
 
-class TextFileDiscovery:
+class DocumentFileDiscovery:
+    formats = {f".{format.value}": format for format in DocumentFormat}
+
     def discover(self, root_directory: str) -> tuple[FileCandidate, ...]:
         root = Path(resolve_directory(root_directory))
         candidates = []
@@ -48,13 +50,18 @@ class TextFileDiscovery:
                             continue
                         if stat.S_ISDIR(info.st_mode):
                             pending.append(Path(entry.path))
-                        elif stat.S_ISREG(info.st_mode) and Path(entry.name).suffix.lower() == ".txt":
+                        elif stat.S_ISREG(info.st_mode) and Path(entry.name).suffix.lower() in self.formats:
                             relative = Path(entry.path).relative_to(root).as_posix()
                             metadata = DocumentMetadata(
-                                RelativePath(relative), entry.name, DocumentFormat.TXT,
+                                RelativePath(relative), entry.name, self.formats[Path(entry.name).suffix.lower()],
                                 FileFingerprint(info.st_size, info.st_mtime_ns),
                             )
                             candidates.append(FileCandidate(str(root), metadata))
         except (OSError, ValueError) as exc:
             raise SourceUnavailable(f"Scansione fallita: {exc}") from exc
         return tuple(sorted(candidates, key=lambda item: item.metadata.relative_path.value))
+
+
+class TextFileDiscovery(DocumentFileDiscovery):
+    """Discovery TXT conservata per gli utilizzatori Homework 3."""
+    formats = {".txt": DocumentFormat.TXT}

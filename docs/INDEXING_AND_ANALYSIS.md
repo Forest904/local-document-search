@@ -1,6 +1,6 @@
 # Indexing Pipeline & Text Analysis v1
 
-**Stato:** analyzer, parser e motore puro implementati e verificati localmente in [M2](M2_VERIFICATION.md); discovery TXT e reader UTF-8 implementati in [M3](M3_VERIFICATION.md); Markdown/PDF restano M4. [ADR 0007](adr/0007-analysis-and-readers.md).
+**Stato:** analyzer, parser e motore puro implementati e verificati localmente in [M2](M2_VERIFICATION.md); discovery TXT e reader UTF-8 implementati in [M3](M3_VERIFICATION.md); Markdown/PDF e discovery multiformato implementati e verificati localmente in [M4](M4_VERIFICATION.md). [ADR 0007](adr/0007-analysis-and-readers.md).
 
 ## 1. Pipeline e responsabilità
 

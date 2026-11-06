@@ -1,6 +1,6 @@
 # ADR 0007 — Analyzer, clausole miste e reader v1
 
-- **Status:** Accepted (design), 2026-11-06; analyzer e query verificati localmente in [M2](../M2_VERIFICATION.md); reader TXT verificato localmente in [M3](../M3_VERIFICATION.md); Markdown/PDF restano M4.
+- **Status:** Accepted (design), 2026-11-06; analyzer e query verificati localmente in [M2](../M2_VERIFICATION.md); reader TXT verificato localmente in [M3](../M3_VERIFICATION.md); Markdown/PDF verificati localmente in [M4](../M4_VERIFICATION.md).
 - **Context:** chiudere i dettagli degli ADR 0003/0005 per una CLI consegnabile e un corpus personale multiformato.
 - **Decision:** indici in RAM; NFC+casefold, accenti, niente stemming/stop word; filename senza estensione con split CamelCase/cifre. Query di clausole termini/frasi AND soddisfatte in un singolo campo. UTF-8 strict con BOM; markdown-it-py e pypdf con policy in [Analisi](../INDEXING_AND_ANALYSIS.md).
 - **Alternatives considered:** stemming per lingua, fallback charset, query solo interamente quotate, OCR e motori IR esterni.

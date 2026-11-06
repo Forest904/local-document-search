@@ -1,6 +1,6 @@
-# Backend — CLI TXT M3
+# Backend — CLI multiformato M4
 
-Python >=3.12, senza dipendenze runtime esterne. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M3](../docs/M3_VERIFICATION.md).
+Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/M4_VERIFICATION.md).
 
 ## Installazione e verifica
 
@@ -24,7 +24,9 @@ local-document-search "C:\percorso\documenti"
 python -m local_document_search.interfaces.cli "C:\percorso\documenti"
 ```
 
-Directory relativa o assoluta; scansione ricorsiva dei soli TXT, suffissi case-insensitive, nessun link/junction/reparse point attraversato. Radici link o con componenti link sono rifiutate. Decodifica UTF-8 rigorosa con BOM ammesso; errore di scansione, lettura o encoding interrompe il build senza pubblicare un indice parziale.
+Directory relativa o assoluta; scansione ricorsiva di TXT, Markdown e PDF, suffissi case-insensitive, nessun link/junction/reparse point attraversato. Radici link o con componenti link sono rifiutate. TXT/Markdown: decodifica UTF-8 rigorosa con BOM ammesso; errore di scansione, lettura o encoding interrompe il build senza pubblicare un indice parziale.
+
+Markdown: testo da token CommonMark con tabelle, link/alt e codice inline; esclusi blocchi di codice, front matter iniziale chiuso e token HTML grezzi. PDF: testo in ordine di pagina, nessun OCR; senza testo non-whitespace viene escluso, mentre corruzione o password necessaria fanno fallire il build. TXT/MD vuoti restano ricercabili per nome. Nessun accesso agli URL dei documenti.
 
 Esempi:
 
@@ -46,9 +48,9 @@ Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argome
 
 - Domain: analyzer, parser, builder e matching puri, snapshot immutabili.
 - Application: `BuildIndex`, `BuildResult`, `SearchDocuments`, DTO e porte.
-- Infrastructure: discovery, reader TXT e `InMemorySnapshotRepository`.
+- Infrastructure: discovery, reader TXT/Markdown/PDF e `InMemorySnapshotRepository`.
 - Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
 
-Ogni sessione usa una directory e un writer sincrono. Nessuna persistenza o rilettura dei file durante le query; i risultati riflettono il build iniziale. Settings, diff, job asincroni e UI sono rinviati. pypdf/markdown-it-py, SQLite e PySide6 non vengono installati.
+Ogni sessione usa una directory e un writer sincrono. Nessuna persistenza o rilettura dei file durante le query; i risultati riflettono il build iniziale. Settings, diff, job asincroni e UI sono rinviati. SQLite e PySide6 non vengono installati.
 
 Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
