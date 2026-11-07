@@ -1,6 +1,9 @@
 # Decisioni architetturali
 
-**Accepted** indica una direzione concordata, non implementazione né collaudo. Gli ADR 0001–0009 documentano v1; restano consultabili insieme all'[archivio v1](../archive/v1/README.md). Gli ADR 0010–0013 fissano la direzione v2. Le scelte ancora aperte sono soltanto nel [registro corrente](../OPEN_DECISIONS.md).
+**Accepted** indica una direzione concordata, non implementazione né collaudo. Gli ADR 0001–0009 documentano v1; restano consultabili insieme all'[archivio v1](../archive/v1/README.md). Gli ADR 0010–0014 fissano la direzione v2. Le scelte ancora aperte sono soltanto nel [registro corrente](../OPEN_DECISIONS.md).
+
+L'[ADR 0014](0014-v2-performance-budgets.md) fissa metodo e budget V2-D01
+approvati dopo la baseline misurata; il codice v1 non è dichiarato conforme.
 
 | ADR | Argomento | Relazione v2 |
 |---|---|---|

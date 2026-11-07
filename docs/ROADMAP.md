@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato al 7 novembre 2026:** V2-01 è completata e verificata localmente; V2-02…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato al 7 novembre 2026:** V2-01 e V2-02 sono completate e verificate localmente; V2-03…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
@@ -28,7 +28,7 @@ La progettazione visiva può iniziare dopo V2-02; l'integrazione desktop usa i c
 
 ## V2-01 — Corpus ibrido e validazione funzionale
 
-**Completamento al 7 novembre 2026, revisione di partenza `c1c04abe177847322b36bde7841d549581ff927d` (working tree modificato, non ancora consolidato in un commit):** generatore e query sintetiche, manifest reale con 12 fonti, download/cache con SHA-256, esportazione testo, controlli strutturali e suite opt-in implementati. La [ground truth reale](../experiments/v2_corpus/real_queries.json) contiene 36 query curate sui tre campi, con casi positivi, negativi, AND e frasi. Gli attesi sono stati preparati dai testi esportati e ricontrollati sui 12 documenti mediante scansioni indipendenti dal motore, prima del confronto applicativo. **T20, T21 e V2-01 chiusi localmente**; nessuna baseline V2-02 è dichiarata.
+**Completamento al 7 novembre 2026, revisione di partenza `c1c04abe177847322b36bde7841d549581ff927d` (working tree modificato, non ancora consolidato in un commit):** generatore e query sintetiche, manifest reale con 12 fonti, download/cache con SHA-256, esportazione testo, controlli strutturali e suite opt-in implementati. La [ground truth reale](../experiments/v2_corpus/real_queries.json) contiene 36 query curate sui tre campi, con casi positivi, negativi, AND e frasi. Gli attesi sono stati preparati dai testi esportati e ricontrollati sui 12 documenti mediante scansioni indipendenti dal motore, prima del confronto applicativo. **T20, T21 e V2-01 chiusi localmente**; V2-01 non produce una baseline prestazionale, che è registrata separatamente in V2-02.
 
 **Verifiche locali (Windows, Python 3.12.2, pytest 8.3.5):** `python -m pytest` da `backend/`: 322 passed, 6 skipped; con `LDS_V2_REAL_CORPUS` impostato al percorso assoluto del corpus: 323 passed, 5 skipped. `python experiments/run_homework3.py`: PASS. `python experiments/v2_corpus.py validate-real experiments/results/v2-real`: corpus completo, 12 hash corretti, tutti i documenti indicizzati, 36/36 query PASS. Suite T20/T21 mirata: 6 passed, inclusi riproducibilità dei 13 sintetici e undici query. Report locale: `experiments/results/v2-real-validation.json`; corpus ID `d35d4e54e00102c67a8e3196c4ed8274eb78cfb5bd6f1343aaf7f3bd6d1a82b9`, hash canonico query `0efc95a09628faacd729d0c986120a5786540fde103ce33fa33abb4307f47164`. Corpus, testi e report restano fuori Git. Le note nelle query documentano ordine del testo PDF, accenti e vincoli BOTH; i test strutturali e il confronto col motore non costituiscono da soli una prova semantica indipendente. Resta da registrare la revisione finale dopo il commit.
 
@@ -49,6 +49,25 @@ La progettazione visiva può iniziare dopo V2-02; l'integrazione desktop usa i c
 **Riferimenti:** [Corpus](TEST_DATASETS.md), [test](TEST_STRATEGY.md), [layout](REPOSITORY_LAYOUT.md), [esperimenti attuali](../experiments/README.md).
 
 ## V2-02 — Baseline e budget prestazionali
+
+**Completamento al 7 novembre 2026: misure eseguite e budget V2-D01 approvati.**
+Il runner e i tre profili sono implementati. Su Windows 11 Home build 26200,
+Python 3.12.2, Ryzen AI 7 350, 32 GB RAM e SSD WD SN5000S, il target
+10.000 file/300 MB ha completato tre cicli `PASS` dal sorgente della revisione
+`9766bb274dfcbd5e8bb0cd865b1fce5a40efe766` con working tree modificato.
+Sono stati estratti 299.948.099 byte per ciclo. Build: 433,0–440,1 s;
+avvio fino a ricerca: 69,0–70,6 s; sync no-change: 0,425–0,438 s;
+sync incrementale 100/100/100: 161,4–162,2 s; peggior query p95:
+247,4 ms; picco working set: 4125 MiB. Anche small e adverse hanno tre
+cicli `PASS`. La cache OS non è stata svuotata; profilo energetico Balanced,
+batteria in carica. Comandi, distribuzioni, spazio storage, profilazione e
+limiti sono nella [relazione V2-02](V2_02_BENCHMARK.md); risultati grezzi in
+`experiments/results/`, fuori Git. Verifiche: suite backend 327 passed,
+6 skipped; Homework PASS; T08 mirata 5 passed. Metodo e budget approvati sono
+nell'[ADR 0014](adr/0014-v2-performance-budgets.md), **Accepted**. **V2-02 è
+chiusa localmente**; il backend v1 misurato supera vari budget, che restano
+criteri di uscita per V2-03/V2-04/V2-08. La revisione finale del working tree
+va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 **Ingresso:** V2-01 chiusa; misure M9 disponibili solo come storia, con corpus ristretto e limiti documentati. Il target v2 è 10.000 file e 300 MB di testo estratto.
 

@@ -1,5 +1,53 @@
 # Esperimenti v1 e baseline v2
 
+## V2-02: corpus e benchmark prestazionale
+
+Da radice repository, con il backend installato, generare e verificare un corpus
+in `experiments/results/` (esclusa da Git):
+
+```powershell
+python experiments/v2_benchmark.py generate experiments/results/v2-target --profile target
+python experiments/v2_benchmark.py verify experiments/results/v2-target
+python experiments/run_v2_benchmark.py run experiments/results/v2-target experiments/results/v2-target-run
+python experiments/run_v2_benchmark.py summary experiments/results/v2-target-run/report.json
+```
+
+I profili sono `small` (100), `adverse` (1.000) e `target` (10.000 file,
+300 MB di testo estratto); `smoke` (12) serve ai test. Ogni formato TXT/MD/PDF
+ricorre a turno. Il runner crea tre copie indipendenti del corpus e storage
+temporanei fuori dal repository, con processi nuovi per build, riapertura,
+no-change, query e sync incrementale. Nel profilo target il sync cambia 100
+file, ne rimuove 100 e ne aggiunge 100. Gli hash nel manifest servono solo
+a verificare il corpus sperimentale; il backend continua a usare path, size e
+mtime_ns.
+
+Il report grezzo contiene campioni query (100 per query, cinque warm-up),
+tempi dei job, RAM e spazio storage. `--cycles`, `--samples`, `--warmups` e
+`--timeout` consentono prove ridotte. Il p95 usa nearest-rank. La cache OS
+non viene svuotata; la riapertura avviene in un processo nuovo ma non prova
+un avvio a cache fredda. Il tempo `compose_seconds` misura la composizione
+del backend; `search_ready_seconds` comprende processo Python, composizione e
+initialize fino alla disponibilità della ricerca. `startup_sync_seconds`
+misura separatamente il job avviato da initialize. I risultati sono di
+backend sorgente, non del pacchetto installato.
+
+Per una profilazione diagnostica separata dai tempi di riferimento:
+
+```powershell
+python experiments/run_v2_benchmark.py profile experiments/results/v2-small C:/percorso/storage-nuovo experiments/results/v2-profile.txt --phase build
+```
+
+`profile` produce testo e `.pstats`; l'overhead del profiler impedisce di
+usare quei tempi come baseline. `diagnostic_seconds` somma le chiamate ai
+reader, all'aggiunta nell'indice, alla persistenza e al caricamento; sono
+durate inclusive e non una partizione esatta del job. La statistica cProfile
+copre il thread principale, mentre il job di build gira nel worker; i timer
+diagnostici coprono anche quel worker. `query_clauses` aggrega lookup,
+intersezione e verifica delle frasi; la differenza rispetto a
+`query_evaluation` include analyzer, raccolta dei match e ordinamento,
+senza isolarli esattamente. Lo storage
+del profilo build deve essere nuovo e fuori dal repo.
+
 ## V2-01: corpus funzionale
 
 Da radice repository, con il backend installato:

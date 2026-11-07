@@ -55,3 +55,16 @@ Le misure backend più recenti riportate in [M9, aggiornamento del 7 novembre](a
 [Archivio v1](archive/v1/README.md) conserva specifiche e report M0–M9. Le sezioni iniziali dei report possono descrivere artefatti precedenti: per M9 prevale l'aggiornamento corrente datato, senza cancellare le prove storiche. Il manifest dell'ultimo ZIP registra una baseline Git con working tree modificato; non prova una build della revisione oggi in uso.
 
 La CI citata nei report riguarda la baseline indicata, non la v2. Le simulazioni di fault non dimostrano resistenza a perdita fisica di alimentazione o OOM non intercettabile. Il materiale [Homework](homework-3/README.md) rimane separato e non prova l'invio amministrativo al docente.
+
+## Aggiornamento V2-02
+
+Il corpus e il runner prestazionali sintetici sono descritti nella
+[relazione V2-02](V2_02_BENCHMARK.md). Misurano il backend da sorgente sugli
+stessi casi d'uso v1, senza modificare il motore. I report small e adverse
+hanno completato tre cicli; anche il target 10.000/300 MB ha tre cicli `PASS`
+con 299.948.099 byte di testo estratto. Il build richiede 433,0–440,1 s,
+la ricerca dopo riapertura 69,0–70,6 s e il sync incrementale 161,4–162,2 s,
+con picco working set di 4125 MiB. I risultati e i budget approvati sono
+distinti dalle prove storiche M9 e dalla validazione funzionale V2-01.
+I budget V2-D01 sono approvati nell'[ADR 0014](adr/0014-v2-performance-budgets.md),
+ma il backend v1 misurato ne supera diversi.

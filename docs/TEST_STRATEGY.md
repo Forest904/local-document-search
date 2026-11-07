@@ -10,7 +10,23 @@ La suite ordinaria usa i sintetici deterministici offline. La suite reale è opt
 
 ## Metodo e criteri
 
-Unit test per dominio, contratti per reader/storage, integrazione per sync/concorrenza, E2E per CLI e desktop, collaudo sul pacchetto installato. La suite deve raccogliere test effettivi. Benchmark separati per lookup, intersezione, ranking, serializzazione, caricamento e UI; corpus, seed, hardware, OS, cache, revisioni e distribuzioni delle durate registrati. In V2-02 approvare budget p95 query, avvio, build, sync e RAM prima di ottimizzare. Il target è 10.000 file e 300 MB di testo estratto; includere anche corpus piccolo e casi avversi. Non inventare soglie o confrontare tempi M9 con condizioni diverse.
+Per T08 il runner V2-02 in `experiments/run_v2_benchmark.py` usa tre cicli
+indipendenti e processi nuovi per build, riapertura, no-change, query e sync
+incrementale. Il corpus sintetico è distinto da T20/T21 e verificato con hash
+prima della prova; i risultati grezzi restano fuori Git. Le query hanno cinque
+warm-up e cento campioni, ordine mescolato deterministico, pagina 50 e p95
+nearest-rank; gli attesi completi sono derivati dai marcatori del generatore.
+Registrare tempi individuali dei job, memoria del processo, ambiente, revisione,
+dimensione del testo estratto e condizioni di cache. La cache OS non è svuotata;
+un processo nuovo non è una misura a cache fredda. Report incompleti o errori
+non valgono come PASS. I budget T08 sono approvati in V2-D01:
+massimo query p95 ≤100 ms, avvio fino alla ricerca ≤15 s, build ≤300 s,
+sync incrementale 100/100/100 ≤60 s, no-change ≤1 s e picco working set
+≤2560 MiB. Si applica il massimo dei tre cicli e, per le query, il massimo
+dei p95 di tutti i casi. [Metodo ed evidenze](V2_02_BENCHMARK.md); la prova
+sul pacchetto finale resta V2-08.
+
+Unit test per dominio, contratti per reader/storage, integrazione per sync/concorrenza, E2E per CLI e desktop, collaudo sul pacchetto installato. La suite deve raccogliere test effettivi. Benchmark separati per lookup, intersezione, ranking, serializzazione, caricamento e UI; corpus, seed, hardware, OS, cache, revisioni e distribuzioni delle durate registrati. I budget V2-02 sono fissati sopra prima delle ottimizzazioni. Il target è 10.000 file e 300 MB di testo estratto; includere anche corpus piccolo e casi avversi. Non confrontare tempi M9 con condizioni diverse.
 
 ## Scenari di accettazione
 
