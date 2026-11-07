@@ -83,7 +83,7 @@ local-document-search "C:\percorso\documenti"
 
 ## 6. Verifiche e limiti
 
-Suite locale: **194 test superati, 3 saltati**, `pip check` riuscito. I tre skip riguardano symlink file/directory (privilegio Windows non disponibile) e due nomi distinti solo per case su filesystem non sensibile alle maiuscole. Sono passati i test con junction reale, hard link e nomi Unicode distinti, oltre alle prove simulate del filtro link/reparse point. Dettagli in [Verifica M3](../M3_VERIFICATION.md).
+Suite locale: **194 test superati, 3 saltati**, `pip check` riuscito. I tre skip riguardano symlink file/directory (privilegio Windows non disponibile) e due nomi distinti solo per case su filesystem non sensibile alle maiuscole. Sono passati i test con junction reale, hard link e nomi Unicode distinti, oltre alle prove simulate del filtro link/reparse point. Dettagli in [Verifica M3](../archive/v1/M3_VERIFICATION.md).
 
 Gli snapshot sono soltanto in RAM e vengono ricostruiti a ogni sessione. Ricerca e risultati non rileggono i sorgenti: modifiche successive al build restano invisibili fino alla nuova sessione. Persistenza, sync incrementale, Markdown/PDF e UI non sono implementati da M3. Il corpus è statico durante il build; non si proteggono modifiche concorrenti. La CI remota e Linux non sono stati verificati in questa esecuzione.
 

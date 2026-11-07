@@ -1,6 +1,8 @@
-# Backend — CLI multiformato e runtime persistente M7
+# Backend attuale — CLI e runtime persistente v1
 
-Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/M4_VERIFICATION.md).
+**Stato:** API e comandi implementati in v1; le estensioni v2 sono [progettate](../docs/PRD.md), non disponibili qui.
+
+Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/archive/v1/M4_VERIFICATION.md).
 
 ## Installazione e verifica
 
@@ -51,12 +53,12 @@ Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argome
 - Infrastructure: discovery, reader TXT/Markdown/PDF, `InMemorySnapshotRepository` e `SqliteSnapshotRepository`.
 - Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
 
-Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; UI rinviata a M8. SQLite usa la standard library; PySide6 non viene installato.
+Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; Il desktop Qt Widgets v1 usa il backend persistente. SQLite usa la standard library; PySide6 non viene installato.
 
 Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
 
 
-## Backend persistente M5
+## Backend persistente: accesso diretto v1
 
 Il testo estratto viene conservato localmente anche se il sorgente viene eliminato: scegliere uno storage privato dell’account, esterno al repository e alla directory indicizzata. Nessuna cifratura applicativa aggiuntiva. La CLI Homework resta volatile; l’uso persistente è esplicito nel backend:
 
@@ -83,9 +85,9 @@ with SqliteSnapshotRepository(source_directory=root) as snapshots:
 
 L’esempio costruisce solo TXT; i reader multiformato esistenti possono essere iniettati nello stesso `BuildIndex`. Non esegue sync o controllo dei cambiamenti. La riapertura del repository non richiede i sorgenti; `resolve_directory` nell’esempio serve alla scelta iniziale della radice.
 
-Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild e ClearLocalData sono disponibili nella composizione M6 seguente; lock e worker sono disponibili nella composizione M7. [Verifica M5](../docs/M5_VERIFICATION.md).
+Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild, ClearLocalData, lock e worker sono disponibili nella composizione persistente seguente. [Verifica M5](../docs/archive/v1/M5_VERIFICATION.md).
 
-## Sessione persistente M7
+## Sessione persistente v1
 
 ```python
 from local_document_search.interfaces.composition import compose_persistent_application
@@ -110,4 +112,4 @@ Nei test e sui sistemi non Windows passare una directory storage esplicita ester
 e al repository. Il lock OS viene acquisito prima dei database; una seconda sessione sullo stesso
 storage riceve StorageFailure. Il context manager attende job e letture prima di rilasciare le risorse.
 Gli errori dei job asincroni sono esposti da job_status e dallo stato applicativo; synchronize li solleva.
-CLI Homework invariata, nessun Qt o dipendenza aggiunta. [Verifica M7](../docs/M7_VERIFICATION.md).
+CLI Homework invariata, nessun Qt o dipendenza aggiunta. [Verifica M7](../docs/archive/v1/M7_VERIFICATION.md).

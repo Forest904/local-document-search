@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M4 — Ingestione multiformato
 
 Data: 6 novembre 2026. Verifica locale su Windows, Python 3.12.2, ambiente `backend/.venv`.
@@ -34,4 +36,4 @@ Cinque skip: quattro combinazioni symlink file/directory e discovery TXT/multifo
 
 CI remota Windows/Linux non verificata. Nessun OCR, benchmark prestazionale o garanzia di fedeltà al layout PDF; frasi possono attraversare pagine e paragrafi. Fixture PDF minime e sintetiche, non un corpus esaustivo di PDF reali. Nessuna persistenza, sync, job asincrono o UI introdotta. Nessun commit o push eseguito.
 
-Riferimenti tecnici consultati: [token e configurazione MarkdownIt](https://markdown-it-py.readthedocs.io/en/latest/using.html), [API PdfReader](https://pypdf.readthedocs.io/en/latest/modules/PdfReader.html). La semantica resta quella dell'[ADR 0007](adr/0007-analysis-and-readers.md) e della [specifica di analisi](INDEXING_AND_ANALYSIS.md).
+Riferimenti tecnici consultati: [token e configurazione MarkdownIt](https://markdown-it-py.readthedocs.io/en/latest/using.html), [API PdfReader](https://pypdf.readthedocs.io/en/latest/modules/PdfReader.html). La semantica resta quella dell'[ADR 0007](../../adr/0007-analysis-and-readers.md) e della [specifica di analisi](INDEXING_AND_ANALYSIS.md).

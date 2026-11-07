@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # M0 — Verbale di verifica documentale
 
 Data: 6 novembre 2026. Ambito: specifica, non implementazione.
@@ -14,7 +16,7 @@ M1–M9 restano da implementare e verificare. Nessuna dipendenza installata o AP
 | Clausole miste | [Contratti](INTERFACE_CONTRACTS.md), [Dominio](DOMAIN_MODEL.md), [Analisi](INDEXING_AND_ANALYSIS.md), scenari M2 nel [piano test](TEST_STRATEGY.md) | AND e frasi interamente nello stesso campo; caso negativo BOTH già presente |
 | Pulizia dati | Contratti, [Privacy](SECURITY_AND_PRIVACY.md), [Snapshot](SNAPSHOTS_AND_SYNC.md), scenari M6 | Rifiuto durante job esplicitato nel piano test; errore ripetibile e sorgenti preservati già previsti |
 | Riuso job | Contratti, snapshot, UX e scenario M7 | Stesso job_id e reused=true, senza secondo writer |
-| Paginazione | [ADR 0009](adr/0009-desktop-runtime.md), OD-19, contratti, UX e scenari M8 | Prima pagina alla variazione di snapshot; query/campo preservati; risposte obsolete ignorate; nessun nuovo campo nei DTO |
+| Paginazione | [ADR 0009](../../adr/0009-desktop-runtime.md), OD-19, contratti, UX e scenari M8 | Prima pagina alla variazione di snapshot; query/campo preservati; risposte obsolete ignorate; nessun nuovo campo nei DTO |
 | Prerequisiti | [Roadmap](ROADMAP.md): catena M0 → M1 → … → M9 | Nessun ciclo; M3 richiede M2 e usa TXT/repository in memoria, senza dipendere da M4–M9 |
 | Collegamenti | Controllo riproducibile sotto su 38 file Markdown del repository, 168 collegamenti locali, esclusi blocchi di codice | Nessun collegamento locale o ancora non risolto |
 | Perimetro modifiche | git diff --check, elenco modifiche e file nuovi | Solo documentazione; nessun errore di whitespace |

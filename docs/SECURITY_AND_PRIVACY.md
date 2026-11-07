@@ -1,41 +1,19 @@
-# Security & Privacy v1
+# Privacy, dati e distribuzione v2
 
-**Stato:** policy approvata; M5 verifica storage per utente, confini dei percorsi e pulizia dei dati del repository senza toccare sorgenti ([evidenze](M5_VERIFICATION.md)). M6 implementa ClearLocalData nel backend ([evidenze](M6_VERIFICATION.md)); lock tra processi verificato in M7; informativa prima dello startup, pulizia confermata e attesa della chiusura implementate in M8 ([evidenze](M8_VERIFICATION.md)). Distribuzione da verificare in M9.
+**Politica approvata, implementazione futura.** [Comportamento v1](archive/v1/SECURITY_AND_PRIVACY.md), [baseline attuale](BASELINE.md).
 
-## Dati e storage
+## Dati locali
 
-Elaborazione locale, nessun upload, OCR o accesso web dei reader.
-Testo estratto persistito: può restare anche quando il sorgente non è accessibile.
-UI e istruzioni devono informare l'utente prima dell'indicizzazione persistente.
-Su Windows usare %LOCALAPPDATA%/LocalDocumentSearch, fuori dal repository e dalla directory indicizzata.
-Usare protezioni standard dell'account; nessuna cifratura applicativa aggiuntiva nella v1.
-Per backend/test su altri sistemi iniettare una directory applicativa/temporanea esplicita,
-senza portare dipendenze Windows nel dominio.
+Nessun upload, telemetria, account o servizio di rete. I reader non visitano URL nei documenti. Testo estratto e indici possono restare dopo la scomparsa dei sorgenti: informare l'utente prima dell'indicizzazione. Storage v2 per account separato dalla radice v1 e dalla directory indicizzata; protezioni standard dell'account Windows. La decisione sul percorso e sul layout fisico è [V2-D04](OPEN_DECISIONS.md).
 
-## Retention e pulizia
+Log condivisibili senza testo estratto, query personali o percorsi assoluti; report dei job con categorie e percorsi relativi. Fixture e corpus dei test sintetici; dati personali, snapshot, database e risultati locali fuori da Git. Niente hash dei sorgenti per il diff o controllo durante la ricerca.
 
-Attivo e precedente della sola directory corrente, con letture già iniziate protette.
-Cambio directory elimina vecchia cache quando non in uso; dettagli in [Snapshot](SNAPSHOTS_AND_SYNC.md).
-ClearLocalData disponibile a job fermo, con conferma UI dell'eliminazione dei dati applicativi.
-Blocca nuove letture, attende quelle in corso e rimuove dati/settings/log/temporanei dell'app.
-Non tocca documenti sorgente e non promette cancellazione forense dei blocchi di disco.
-Se la pulizia fallisce, riportare errore e consentire ripetizione, senza dichiarare completamento.
+Pulizia esplicita: rimuove dati applicativi v2 secondo lo stato del job e protegge le letture attive; mai sorgenti o storage v1. Fallimento osservabile e riprovabile. Disinstallazione conserva per default indici e preferenze v2; il wizard offre scelta esplicita per eliminarli. Nessuna promessa di cancellazione forense.
 
-## Accesso e diagnostica
+## Distribuzione e diritti
 
-Lock OS esclusivo dello storage tra CLI/desktop; nessun server HTTP/IPC o porta di rete.
-Non seguire symlink/junction/reparse point durante discovery.
-Log senza testo, query personali o percorsi assoluti; diagnostica con categorie e percorsi relativi.
-Errori mostrati localmente non devono riversare contenuti sensibili nei log condivisibili.
-Mai committare corpus personali, snapshot o testo estratto; fixture sintetiche.
-Parser trattano documenti come input non fidati: test per file corrotti e risorse insufficienti.
+Installer Windows 11 x64 offline, per utente e senza elevazione; include Python, Qt, plugin e ogni dipendenza runtime necessaria. Aggiornamento tramite nuovo installer completo, nessun updater che chiama un servizio. Collaudo su account standard e sistema pulito, senza Python o tool di sviluppo. La prima release pubblica può essere non firmata; registrare gli avvisi realmente osservati e non presentarla come firmata.
 
-## Distribuzione
+**Intenzione del titolare:** diritti riservati sul codice del progetto; uso gratuito personale e di studio; uso professionale soggetto ad autorizzazione. Prima della pubblicazione approvare termini completi in [V2-D08](OPEN_DECISIONS.md); questa frase non è una licenza d'uso completa. Il repository GitHub pubblico consente visualizzazione e fork nei limiti delle condizioni della piattaforma; non concede automaticamente una licenza open source di riuso del codice. [Spiegazione GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
 
-Pacchetto per account standard Windows 11 x64, senza privilegi amministrativi o Python installato.
-Includere avvisi/licenze delle dipendenze; nessun cloud, telemetry o updater introdotto implicitamente.
-Verifica operativa e pulizia del pacchetto in M9; [Roadmap](ROADMAP.md).
-
-## Stato distribuzione (2026-11-07)
-
-Il pacchetto locale M9 esiste; la prova finale dopo le correzioni è in corso. Per decisione esplicita dell'utente, la prova su Windows pulito e account standard distinto è rinviata alle versioni successive. La CLI Homework resta volatile e non acquisisce il lock delle sessioni persistenti. I report dei job mostrano categorie e percorsi relativi, senza testo, query o percorsi assoluti nei log.
+Il percorso scelto per Qt è usare componenti compatibili con LGPL. Prima del rilascio, verificare il payload effettivo, licenze per modulo, avvisi/testi e possibilità di sostituire le librerie secondo gli obblighi applicabili; includere solo avvisi non basta. [Obblighi Qt](https://www.qt.io/development/open-source-lgpl-obligations), [gate V2-D09](OPEN_DECISIONS.md). Ogni altra dipendenza redistribuita entra nell'inventario. I termini del progetto non limitano i diritti concessi dalle licenze delle dipendenze.

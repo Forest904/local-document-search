@@ -6,4 +6,4 @@
 - **Alternatives considered:** unico script (troppo accoppiato), microservizi e repository separate (complessità ingiustificata).
 - **Consequences:** riuso fra CLI/UI, testabilità, un composition root futuro, disciplina sui confini. Nessun server HTTP necessario ora.
 - **v1 clarification (2026-11-06):** framework UI, chiamate in-process senza IPC/HTTP e packaging sono definiti in [ADR 0009](0009-desktop-runtime.md). La composizione concreta resta un dettaglio interno da implementare in M1/M3, senza framework di dependency injection obbligatorio.
-- **Related:** [Architecture](../ARCHITECTURE.md), [Interface Contracts](../INTERFACE_CONTRACTS.md).
+- **Related:** [Architecture](../archive/v1/ARCHITECTURE.md), [Interface Contracts](../archive/v1/INTERFACE_CONTRACTS.md).

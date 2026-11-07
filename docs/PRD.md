@@ -1,114 +1,49 @@
-# PRD — Product Requirements Document
+# PRD — Local Document Search v2
 
-**Prodotto:** Local Document Search
-**Versione specifica:** v1 (progettazione)
-**Stato:** requisiti concordati; M1–M8 implementate, CLI TXT/Markdown/PDF operativa con snapshot in memoria; persistenza SQLite disponibile nel backend. Sync, lifecycle asincrono, ricerca concorrente e lock di sessione disponibili nel backend; desktop PySide6 implementato in un pacchetto separato; [evidenze M8](M8_VERIFICATION.md). Packaging standalone M9 implementato; [misure e verifiche locali](M9_VERIFICATION.md), accettazione Windows pulito ancora aperta.
-**Target:** applicazione desktop locale Windows con backend Python indipendente dalla UI
-**Relazione con il corso:** la CLI per TXT, due campi e phrase queries deve soddisfare l'Homework 3; PDF/Markdown e UI sono estensioni.
+**Stato: approvato per v2 il 7 novembre 2026; non implementato.** Il prodotto attuale è descritto nella [baseline](BASELINE.md). Questo documento è la fonte dei requisiti; le scelte tecniche ancora aperte sono nel [registro decisioni](OPEN_DECISIONS.md).
 
-## 1. Problema e obiettivo
+## Prodotto e utenti
 
-Permettere a un utente di scegliere una directory locale e ritrovare i documenti in base al **nome** e al **contenuto**, senza ricaricare o reindicizzare inutilmente i file a ogni avvio. La futura UI deve rimanere responsiva durante elaborazioni e sincronizzazioni.
+V1 soddisfa l'Homework e offre un desktop per interagirvi. V2 evolve lo stesso prodotto, gli stessi package e il backend già implementato: aggiunge capacità di ricerca, rinnova la presentazione e completa la distribuzione. La [mappa M0–M9 → v2](BASELINE.md#continuità-da-m0m9-a-v2) mostra cosa viene riutilizzato; V2-01 parte dai generatori e dalle verifiche già presenti per costruire il corpus ibrido funzionale. V2 deve permettere a utenti Windows non tecnici di installare e usare un prodotto completo senza Python preinstallato, servizi remoti o configurazione di sviluppo. La distribuzione pubblica è destinata all'uso personale e di studio; uso professionale soggetto ad autorizzazione.
 
-Il motore IR deve essere implementato internamente: un indice invertito posizionale distinto per ciascuno dei campi `filename` e `content`, senza dipendenze da motori IR già pronti.
+Il percorso principale è: installare offline → scegliere una cartella → indicizzare → cercare → leggere il contesto → aprire il file. Le aperture successive recuperano l'indice e sincronizzano in background. La UI espone attese, errori e recupero senza richiedere conoscenze tecniche.
 
-## 2. Percorsi utente
+## Requisiti e accettazione
 
-### Nuova directory
+Gli ID sono stabili. I riferimenti Txx sono scenari della [strategia di test](TEST_STRATEGY.md); le milestone sono nella [roadmap](ROADMAP.md).
 
-1. Utente sceglie una directory accessibile (una sola attiva).
-2. Backend avvia la scansione **ricorsiva**, senza seguire symlink o junction.
-3. UI mostra scansione indeterminata, poi lavorazione con statistiche e avanzamento pesato sui byte dei file elaborati.
-4. Uno snapshot consistente viene persistito e attivato.
-5. La barra di ricerca diventa disponibile.
+| ID | Requisito approvato | Accettazione | Milestone / scenario |
+|---|---|---|---|
+| V2-R01 | Windows 11 x64, esecuzione locale e offline | Installazione e flussi completi senza rete, Python o strumenti di sviluppo | V2-07, V2-08 / T01 |
+| V2-R02 | Una directory ricorsiva attiva; TXT, MD e PDF testuali | Nessun attraversamento symlink/junction; un file = un documento; esclusioni distinte dagli errori | V2-04, V2-08 / T02 |
+| V2-R03 | Due indici posizionali proprietari e analyzer coerenti | AND e frasi soddisfatti interamente nello stesso campo, anche in BOTH | V2-03 / T03 |
+| V2-R04 | Indice secondario ordinato sul vocabolario | Coerenza con entrambi i campi e snapshot; confronto misurato della struttura scelta | V2-03 / T04 |
+| V2-R05 | Prefissi espliciti e suggerimenti durante digitazione | Suggerimenti separati dalla query, riferiti allo snapshot; nessuna espansione implicita della ricerca esatta | V2-03, V2-05, V2-06 / T05 |
+| V2-R06 | Filtri per formato e cartella; rilevanza e percorso | Filtri coerenti con totale/pagine; ranking dei soli match, deterministico con spareggio stabile | V2-05 / T06 |
+| V2-R07 | Snippet ed evidenziazione nei risultati e nell'anteprima | Testo e corrispondenze della versione richiesta, senza rilettura dei sorgenti | V2-05, V2-06 / T07 |
+| V2-R08 | Target 10.000 file / 300 MB di testo estratto | Budget approvati su corpus e hardware definiti per p95 query, avvio, build, sync e RAM; verifica sul pacchetto | V2-02, V2-03, V2-04, V2-08 / T08 |
+| V2-R09 | Snapshot immutabili, commit atomico e single-writer | Ricerca sul precedente della stessa cartella; nessun candidato parziale dopo errore o recovery | V2-04, V2-08 / T09 |
+| V2-R10 | Annullamento cooperativo prima del commit | Esito annullato distinto da errore, vecchio snapshot preservato; richiesta tardiva rifiutata esplicitamente | V2-04, V2-06 / T10 |
+| V2-R11 | Rilevare variazioni dei metadati durante ingestione | Variazione rilevata interrompe il candidato e offre retry; nessun hash o controllo dei sorgenti durante query | V2-04 / T11 |
+| V2-R12 | Desktop Qt Quick/QML minimale e professionale | Sidebar, ricerca centrale, risultati e anteprima; Invio esegue, rilevanza predefinita; UI utilizzabile sotto carico | V2-06 / T12 |
+| V2-R13 | Italiano/inglese, temi e accessibilità | Preferenze persistenti, tastiera completa, focus e contrasto, DPI e Narrator sui flussi principali | V2-06 / T13 |
+| V2-R14 | Storage v2 separato, nessuna migrazione automatica | Nuova selezione cartella; v1 non letta, modificata o rimossa dalla gestione dati v2 | V2-04, V2-07 / T14 |
+| V2-R15 | Installer offline per utente con wizard | Nessuna elevazione; Python, Qt, plugin e runtime necessari inclusi; aggiornamento da installer completo | V2-07, V2-08 / T15 |
+| V2-R16 | Disinstallazione e pulizia controllate | Dati conservati salvo scelta esplicita; sorgenti e dati v1 intatti; errore riprovabile | V2-07, V2-08 / T16 |
+| V2-R17 | Privacy e distribuzione verificabili | Nessuna telemetria/upload; termini e inventario dipendenze verificati; avvisi della release non firmata documentati | V2-07, V2-08 / T17 |
+| V2-R18 | Preservare CLI Homework e backend condiviso | Sintassi, ordine per percorso, output e codici esistenti; nessuna dipendenza Qt della CLI | V2-03, V2-05, V2-08 / T18 |
+| V2-R19 | Corpus ibrido riproducibile per validazione funzionale | Sintetici TXT/MD/PDF deterministici; circa 12–30 documenti Internet indicizzabili con permessi espliciti, italiano/inglese e almeno un file reale per formato; ground truth completa e versionata; suite reale opt-in valida solo con corpus completo | V2-01 / T20, T21 |
 
-### Apertura successiva
+## Limiti e non-obiettivi
 
-1. App recupera l'ultima directory e lo snapshot attivo.
-2. La ricerca può usare lo snapshot precedente mentre il backend verifica i metadati dei file.
-3. Se cambia qualcosa, una sincronizzazione incrementale costruisce un nuovo snapshot in background.
-4. Lo snapshot vecchio resta disponibile fino al commit; in assenza di differenze non viene creata una versione nuova.
+Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Nessuna promessa di rendering PDF, coordinate di pagina o conservazione del layout originale nelle anteprime.
 
-### Sync manuale
+Il diff resta basato su path, size e mtime_ns. Modifiche che preservano dimensione e timestamp possono non essere rilevate, anche con i nuovi controlli in ingestione. I risultati possono diventare obsoleti fino al sync. PDF multicolonna e tabelle possono produrre testo imperfetto; le frasi operano sul testo canonico unico.
 
-Il pulsante Sync avvia un controllo/sincronizzazione. Mentre il job è in corso visualizza uno spinner; al successo mostra brevemente un check e poi torna disponibile. Il ritardo del check è esclusivamente di UI, non uno stato persistente del dominio.
+Il [corpus funzionale](TEST_DATASETS.md) non è un benchmark; fonti concrete e dettagli di acquisizione restano gate V2-01.
 
-### Ricerca
+Il target di scala non è un limite automatico ai file né una garanzia su qualunque PDF o hardware. Soglie e profilo supportato devono essere approvati in V2-02; risorse esaurite devono produrre errori gestibili quando intercettabili. Non si promette recupero da ogni OOM o perdita fisica di alimentazione.
 
-La query interroga uno snapshot immutabile. I termini non quotati seguono AND; le virgolette denotano una frase. La ricerca predefinita su nome e contenuto trova un documento solo se **l'intera query** corrisponde almeno a uno dei due campi, senza distribuire i termini tra i campi. Un file eliminato o cambiato dopo l'ultimo snapshot può comparire ancora nei risultati; l'utente può premere Sync.
+## Condizione di rilascio
 
-## 3. Requisiti funzionali
-
-| ID | Requisito | Stato |
-|---|---|---|
-| FR-01 | Selezionare una sola directory attiva | Approvato |
-| FR-02 | Discovery ricorsiva di `.txt`, `.md`, `.pdf`; non attraversare symlink/junction e non indicizzare symlink a file | Approvato |
-| FR-03 | Un file = un documento logico; testo canonico unico, senza struttura pagine/segmenti | Approvato |
-| FR-04 | Estrarre PDF con testo selezionabile; escludere interamente PDF senza testo; non eseguire OCR | Approvato |
-| FR-05 | Estrarre Markdown come testo, escludendo i blocchi di codice | Approvato |
-| FR-06 | Trattare i problemi di decodifica come errore, senza pubblicare uno snapshot incompleto | Approvato |
-| FR-07 | Gestire file senza un limite applicativo di dimensione prefissato | Approvato; indici/draft in RAM, ResourceFailure esplicito |
-| FR-08 | Analizzare nome e contenuto con analyzer distinti e indice posizionale proprietario per campo | Approvato |
-| FR-09 | Supportare termini AND, phrase queries e ricerca per campo / entrambi | Approvato; clausole termini/frasi in AND |
-| FR-10 | Persistenza degli snapshot e del testo estratto | Approvato |
-| FR-11 | Individuare differenze con percorso relativo, dimensione e `mtime_ns`, senza hash del contenuto | Approvato |
-| FR-12 | Sincronizzare all'apertura con directory salvata, su nuova selezione e su Sync manuale | Approvato |
-| FR-13 | Rielaborare i soli file nuovi/modificati; eliminare riferimenti ai rimossi; riutilizzare quelli invariati | Approvato |
-| FR-14 | Pubblicare nuovi snapshot soltanto dopo commit atomico riuscito | Approvato |
-| FR-15 | Eseguire un solo job di indicizzazione alla volta; backend asincrono per UI, sincrono per CLI/test | Approvato |
-| FR-16 | Mostrare fase, progresso e conteggi; scansione iniziale indeterminata, byte come misura indicativa successiva | Approvato |
-| FR-17 | Consentire ricerca sul vecchio snapshot mentre si costruisce quello nuovo per la stessa cartella | Approvato |
-| FR-18 | Preservare gli errori e le esclusioni nel report del job e nel manifest dove pertinente | Approvato |
-| FR-19 | Consentire l'accesso al testo estratto per risultati e future anteprime | Approvato |
-| FR-20 | Nessun controllo continuo dei file: cambiamenti dopo lo snapshot possono dare risultati obsoleti | Approvato |
-
-## 4. Requisiti non funzionali
-
-- **Local-first:** i dati restano sul dispositivo; nessuna dipendenza cloud progettata.
-- **Consistenza:** manifest, catalogo, testo persistito e posting lists appartengono alla medesima versione attiva.
-- **Isolamento:** il job in corso non altera lo snapshot interrogabile.
-- **Responsività:** indicizzazione fuori dal thread UI; il progresso non dipende da widget Windows.
-- **Manutenibilità:** moduli separati per Domain, Application, Infrastructure, Presentation; nessuna dipendenza del core da Windows, HTTP o librerie di parsing file.
-- **Determinismo:** tokenizzazione, scansione e interrogazioni riproducibili a parità di input e versioni di elaborazione.
-- **Riservatezza:** il testo estratto persistito può essere sensibile; storage, log e Git devono trattarlo come dato locale dell'utente.
-
-## 5. Non-obiettivi v1
-
-OCR; motore IR esterno; ricerca cloud; multiutente; più directory attive; crawler di rete; monitoraggio filesystem continuo; aggiornamenti di file durante il job (esclusi per ipotesi); pausa/cancel job; indicizzazione di pagine PDF come documenti separati; ranking e scoring; snippet/highlighting; full-text SQL; microservizi.
-
-## 6. Criteri di accettazione
-
-- La CLI indicizza una directory TXT e restituisce correttamente risultati per `nome`/`contenuto`, AND e phrase queries.
-- TXT, Markdown e PDF testuali della stessa directory sono documenti ricercabili; i PDF privi di testo non lo sono.
-- Dopo riavvio, lo snapshot valido viene caricato; un corpus invariato non genera un nuovo snapshot.
-- Aggiunta, modifica ed eliminazione producono una versione corretta dell'indice; la versione precedente resta consultabile durante il build.
-- Un errore di lettura, decodifica o commit non promuove un indice parziale.
-- Progress e status sono leggibili indipendentemente dalla UI; un secondo trigger non crea un job concorrente.
-- Lo snapshot persistito contiene anche il testo estratto dei documenti validi.
-- Il test di circa dieci query e le misure richieste dall'Homework 3 vengono documentati, **senza inventare i risultati**.
-
-## 7. Assunzioni e limiti dichiarati
-
-- Il contenuto dei file **non cambia durante la scansione/indicizzazione**, per scelta di progetto.
-- La rilevazione basata su dimensione e `mtime_ns` può perdere modifiche che mantengono entrambi i valori.
-- L'ordine di lettura estratto dal PDF può essere imperfetto, specie con colonne e tabelle.
-- Le phrase queries possono attraversare confini originari di pagine/paragrafi, poiché il CDM è testo unico.
-- La percentuale basata sui byte dei file elaborati non è una previsione del tempo residuo.
-- File estremamente grandi possono esaurire le risorse: il limite applicativo è assente ma le risorse fisiche no.
-
-Vedere [OPEN_DECISIONS.md](OPEN_DECISIONS.md) per decisioni risolte, esclusioni e verifiche assegnate.
-
-## 8. Baseline di consegna v1
-
-Prima CLI TXT/Homework; poi altri reader, persistenza, sync e desktop.
-V1 Windows 11 x64: PySide6 Qt Widgets in-process, ZIP senza Python preinstallato.
-SQLite persiste snapshot completi; indici proprietari in RAM, niente full-text SQL.
-Query miste come machine "deep learning", interamente soddisfatte da un campo.
-Lista ordinata per percorso, testo completo e apertura file; Invio e pagine da 50.
-ClearLocalData elimina soli dati applicativi a job fermo; storage per utente, nessuna cifratura aggiuntiva.
-Attivo/precedente della sola directory corrente, nessuna cache multi-directory.
-Dettagli in [Contratti](INTERFACE_CONTRACTS.md), [UX](UX_WINDOWS.md), [Roadmap](ROADMAP.md).
-
-## Stato FR-18 (2026-11-07)
-
-Il report strutturato del job è disponibile per la sessione tramite JobStatus, con categoria, fase, percorso relativo e motivo controllato. SyncResult include il report di successo. Il manifest dello snapshot pubblicato conserva le esclusioni; un candidato fallito non è pubblicato. La prova finale del pacchetto resta da registrare in M9.
+La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [baseline](BASELINE.md), e i [gate di distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti). Approvazione del progetto, test del sorgente e collaudo del pacchetto sono evidenze differenti. La sola riscrittura documentale non soddisfa nessuna milestone di implementazione.

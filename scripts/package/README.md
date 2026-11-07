@@ -1,4 +1,6 @@
-# Distribuzione personale Windows x64 (M9)
+# Packaging attuale v1 — ZIP personale Windows x64
+
+Questa procedura genera lo ZIP v1, non l’[installer offline v2](../../docs/ROADMAP.md). M9 resta [parzialmente accettata](../../docs/BASELINE.md).
 
 Da PowerShell, nella radice del repository:
 
@@ -32,7 +34,7 @@ Per una build da zero eliminare manualmente l'ambiente dedicato e rieseguire il 
 
 ## Licenze e ambito
 
-Uso personale concordato: nessuna pubblicazione e nessuna licenza del progetto aggiunta.
+La distribuzione v1 era personale e non includeva una licenza del progetto. La politica pubblica v2 è [progettata separatamente](../../docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
 `licenses/` contiene testi originali LGPL/GPL e avvisi QtBase 6.12.0 con provenienza
 in `SOURCES.json`; durante la build si aggiungono le licenze delle distribuzioni installate
 e Python. L'inventario QtBase include anche componenti non usati dal programma.
@@ -56,6 +58,6 @@ pagine da 50, anteprima e apertura, add/modify/remove, restart/no-change,
 errori con snapshot precedente, doppia istanza, chiusura durante job,
 arresto forzato e recovery, sorgente assente e pulizia dei soli dati app.
 Misurare il processo compilato separatamente dal benchmark backend.
-Esiti e limiti effettivi: [M9_VERIFICATION](../../docs/M9_VERIFICATION.md).
+Esiti e limiti effettivi: [M9_VERIFICATION](../../docs/archive/v1/M9_VERIFICATION.md).
 
 Per decisione dell'utente del 2026-11-07 la prova Windows pulito/account standard distinto è rinviata alle versioni successive. M9 richiede il collaudo dello ZIP finale sul PC attuale; la prova locale non dimostra portabilità su ambiente pulito.

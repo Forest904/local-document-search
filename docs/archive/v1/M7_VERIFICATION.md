@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M7 — Job e concorrenza
 
 Verifica locale del 6 novembre 2026 su Windows 11 x64, Python 3.12.2.

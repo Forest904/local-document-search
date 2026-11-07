@@ -1,119 +1,41 @@
-# Test Strategy & Acceptance Plan
+# Strategia di verifica v2
 
-**Stato:** test M1 implementati e verificati localmente: modelli, DTO, coerenza/immutabilità degli snapshot, composizione minima e confini degli import. [Evidenze M1](M1_VERIFICATION.md). M2 aggiunge 72 casi per analyzer, parser, builder, matching e pipeline in memoria: [evidenze M2](M2_VERIFICATION.md). M3 aggiunge test adapter, pipeline, fault injection e CLI reale: 194 test superati e 3 skip nella suite totale; [evidenze e limiti](M3_VERIFICATION.md). M4 verifica reader e pipeline multiformato: 234 test superati e 5 skip nella suite totale; [evidenze e limiti](M4_VERIFICATION.md). M5 aggiunge 34 casi su persistenza, retention, errori e recovery: 268 test superati e 5 skip nella suite totale; [evidenze M5](M5_VERIFICATION.md). M6 aggiunge 25 casi di sync/lifecycle: 293 test superati e 5 skip nella suite totale; [evidenze M6](M6_VERIFICATION.md). M7 aggiunge 21 casi su concorrenza, progresso, lock e arresto: [evidenze M7](M7_VERIFICATION.md). M8 aggiunge 24 test Qt, integrazione con backend reale e verifica visiva Windows: [evidenze M8](M8_VERIFICATION.md). M9 aggiunge test del packaging, corpus sintetico e misure locali; [evidenze e verifiche ancora aperte](M9_VERIFICATION.md).
+Una specifica approvata non equivale a codice funzionante. Conservare test v1 e CLI Homework come regressione; estenderli con il [corpus ibrido funzionale](TEST_DATASETS.md), usando report legati a revisione e artefatto. [Evidenze storiche](archive/v1/README.md), [lacune M9](BASELINE.md). I casi qui sono scenari da eseguire nelle milestone, non risultati già ottenuti.
 
-## 1. Livelli
+## Validazione funzionale V2-01
 
-| Livello | Focus | Esempi |
+La suite ordinaria usa i sintetici deterministici offline. La suite reale è opt-in e richiede tutti i documenti del manifest verificati tramite hash; se uno è stato saltato o non disponibile, segnala corpus incompleto e non passa. Confronta le liste complete di percorsi attesi per query e campo, comprese frasi e casi senza match. La ground truth viene preparata dopo acquisizione e associata alla versione dei documenti; [provenienza, metodo e limiti](TEST_DATASETS.md). Nessun tempo misurato in questo corpus costituisce un obiettivo di prestazione.
+
+## Metodo e criteri
+
+Unit test per dominio, contratti per reader/storage, integrazione per sync/concorrenza, E2E per CLI e desktop, collaudo sul pacchetto installato. La suite deve raccogliere test effettivi. Benchmark separati per lookup, intersezione, ranking, serializzazione, caricamento e UI; corpus, seed, hardware, OS, cache, revisioni e distribuzioni delle durate registrati. In V2-02 approvare budget p95 query, avvio, build, sync e RAM prima di ottimizzare. Il target è 10.000 file e 300 MB di testo estratto; includere anche corpus piccolo e casi avversi. Non inventare soglie o confrontare tempi M9 con condizioni diverse.
+
+## Scenari di accettazione
+
+| ID | Scenario e risultato atteso | Milestone |
 |---|---|---|
-| Unit | Funzioni pure di dominio | Normalizzazione, token/posizioni, AND, phrase, termini ripetuti |
-| Contract | Ogni adapter rispetta la porta | Reader con 3 esiti, scanner no symlink, repository atomic activate |
-| Integration | Collaborazione dei moduli | Snapshot iniziale, sync con ADD/MODIFY/REMOVE, errore rollback |
-| E2E | CLI e sistema completo | Indicizzazione `.txt`, query da console, persistenza tra sessioni |
-| Experiments | Relazione Homework 3 | ~10 query, numero file, tempo indicizzazione, motivazioni analyzer |
+| T01 | Installer e flussi completi offline su Windows 11 x64 pulito, account standard, senza Python/tool di sviluppo | V2-07, V2-08 |
+| T02 | TXT/MD/PDF testuali, PDF protetto/vuoto/misto e TXT/MD vuoti; symlink/junction esclusi; errori distinti dalle esclusioni | V2-04, V2-08 |
+| T03 | AND, frasi, termini ripetuti e BOTH nello stesso campo; match identici a v1 per query esatte | V2-03 |
+| T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
+| T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati | V2-03, V2-05, V2-06 |
+| T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso | V2-05 |
+| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; anteprima sotto carico e versione rimossa gestita | V2-05, V2-06, V2-08 |
+| T08 | Budget approvati su 10.000/300 MB per p95 query, avvio, build, sync, RAM; metodologia e limiti registrati | V2-02, V2-03, V2-04, V2-08 |
+| T09 | Add/modify/remove, no-change, A→B→A, rebuild, fault commit, recovery; mai snapshot parziale o directory errata | V2-04, V2-08 |
+| T10 | Cancel durante estrazione/build conserva N e produce CANCELLED; cancel al commit rifiutato; pulizia durante job rifiutata | V2-04, V2-06, V2-08 |
+| T11 | Sorgente modificato durante lettura con metadati diversi: fallimento/retry; size+mtime identici resta limite dichiarato | V2-04 |
+| T12 | UI usabile durante build, ricerca e anteprima; query/filtri/directory obsolete non sovrascrivono stato corrente | V2-06, V2-08 |
+| T13 | Italiano/inglese, temi persistenti, tastiera, focus, contrasto, DPI e Narrator su flussi principali | V2-06, V2-08 |
+| T14 | Prima selezione v2 e upgrade v2 senza leggere, alterare o cancellare dati v1 | V2-04, V2-07 |
+| T15 | Wizard install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi e avvio riuscito | V2-07, V2-08 |
+| T16 | Disinstallazione conserva dati per default; cancellazione solo esplicita, rifiuto durante job, sorgenti/v1 intatti | V2-07, V2-08 |
+| T17 | Nessuna connessione richiesta, inventario dipendenze e obblighi Qt verificati; termini approvati; avvisi release non firmata registrati | V2-07, V2-08 |
+| T18 | Runner Homework e CLI: sintassi, ordine, codici e installazione backend senza Qt invariati | V2-03, V2-05, V2-08 |
+| T19 | CI della revisione finale, manifest/hash del pacchetto e risultati legati alla stessa revisione pulita | V2-08 |
+| T20 | Sintetici TXT/MD/PDF riproducibili: analyzer, campi, AND, frasi, Unicode e edge case confrontati con ground truth indipendente dal motore | V2-01 |
+| T21 | 12–30 file reali autorizzati, IT/EN e tre formati; provenienza/hash verificati, query con liste attese complete; download mancante → suite reale incompleta, non PASS | V2-01 |
 
-## 2. Casi unitari obbligatori
+## Gate finale
 
-- **Tokenization:** Unicode, accenti, punteggiatura, underscore, apostrofi, CamelCase e lettere/cifre nel filename; input vuoto; token ripetuti.
-- **Positioning:** zero-based, posizioni crescenti, stesso termine ripetuto, nessun offset tra nome e contenuto.
-- **AND:** tutte le parole nello stesso campo, ordine non vincolante, documenti con una sola parola.
-- **Phrase:** `"roma tre"` trova `Roma Tre` ma non `Roma ... tre`; gestire `"data data"`, frase più lunga del documento.
-- **BOTH:** `machine` nel filename e `learning` nel content **non** soddisfano query `machine learning` se nessun campo contiene entrambi.
-- **Manifest:** entry INDEXED ↔ IndexedDocument ↔ posting; entry EXCLUDED senza postings.
-- **ID:** uguale basename in cartelle differenti deve produrre documenti distinti.
-
-## 3. Reader fixtures
-
-- TXT UTF-8 valido, contenuto vuoto, encoding errato → FAILED.
-- Markdown titolo/paragrafo, code fence escluso, link/tabelle/alt immagini/codice inline inclusi, HTML grezzo e front matter esclusi.
-- PDF digitale con testo estraibile; PDF solo immagine → EXCLUDED; PDF corrotto/protetto non leggibile → FAILED.
-- File TXT/MD/PDF identici per nome in sottodirectory; file symlink e directory junction → esclusi dalla discovery.
-
-Usare file sintetici di dimensioni minime, idealmente con permesso di redistribuzione. I file di prova non devono contenere dati personali dell'utente.
-
-## 4. Test di sincronizzazione
-
-| Scenario | Expected |
-|---|---|
-| Prima indicizzazione | Snapshot creato, catalogo e posting coerenti |
-| Riavvio su filesystem invariato | Nessun nuovo snapshot |
-| Un nuovo `.txt` | Nuovo documento ricercabile dopo commit |
-| Contenuto modificato | Vecchi termini rimossi, nuovi termini ricercabili |
-| File eliminato | Non compare nella nuova versione, può comparire nella precedente finché attiva |
-| File rinominato | REMOVED + ADDED |
-| Modifica con stesso size + mtime | Non rilevata (limitazione accettata) |
-| PDF senza testo | Manifest EXCLUDED, assente dai due indici |
-| Errore encoding | FAILED, precedente attivo preservato |
-| Crash prima di activate | Precedente preservato prima del commit; durante commit SQLite espone solo vecchio o nuovo completo |
-| Due richieste sync concorrenti | Un solo writer/job |
-| Ricerca durante build | Risultato completo della versione N, non mix N/N+1 |
-
-## 5. Test del progresso
-
-- Fase SCANNING: byte totali sconosciuti, percentuale indeterminata.
-- Dopo scansione: byte pesati sui file nuovi/modificati completati, andamento monotono (ove applicabile).
-- Sync con sole cancellazioni: evitare divisione per zero.
-- 100% e successo solo dopo commit, oppure sync NO_CHANGES riuscita.
-- Nessun job blocca il thread UI; questo verrà testato quando esisterà il frontend.
-
-## 6. Benchmark
-
-Misurare separatamente **tempo totale di sincronizzazione**, eventuale tempo di estrazione, tokenizzazione, build e commit. Usare un clock monotono (es. `perf_counter` in implementazione), contare file scoperti / validi / esclusi e byte; annotare hardware, ambiente, corpus e versione analyzer. Prima di confrontare prestazioni, distinguere indicizzazione iniziale, riapertura senza cambiamenti e update incrementale.
-
-La prima consegna richiede il numero di file indicizzati, tempi e ~10 query: [QUERY_TEST_PLAN](homework-3/QUERY_TEST_PLAN.md), [REPORT_TEMPLATE](homework-3/REPORT_TEMPLATE.md).
-
-## 7. Definition of Done
-
-Una funzionalità è completata solo se: contratto implementato, invarianti coperti, test automatici verdi, errori osservabili, documentazione e ADR aggiornati. La verifica M1 riguarda le sole fondazioni; non dimostra ricerca, ingestione, atomicità di un repository o comportamento concorrente.
-
-## 8. Accettazione delle decisioni v1
-
-Le righe M1–M3 sono coperte dai test locali con i limiti M3 documentati (symlink reali e nomi distinti solo per case saltati su questo Windows; junction reale verificata). Le righe M4 sono coperte dalle fixture sintetiche e dalla pipeline multiformato ([evidenze](M4_VERIFICATION.md)); le righe M5 sono coperte con i limiti dei crash test documentati in [Verifica M5](M5_VERIFICATION.md). Le letture protette M5 sono verificate tramite acquisizioni esplicite nella stessa sessione; la concorrenza reale è verificata in M7. Le righe M6 sono verificate con i limiti in [Verifica M6](M6_VERIFICATION.md). Le righe M7 sono verificate con thread e processi reali su Windows ([evidenze](M7_VERIFICATION.md)); M8 è verificata con test Qt e smoke visivo, con i limiti di [Verifica M8](M8_VERIFICATION.md); M9 ha evidenze locali in aggiornamento. La prova Windows pulito/account standard distinto è rinviata alle versioni successive ([dettagli](M9_VERIFICATION.md)).
-
-| Milestone | Scenario | Risultato atteso |
-|---|---|---|
-| M0 | OD-01…OD-23, link, prerequisiti | Copertura completa, nessun link locale rotto o dipendenza futura |
-| M1 | Import domain/application | Nessun import di Qt, SQLite o parser; violazioni intercettate dal controllo |
-| M2 | Report2026Finale.txt, HTTPServer.md | Token nome report/2026/finale e http/server; nessun suffisso indicizzato |
-| M2 | l'acqua, caffè, caffe | Apostrofo separatore; accenti preservati; nessuna stop word rimossa |
-| M2 | machine "deep learning" in content | Match se machine e frase adiacente sono nello stesso campo |
-| M2 | machine nel nome, deep learning nel contenuto | Nessun match BOTH della query mista |
-| M2 | Query vuota, "", sola punteggiatura, virgolette aperte | InvalidInput, nessuna clausola silenziosamente scartata |
-| M2 | Query txt su Report.txt con contenuto vuoto | Nessun match nome per la sola estensione |
-| M3 | UTF-8 con BOM / byte non validi | BOM rimosso / job fallito senza candidato parziale |
-| M3 | Basename duplicati, case/Unicode distinti, hard link | Identità per percorso, nessuna fusione distruttiva |
-| M3 | Root link, file symlink, junction/reparse point | Radice link rifiutata; discovery non attraversa i link |
-| M4 | Markdown vuoto dopo esclusioni | Documento valido, ricercabile per nome |
-| M4 | Front matter chiuso/non chiuso e token HTML | Esclusione secondo policy, nessuna esecuzione HTML o accesso URL |
-| M4 | PDF misto, whitespace-only, con password necessaria | Testo disponibile / EXCLUDED / FAILED |
-| M5 | Round-trip catalogo/testo/posting | Stessi contenuti e risultati, nessuna rilettura sorgenti |
-| M5 | Arresto prima/durante/dopo commit | Vecchio o nuovo snapshot completo; RAM riallineata al persistito al restart |
-| M5 | Errore scrittura, disco pieno, ResourceFailure simulato | Nessun riferimento a candidato parziale |
-| M5–M7 | Tre versioni e lettura ancora su N | N protetta fino al rilascio; poi SnapshotUnavailable se eliminata |
-| M6 | NO_CHANGES | Stesso snapshot_id; ultimo controllo operativo aggiornato |
-| M6 | Schema/processing incompatibile, sorgente presente/assente | Rebuild / errore; mai ricerca incompatibile, vecchi dati preservati fino al successo |
-| M6 | Crash durante rebuild di schema fisico | Vecchio database preservato finché il riferimento non seleziona quello nuovo completo |
-| M6 | Cambio A→B→A | Nessun risultato della directory errata, A reindicizzata al ritorno |
-| M6 | ClearLocalData durante job | Richiesta rifiutata, nessuna pulizia avviata |
-| M6 | ClearLocalData, anche con errore di cancellazione | Solo dati app rimossi; errore osservabile e ripetibile, sorgenti intatti |
-| M7 | Sync sovrapposti / seconda istanza | Stesso job_id e reused=true / rifiuto accesso storage |
-| M7 | Chiusura normale / kill durante job | Attesa del job / recovery e lock rilasciato dal sistema |
-| M8 | Query lenta seguita da altra query/cambio cartella | Risposta superata non sovrascrive lo stato corrente |
-| M8 | Invio, paginazione, polling, check | Ricerca esplicita, pagine 50, polling 200 ms, check 1,5 s |
-| M8 | Pagina successiva sullo stesso snapshot N | Offset richiesto mantenuto, ordine e totale riferiti a N |
-| M8 | Pagina successiva restituisce N+1 dopo lista su N | Risposta scartata; stessa query/campo ripetuta con offset=0, lista e totale dalla nuova prima pagina |
-| M8 | Cambio query/campo/directory durante ritorno alla prima pagina | Risposta precedente ignorata, nessuna sovrascrittura dello stato corrente |
-| M8 | Query senza match / offset oltre il totale | Lista vuota e snapshot_id valido; totale 0 / totale effettivo; cambio versione applica comunque il ritorno alla prima pagina |
-| M8 | Apri file assente / anteprima versione rimossa | Messaggio e proposta Sync / invito a ripetere ricerca |
-| M8 | Build/query/anteprima sotto carico | UI utilizzabile, nessun lavoro pesante nel thread grafico |
-| M9 | ZIP finale sul PC attuale, ambiente del processo isolato | Avvio, indicizzazione, ricerca, restart e pulizia funzionanti; account standard distinto e Windows pulito rinviati alle versioni successive per decisione del 2026-11-07 |
-
-## 9. Misure e verifica della consegna
-
-Generare un corpus sintetico deterministico di alcune migliaia di documenti e decine di MB di testo;
-registrare seed/configurazione, formati, dimensioni, hardware e versioni. Nessun dato personale.
-Misurare memoria massima del processo, tempo build iniziale, caricamento, no-change sync,
-sync incrementale e query. Distinguere tempi di estrazione, analisi e commit dove misurabili.
-Nessuna soglia quantitativa prestazionale è stata approvata; pubblicare risultati e limiti reali.
-Ripetere i percorsi di accettazione sul pacchetto distribuito; conservare log sintetici e istruzioni.
-La verifica documentale non sostituisce questi test. Non segnare M1–M9 complete prima delle evidenze.
+Le [lacune M9-G01…G07](BASELINE.md) richiedono prove sul pacchetto v2 finale. Test del sorgente, mock e collaudo dello ZIP v1 non sostituiscono questa prova. V2-08 è chiusa solo se tutti i requisiti applicabili hanno esiti registrati; un limite accettato rimane documentato. Durante la sola riscrittura documentale non si rieseguono suite o benchmark applicativi.

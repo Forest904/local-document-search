@@ -1,247 +1,162 @@
-# Roadmap — Dallo scaffold alla v1 desktop
+# Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato:** M1–M8 implementate e verificate localmente; M9 richiede il collaudo del pacchetto finale e la correzione delle lacune normative. Il 7 novembre 2026 l'utente ha rinviato alle versioni successive Windows pulito/account standard distinto: l'uscita M9 è ora locale sul PC attuale. Il rinvio non dimostra portabilità. [Evidenze M9](M9_VERIFICATION.md).
-M0 verificata documentalmente il 6 novembre 2026: [evidenze e limiti](M0_VERIFICATION.md). M1 verificata localmente il 6 novembre 2026: [evidenze e limiti](M1_VERIFICATION.md); CI della baseline de93bab verde su Windows e Ubuntu. M2 verificata localmente il 6 novembre 2026: [evidenze e limiti](M2_VERIFICATION.md). M3 verificata localmente il 6 novembre 2026: [evidenze e limiti](M3_VERIFICATION.md). M4 verificata localmente il 6 novembre 2026: [evidenze e limiti](M4_VERIFICATION.md). M5 verificata localmente il 6 novembre 2026: [evidenze e limiti](M5_VERIFICATION.md). M6 verificata localmente il 6 novembre 2026: [evidenze e limiti](M6_VERIFICATION.md). M7 verificata localmente il 6 novembre 2026: [evidenze e limiti](M7_VERIFICATION.md). M8 verificata localmente il 6 novembre 2026: [evidenze e limiti](M8_VERIFICATION.md). M9: packaging implementato; verifiche locali e limiti in [Verifica M9](M9_VERIFICATION.md). La prova Windows pulito è rinviata alle versioni successive.
-Sequenza lineare: ogni milestone richiede la precedente, mai una milestone futura.
-Prima consegna: CLI TXT. Traguardo: Windows 11 x64, ZIP autonomo senza Python preinstallato.
+**Stato al 7 novembre 2026:** V2-01…V2-08 sono progettate, non implementate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
-- Seguire le attività nell'ordine indicato; chiudere ogni milestone con evidenze verificabili.
-- Registrare comandi, esiti e artefatti; specifiche approvate non equivalgono a codice funzionante.
-- Cambi a comportamento, contratti o dipendenze richiedono decisione esplicita e aggiornamento dei documenti.
-- CLI e UI condividono casi d'uso e motore; evitare framework e ottimizzazioni preventive.
-- I dettagli normativi risiedono nelle specifiche collegate e negli ADR, non in copie divergenti.
+1. Aprire la milestone successiva e verificare nel codice l'**ingresso** indicato; un ADR approvato non prova che una funzione esista.
+2. Chiudere le decisioni elencate nel [registro](OPEN_DECISIONS.md) **prima** di implementare la parte che dipende da esse. Le scelte interne ordinarie seguono le convenzioni esistenti.
+3. Svolgere le attività nell'ordine logico, aggiornando [PRD](PRD.md), [contratti](INTERFACE_CONTRACTS.md), ADR e scenari se il comportamento approvato cambia. CLI Homework e backend desktop restano condivisi.
+4. Chiudere la milestone solo dopo le verifiche di uscita, registrando revisione, comandi, ambiente, risultati e limiti. Test sul sorgente, prova visiva e collaudo del pacchetto sono evidenze differenti.
 
-## Sequenza
+Il [PRD](PRD.md) assegna gli ID V2-R01…V2-R19; la [strategia di test](TEST_STRATEGY.md) definisce T01…T21. Le specifiche collegate contengono le regole normative senza duplicarle qui. L'archivio [v1](archive/v1/README.md) conserva le motivazioni e le prove M0–M9.
 
-| Milestone | Risultato | Stato |
+## Sequenza e dipendenze
+
+| Milestone | Ingresso principale | Uscita |
 |---|---|---|
-| M0 | Specifica eseguibile | Verificata (documentazione, 2026-11-06) |
-| M1 | Fondazioni verificabili | Verificata localmente (2026-11-06); CI della baseline de93bab verde su Windows e Ubuntu |
-| M2 | Motore di ricerca puro | Verificata localmente (2026-11-06); CI della baseline de93bab verde su Windows e Ubuntu |
-| M3 | CLI TXT e Homework 3 | Verificata localmente (2026-11-06); 3 test saltati, CI remota da verificare |
-| M4 | Ingestione multiformato | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M5 | Snapshot persistenti | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M6 | Sync e lifecycle | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M7 | Job e concorrenza | Verificata localmente (2026-11-06); 5 test saltati, CI remota da verificare |
-| M8 | Desktop completo | Verificata localmente (2026-11-06); CI della baseline de93bab verde su Windows e Ubuntu |
-| M9 | Distribuzione e accettazione v1 | Packaging e prove locali storiche disponibili; collaudo ZIP finale in corso, Windows pulito rinviato ([evidenze](M9_VERIFICATION.md)) |
+| V2-01 — Corpus funzionale | Codice, generatori e test v1 | Corpus ibrido riproducibile e validazione funzionale |
+| V2-02 — Baseline prestazionale | V2-01 | Metodo, misure e budget approvati sul target 10.000/300 MB |
+| V2-03 — Retrieval | V2-02 | Vocabolario ordinato, prefissi e suggerimenti verificati |
+| V2-04 — Storage e lifecycle | V2-02 e interfaccia indice V2-03 | Persistenza, riapertura, sync, cancel e isolamento v1/v2 |
+| V2-05 — Ricerca applicativa | V2-03 e V2-04 | Ranking, filtri, snippet e highlighting nei contratti backend |
+| V2-06 — Desktop Qt Quick | V2-05 per l'integrazione | Nuova UI, lingue, temi e accessibilità verificati |
+| V2-07 — Installer offline | V2-06 per il pacchetto finale | Wizard, dipendenze, aggiornamento, disinstallazione e diritti verificati |
+| V2-08 — Accettazione pubblica | V2-01…V2-07 | Pacchetto finale provato su Windows pulito e lacune M9 chiuse |
 
-## M0 — Specifica eseguibile
+La progettazione visiva può iniziare dopo V2-02; l'integrazione desktop usa i contratti V2-05. Un prototipo di packaging Qt Quick può iniziare dopo V2-02; V2-07 non attende la fine della UI per scoprire incompatibilità. Il corpus funzionale V2-01 e quello prestazionale V2-02 hanno scopi e criteri distinti.
 
-**Ingresso:** Scaffold attuale; solo progettazione.
+## V2-01 — Corpus ibrido e validazione funzionale
 
-**Attività ordinate**
-1. Formalizzare negli ADR le decisioni su ricerca, reader, storage e runtime.
-2. Allineare dominio e contratti: clausole miste, pulizia dati, riuso job e paginazione.
-3. Collegare ogni OD-01…OD-23 a decisione/esclusione e milestone di verifica.
+**Ingresso:** `experiments/run_homework3.py` genera otto TXT con query attese; `experiments/m9_corpus.py` genera TXT/MD/PDF e manifest con query; `experiments/run_m9.py` confronta risultati ma misura anche prestazioni; esistono fixture reader. Nessun corpus Internet è ancora acquisito. [Stato esatto](BASELINE.md#materiale-di-test-esistente-da-cui-parte-v2-01).
 
-**Confini:** Solo documentazione; nessuna dipendenza installata o API Python anticipata.
-
-**Verifica e uscita**
-- Registro completo; nessun TBD v1 implicito; link validi e milestone senza cicli.
-- Contratti coerenti ed esempi di accettazione definiti, senza dichiarare implementato il prodotto.
-
-**Riferimenti:** [Decisioni](OPEN_DECISIONS.md), [ADR](adr/README.md), [Contratti](INTERFACE_CONTRACTS.md).
-
-## M1 — Fondazioni verificabili
-
-**Ingresso:** M0 verificata; Python >=3.12 e Ports & Adapters.
+**Decisioni prima del codice:** V2-D10…V2-D13: fonti e permessi, struttura/versione del manifest, acquisizione e cache, composizione dei sintetici e preparazione della ground truth. Non scegliere URL o schemi definitivi per supposizione; [criteri approvati](TEST_DATASETS.md).
 
 **Attività ordinate**
-1. Configurare ambiente riproducibile, pytest e CI.
-2. Introdurre tipi minimi per documenti, token, clausole, snapshot e DTO.
-3. Definire porte e punto di composizione minimo; verificare automaticamente i confini d'import. Il collegamento operativo a casi d'uso e adapter resta in M3.
 
-**Confini:** Domain puro; application dipende da dominio e porte; nessun Qt/SQLite/parser nel core.
+1. Separare gli scenari funzionali dai tempi del runner M9 e riusare, dove utile, generatori e fixture esistenti. Preparare sintetici deterministici TXT/MD/PDF per analyzer, campi, AND, frasi, Unicode, casi vuoti e negativi controllati; tenere errori/esclusioni reader in fixture distinte dal corpus ricercabile.
+2. Selezionare circa 12–30 documenti autentici indicizzabili, con italiano e inglese e almeno un TXT, un MD e un PDF. Verificare per ciascuno fonte e permesso esplicito di riuso; versionare URL, licenza, lingua, formato e hash nel manifest, non i file scaricati.
+3. Implementare acquisizione verificabile: URL o hash cambiati non modificano silenziosamente il corpus approvato. Un file può essere saltato con diagnostica, ma la suite reale non può passare finché il manifest non è completo.
+4. Sul corpus acquisito preparare query e liste complete dei percorsi attesi, usando ChatGPT Astra come supporto e il testo estratto come evidenza; mai derivare la ground truth dall'output del motore. Verificare automaticamente schema, riferimenti, completezza strutturale e versione del corpus. Registrare le ambiguità che i controlli non risolvono.
+5. Integrare sintetici nella suite ordinaria offline e reali in suite opt-in separata, predisposta per CI dedicata. Confrontare insiemi completi, non solo conteggi; conservare revisione di manifest, query e codice nell'esito.
 
-**Verifica e uscita**
-- Installazione da ambiente pulito e test di invarianti verdi; zero test non è successo.
-- Nessun framework generico o astrazione senza utilizzatore concreto.
+**Verifica e uscita:** T20 e T21 passano con corpus completo; ripetendo la generazione si ottengono gli stessi file/hash; assenza o hash errato di un reale dà esito incompleto/non valido, mai PASS. La CLI Homework e i reader esistenti continuano a passare. Nessuna soglia prestazionale viene dichiarata da questi test.
 
-**Evidenze:** 73 test superati su Windows/Python 3.12.2, installazione in ambiente virtuale e `pip check` riusciti. GitHub Actions configurata per Windows/Linux e Python 3.12; nessuna esecuzione remota verificata. Dettagli e comandi in [Verifica M1](M1_VERIFICATION.md).
+**Riferimenti:** [Corpus](TEST_DATASETS.md), [test](TEST_STRATEGY.md), [layout](REPOSITORY_LAYOUT.md), [esperimenti attuali](../experiments/README.md).
 
-**Riferimenti:** [Layout](REPOSITORY_LAYOUT.md), [Dominio](DOMAIN_MODEL.md), [Test](TEST_STRATEGY.md).
+## V2-02 — Baseline e budget prestazionali
 
-## M2 — Motore di ricerca puro
+**Ingresso:** V2-01 chiusa; misure M9 disponibili solo come storia, con corpus ristretto e limiti documentati. Il target v2 è 10.000 file e 300 MB di testo estratto.
 
-**Ingresso:** M1; analyzer e grammatica fissati.
-
-**Attività ordinate**
-1. Implementare analyzer distinti e preparazione filename senza estensione.
-2. Implementare parser di termini/frasi AND con errori espliciti.
-3. Costruire posting e catalogo nel draft; congelare lo snapshot interrogabile.
-4. Implementare matching per campo, BOTH e ordine deterministico.
-
-**Confini:** Dominio senza I/O o conoscenza dei formati dei documenti.
-
-**Verifica e uscita**
-- Unicode, apostrofi, CamelCase, numeri, posizioni e termini ripetuti verificati.
-- Query miste soddisfatte in un singolo campo; nessun match distribuito tra campi.
-- Modifiche successive al draft non alterano lo snapshot attivo.
-
-**Evidenze:** 145 test superati su Windows/Python 3.12.2, inclusi 72 nuovi casi M2; `pip check` riuscito. Analyzer, parser, draft/builder, matching e isolamento degli snapshot verificati con dati sintetici in memoria. [Verifica M2](M2_VERIFICATION.md). CLI e persistenza restano nelle milestone successive.
-
-**Riferimenti:** [Analisi](INDEXING_AND_ANALYSIS.md), [Dominio](DOMAIN_MODEL.md).
-
-## M3 — CLI TXT e Homework 3
-
-**Ingresso:** M2; UTF-8 rigoroso e discovery senza symlink/junction.
+**Decisione prima delle ottimizzazioni:** V2-D01 approva corpus **prestazionale** separato, hardware, metodo, condizioni di cache e budget numerici per query p95, avvio, build iniziale, sync incrementale/no-change e picco RAM. Non usare la ground truth funzionale come benchmark implicito.
 
 **Attività ordinate**
-1. Implementare discovery TXT ricorsiva e reader con ordine stabile.
-2. Orchestrare build/ricerca in application usando un repository in memoria.
-3. Collegare CLI e composition root: directory e sessione query per campo.
-4. Eseguire circa dieci query, misurare file/tempi e compilare la relazione.
 
-**Confini:** Filesystem in infrastructure; CLI senza algoritmi; adapter in memoria riutilizzabile nei test.
+1. Preparare un carico riproducibile e un ambiente descritto con versioni, seed, formati, query, dimensioni e stato della cache.
+2. Misurare lo stato attuale, distinguendo dove possibile lookup, intersezione, ordinamento, caricamento, estrazione, costruzione e serializzazione. Registrare distribuzioni, memoria e limiti del metodo, senza confronti impropri con M9.
+3. Identificare i costi dominanti e approvare soglie da usare come criteri delle milestone V2-03/V2-04/V2-08. Documentare rischi e regressioni accettabili.
 
-**Verifica e uscita**
-- Sessione console completa con AND, frasi e clausole miste.
-- Encoding/lettura errati non espongono candidati parziali.
-- Relazione con query, risultati, ambiente, numero file, tempi e URL repository reali.
+**Verifica e uscita:** runner ripetibile, risultati grezzi fuori Git, relazione con ambiente e budget approvati. V2-02 misura e decide: non dichiara raggiunti i budget dal codice v1.
 
-**Evidenze:** 194 test superati, 3 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Dieci query e due regressioni PASS su 8 TXT sintetici (192 byte), build iniziale misurato in 0,016752 s. [Verifica M3](M3_VERIFICATION.md), [relazione compilata](homework-3/REPORT.md). Nessun push o invio al docente; CI remota non verificata.
+**Riferimenti:** [PRD V2-R08](PRD.md), [test T08](TEST_STRATEGY.md), [misure storiche](archive/v1/M9_VERIFICATION.md).
 
-**Riferimenti:** [Consegna](homework-3/ASSIGNMENT_ALIGNMENT.md), [Query](homework-3/QUERY_TEST_PLAN.md), [Relazione](homework-3/REPORT_TEMPLATE.md).
+## V2-03 — Retrieval e vocabolario ordinato
 
-## M4 — Ingestione multiformato
+**Ingresso:** budget V2-02; due indici posizionali e lookup esatto su dizionario implementati in v1. La struttura secondaria è obbligatoria, la sua rappresentazione è aperta.
 
-**Ingresso:** M3 già consegnabile; pypdf e markdown-it-py scelti.
+**Decisioni prima dell'API/codice:** V2-D02 struttura, memoria, persistenza e coerenza per campo; V2-D03 sintassi/limiti dei prefissi e comportamento dei suggerimenti. Confrontare alternative, incluso albero bilanciato e array ordinato: un BST non è assunto più rapido del dizionario per lookup esatto.
 
 **Attività ordinate**
-1. Implementare Markdown dai token, separando blocchi e applicando le esclusioni.
-2. Implementare PDF concatenando testo delle pagine, senza OCR.
-3. Estendere discovery e registrazione reader senza cambiare analyzer/evaluator.
 
-**Confini:** Reader negli adapter, senza assegnazione ID o costruzione posting.
+1. Profilare e confrontare le strutture sul carico V2-02: lookup esatto, intervalli per prefisso, build, RAM e riapertura. Fissare una scelta motivata.
+2. Costruire il vocabolario ordinato per filename e content nello stesso ciclo dello snapshot e validarne la coerenza con i due indici primari; preservare snapshot immutabili e single-writer.
+3. Implementare prefissi solo espliciti e suggerimenti come operazione distinta dalla query; mantenere analyzer coerenti, AND/frasi nello stesso campo e nessuna espansione implicita della ricerca esatta.
+4. Verificare aggiornamento, restart, recovery e regressioni della CLI Homework senza Qt o cambi di ordinamento.
 
-**Verifica e uscita**
-- Contract test per Extracted, Excluded ed ExtractionFailed.
-- Markdown: tabelle, link, alt immagini, codice inline, HTML e front matter.
-- PDF: testuale/misto, immagini, spazi, protetto e corrotto; TXT/MD vuoti ricercabili per nome.
+**Verifica e uscita:** T03–T05 e T18; risultati delle query v1 invariati, vocabolario coerente in ogni snapshot e costi confrontati con i budget pertinenti. Nessun motore IR esterno.
 
-**Riferimenti:** [Analisi](INDEXING_AND_ANALYSIS.md), [Contratti](INTERFACE_CONTRACTS.md).
+**Riferimenti:** [analisi](INDEXING_AND_ANALYSIS.md), [dominio](DOMAIN_MODEL.md), [ADR 0010](adr/0010-v2-retrieval.md), [contratti](INTERFACE_CONTRACTS.md).
 
-**Evidenze M4:** 234 test superati, 5 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Reader Markdown/PDF, discovery multiformato, CLI e conservazione dello snapshot precedente verificati con fixture sintetiche. [Verifica M4](M4_VERIFICATION.md). CI remota non verificata.
+## V2-04 — Storage e lifecycle
 
-## M5 — Snapshot persistenti
+**Ingresso:** V2-02 e interfaccia dello snapshot/vocabolario V2-03; v1 possiede persistenza SQLite, sync, lock e job concorrenti. M9 segnala costi di riapertura/sync e prove sul pacchetto ancora mancanti.
 
-**Ingresso:** M4; SQLite, snapshot completi e retention minima.
+**Decisione prima della persistenza:** V2-D04 su layout fisico, versione, retention e recovery v2. Conservare gli invarianti; non importare automaticamente gli indici v1 né leggere/pulire il loro storage.
 
 **Attività ordinate**
-1. Implementare round-trip di manifest, catalogo, testo e posting.
-2. Salvare/validare candidato e riferimento attivo nella stessa transazione.
-3. Pubblicare in memoria dopo commit; aggiungere caricamento e recovery.
-4. Conservare attivo/precedente, proteggere letture in corso e predisporre pulizia dati.
 
-**Confini:** SQLite solo in infrastructure; matching e indici proprietari in domain.
+1. Implementare storage v2 separato per account e la strategia fisica approvata, collegando il vocabolario agli stessi snapshot di manifest, catalogo e posting. Commit e attivazione restano atomici; versioni incompatibili non diventano ricercabili.
+2. Ridurre costi di riapertura, RAM e sync rispetto alla baseline V2-02, verificando no-change, add/modify/remove, rebuild, retention e recovery. Una directory alla volta, diff path+size+mtime_ns.
+3. Aggiungere annullamento cooperativo prima del commit: stato CANCELLED distinto da FAILED, candidato scartato e precedente ricercabile. Rifiutare cancel dopo l'inizio del commit non interrompibile.
+4. Controllare i metadati durante ingestione; variazione osservata fallisce il candidato e consente retry. Non aggiungere hash dei sorgenti né controlli filesystem durante le query.
+5. Coprire cambio directory, pulizia durante job e matrice reader che M9 non ha documentato sul pacchetto corrente; la conferma finale sul prodotto installato resta V2-08.
 
-**Verifica e uscita**
-- Round-trip esatto, rollback, crash prima/durante/dopo commit e disco pieno simulato.
-- Mai snapshot parziali al riavvio; versione eliminata → SnapshotUnavailable.
-- Storage per utente; nessuna modifica ai documenti originali.
+**Verifica e uscita:** T02, T04 e T08–T11/T14; fault injection e restart producono solo snapshot completi; dati v1 e sorgenti intatti; tempi/memoria nel budget approvato o scostamenti esplicitamente risolti. Le modifiche con size+mtime invariati restano un limite dichiarato.
 
-**Evidenze M5:** 268 test superati, 5 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Round-trip, pubblicazione atomica, recovery, retention, letture protette e `GetDocument` verificati nel backend. CLI invariata; lifecycle e lock rinviati a M6–M7. Crash simulati di processo, non perdita di alimentazione. [Verifica M5](M5_VERIFICATION.md).
+**Riferimenti:** [snapshot](SNAPSHOTS_AND_SYNC.md), [contratti](INTERFACE_CONTRACTS.md), [ADR 0012](adr/0012-v2-lifecycle-storage.md), [debito M9](BASELINE.md).
 
-**Riferimenti:** [Snapshot](SNAPSHOTS_AND_SYNC.md), [Privacy](SECURITY_AND_PRIVACY.md).
+## V2-05 — Ricerca applicativa e contratti
 
-## M6 — Sync e lifecycle
+**Ingresso:** motore V2-03 e storage/lifecycle V2-04; `SearchDocuments`, `GetDocument` e DTO v1 sono la base, la CLI conserva i suoi default.
 
-**Ingresso:** M5; diff path+size+mtime_ns e rebuild per incompatibilità.
+**Decisioni prima dell'API definitiva:** V2-D05 formula e spareggi della rilevanza; V2-D06 finestre snippet e corrispondenze nel testo Unicode. Fissare esempi attesi prima del codice.
 
 **Attività ordinate**
-1. Implementare add/modify/remove e riuso logico dei documenti invariati.
-2. Preservare ID sullo stesso percorso e aggiornare entrambi gli indici.
-3. Integrare startup, settings, cambio directory e stato no-change.
-4. Integrare rebuild e ClearLocalData a job fermo.
 
-**Confini:** Application orchestra porte; filesystem e persistenza restano adapter.
+1. Estendere i casi d'uso con filtri formato/cartella e scelta ordine: rilevanza predefinita desktop, percorso alternativo. Filtrare e ordinare i match senza allargare la semantica AND/frasi/BOTH; totale e pagine appartengono allo stesso snapshot.
+2. Produrre snippet ed evidenziazione dal testo estratto persistito della versione acquisita; dettagli e anteprima mantengono lo `snapshot_id`. Nessuna rilettura dei sorgenti, coordinate PDF o promessa di layout originale.
+3. Definire DTO/errori logici per suggerimenti, filtri, ordine e anteprima nei [contratti](INTERFACE_CONTRACTS.md), integrando lo stato e il cancel introdotti in V2-04; collegare il backend senza import di Qt nell'application.
+4. Eseguire regressioni su query esatte, paginazione/versione e CLI Homework, preservando sintassi, ordine per percorso e codici esistenti.
 
-**Verifica e uscita**
-- Invariati non riletti, rename = removed+added, no-change senza nuovo snapshot.
-- Sorgente assente conserva snapshot compatibile; incompatibile non è interrogabile.
-- Cambio directory senza risultati vecchi; rebuild fallito conserva i dati precedenti.
+**Verifica e uscita:** T05–T07 e T18; ranking deterministico sui soli match, liste attese e highlighting verificati con fixture sintetiche e corpus reale dove pertinente. Ogni cambio di versione o query non mescola risultati.
 
-**Riferimenti:** [Snapshot](SNAPSHOTS_AND_SYNC.md), [Contratti](INTERFACE_CONTRACTS.md).
+**Riferimenti:** [contratti](INTERFACE_CONTRACTS.md), [analisi](INDEXING_AND_ANALYSIS.md), [ADR 0010](adr/0010-v2-retrieval.md), [test](TEST_STRATEGY.md).
 
-**Evidenze M6:** 293 test superati, 5 saltati su Windows/Python 3.12.2; `pip check` riuscito. Diff, riuso senza rilettura/analisi, startup, cambio directory, rebuild, crash di processo e pulizia verificati. CLI invariata; worker e lock restano M7. [Verifica M6](M6_VERIFICATION.md).
+## V2-06 — Desktop Qt Quick
 
-## M7 — Job e concorrenza
-
-**Ingresso:** M6 funzionante in modalità bloccante.
+**Ingresso:** contratti backend V2-05; desktop v1 Qt Widgets esistente. Il design può essere esplorato dopo V2-02, ma non si dichiara integrato prima dei contratti.
 
 **Attività ordinate**
-1. Aggiungere JobManager con un worker e stesso algoritmo sync/async.
-2. Esporre progresso e indicazione esplicita di job riutilizzato.
-3. Eseguire ricerche su snapshot acquisito fuori dal futuro thread UI.
-4. Integrare lock per tutte le sessioni persistenti e chiusura che attende job/letture; CLI Homework volatile invariata.
 
-**Confini:** Coordinamento applicativo; primitive esterne negli adapter; nessun Qt nel core.
+1. Progettare e realizzare la presentazione PySide6/Qt Quick con QML nello stesso processo: sidebar essenziale, ricerca centrale, risultati con snippet, anteprima, stati vuoti ed errori. L'app ChatGPT è riferimento di qualità visiva, non un requisito di chat o AI.
+2. Collegare ricerca con Invio, suggerimenti durante digitazione, campo, filtri, rilevanza/percorso, paginazione e apertura file ai casi d'uso; evitare lavoro pesante nel thread grafico e scartare risposte obsolete.
+3. Collegare sync, progresso, diagnostiche, cancel e retry. La UI indica quando usa lo snapshot precedente e non mostra risultati della directory errata.
+4. Completare italiano/inglese, temi chiaro/scuro e preferenze persistenti separate dagli indici. Verificare tastiera, focus, contrasto, DPI e Narrator sui flussi principali.
+5. Provare anticipatamente il runtime QML nel packaging, senza confondere il prototipo con l'installer finale.
 
-**Verifica e uscita**
-- Trigger sovrapposti: un job; seconda istanza rifiutata senza alterare storage.
-- Ricerca su N durante commit N+1 senza mix; letture già iniziate completano.
-- Scansione indeterminata, sole rimozioni senza divisione per zero, successo dopo commit.
-- Chiusura normale attende; arresto forzato lascia recovery valido.
+**Verifica e uscita:** T05, T07, T10, T12–T13; test Qt e controllo visivo/accessibile su Windows, con ricerca e anteprima sotto carico. Registrare errori e limiti osservati; la prova sul pacchetto installato si ripete in V2-08.
 
-**Riferimenti:** [Architettura](ARCHITECTURE.md), [Contratti](INTERFACE_CONTRACTS.md).
+**Riferimenti:** [UX](UX_WINDOWS.md), [contratti](INTERFACE_CONTRACTS.md), [ADR 0011](adr/0011-v2-desktop.md), [frontend attuale](../frontend/README.md).
 
-**Evidenze M7:** 314 test superati, 5 saltati su Windows/Python 3.12.2; installazione sviluppo e `pip check` riusciti. Runtime con un worker sync e un worker letture, riuso dei job, progresso, snapshot protetti, lock OS e chiusura con attesa verificati con thread e processi reali. [Verifica M7](M7_VERIFICATION.md). CLI invariata; nessuna verifica Qt o del pacchetto.
+## V2-07 — Installer offline e distribuzione
 
-## M8 — Desktop completo
+**Ingresso:** desktop V2-06 e prova preliminare del packaging QML; ZIP v1 disponibile solo come riferimento storico. La release pubblica richiede termini e diritti verificati.
 
-**Ingresso:** M7; PySide6 Qt Widgets, stesso processo, nessun IPC/server.
+**Decisioni prima della build finale:** V2-D07 strumento/formato, upgrade e wizard; V2-D08 termini d'uso; V2-D09 componenti Qt e obblighi LGPL del payload.
 
 **Attività ordinate**
-1. Collegare selettore, stato directory e ricerca ai casi d'uso.
-2. Aggiungere lista, pagine da 50, testo completo e apertura file.
-3. Integrare polling 200 ms, check 1,5 secondi ed errori.
-4. Integrare privacy notice, pulizia dati e chiusura durante job.
 
-**Confini:** Frontend usa DTO pubblici; composition root assembla servizi e adapter.
+1. Preparare installer Windows 11 x64 per utente senza elevazione, con wizard e tutte le dipendenze software necessarie incluse: Python, Qt, plugin QML e runtime. Nessun servizio di download all'installazione o updater online.
+2. Definire aggiornamento tramite installer completo e disinstallazione: preservare dati v2 per default, cancellarli solo su scelta esplicita; non toccare sorgenti o storage v1.
+3. Inventariare i componenti effettivamente distribuiti e verificarne licenze, avvisi e sostituibilità delle librerie Qt secondo il percorso LGPL. Approvare i termini del progetto: diritti riservati, uso personale/studio gratuito, uso professionale soggetto ad autorizzazione.
+4. Bloccare input e procedura di build, produrre manifest/hash e verificare installazione, update, uninstall e avvio offline su account standard di prova. Una prima release non firmata è ammessa; registrare gli avvisi Windows realmente osservati.
 
-**Verifica e uscita**
-- Invio avvia ricerca; UI responsiva durante build, query e anteprima.
-- Risposte superate non sovrascrivono nuova richiesta o directory.
-- File assente, versione rimossa e sorgente indisponibile hanno recupero esplicito.
-- Pulizia disabilitata durante job; nessun accesso UI diretto allo storage.
+**Verifica e uscita:** T01, T14–T17; payload completo e tracciabile, nessuna elevazione/rete o Python preinstallato richiesti. Le prove su Windows pulito e il pacchetto finale identificato restano il gate V2-08.
 
-**Riferimenti:** [UX](UX_WINDOWS.md), [Privacy](SECURITY_AND_PRIVACY.md).
+**Riferimenti:** [privacy e diritti](SECURITY_AND_PRIVACY.md), [ADR 0013](adr/0013-v2-distribution.md), [packaging v1](../scripts/package/README.md), [test](TEST_STRATEGY.md).
 
-**Evidenze M8:** pacchetto frontend separato, interfaccia italiana, ricerca con Invio e pagine da 50,
-testo completo, apertura file, polling e lifecycle asincroni. Backend: 314 test superati e 5 saltati;
-frontend: 24 test superati. Verifica visiva Windows su 56 documenti sintetici. Installazioni e
-`pip check` riusciti. [Verifica M8](M8_VERIFICATION.md). CI remota, pacchetto e misure di scala restano da verificare.
+## V2-08 — Accettazione della release pubblica
 
-## M9 — Distribuzione e accettazione v1
-
-**Ingresso:** M8; test pertinenti verdi.
+**Ingresso:** V2-01…V2-07 chiuse; installer finale da una revisione pulita, termini approvati e inventario dipendenze verificato. M9 v1 rimane storicamente parziale: questa milestone chiude sul prodotto v2 le [lacune trasferite](BASELINE.md#lacune-da-trasferire-non-prove-superate), non riscrive gli esiti v1.
 
 **Attività ordinate**
-1. Fissare versioni e configurazione pyside6-deploy standalone; produrre ZIP x64.
-2. Includere istruzioni, dipendenze e avvisi/licenze di redistribuzione.
-3. Provare lo ZIP finale sul PC attuale con ambiente del processo isolato e storage di prova; Windows pulito è rinviato alle versioni successive.
-4. Eseguire corpus riproducibile e percorsi completi; registrare misure e limiti.
 
-**Confini:** Packaging fuori dal dominio; nessun installer, updater, server o cloud.
+1. Fissare revisione, toolchain e artefatto; verificare manifest, hash, licenze e CI della stessa revisione. Non usare un ZIP costruito da working tree modificato come prova della release.
+2. Installare e usare offline su Windows 11 x64 pulito, senza Python/tool di sviluppo e con account standard distinto. Ripetere installazione, upgrade, avvio, disinstallazione e conservazione/cancellazione opzionale dei dati.
+3. Sul pacchetto finale provare TXT/MD/PDF (anche protetto, senza testo e misto), TXT/MD vuoti, cambio directory/rebuild, pulizia rifiutata durante job, errori con snapshot precedente, doppia istanza e recovery.
+4. Verificare ricerca, suggerimenti, filtri, ranking, snippet e anteprima durante carico; misurare rispetto ai budget V2-02 sul metodo approvato. Ripetere accessibilità, lingua, tema e regressioni CLI Homework.
+5. Registrare esiti, ambiente, limiti, scostamenti e correzioni con collegamento alla revisione e all'installer effettivamente distribuito. Non segnare PASS per prove saltate o corpus reale incompleto.
 
-**Verifica e uscita**
-- ZIP con configurazione/versioni registrate e uso locale senza elevazione; prova su account standard distinto rinviata alle versioni successive.
-- TXT/MD/PDF, sync, restart, errori e doppia istanza verificati nel pacchetto.
-- Hardware, memoria massima, tempi build/riapertura/sync/query riportati.
-- V1 pronta solo dopo evidenze; nessuna soglia prestazionale inventata.
+**Verifica e uscita:** T01–T21 applicabili con evidenze, comprese M9-G01…G07; nessun candidato parziale; documenti personali e dati v1 intatti nelle prove sul pacchetto. La release è pronta solo quando i criteri pubblici e legali sono soddisfatti; nessuna data o soglia inventata.
 
-**Evidenze M9 storiche:** build standalone e lock dedicato, ZIP con runtime/licenze e manifest, corpus sintetico di 3.000 documenti e circa 30 MB di testo. Backend: 314 passed e 5 skipped; frontend: 24 passed; script: 17 passed. Misure e prove sul pacchetto in [Verifica M9](M9_VERIFICATION.md). Il collaudo dello ZIP corretto è in corso. Windows pulito/account standard distinto sono rinviati alle versioni successive; M9 non è ancora completamente accettata secondo il nuovo perimetro locale.
-
-**Riferimenti:** [Test](TEST_STRATEGY.md), [UX](UX_WINDOWS.md), [ADR desktop](adr/0009-desktop-runtime.md), [Packaging](../scripts/package/README.md).
-
-## Vincoli di consegna
-
-Homework 3: **13 novembre 2026 alle 18:00**, secondo il materiale del corso.
-M3 non dipende da altri reader, SQLite, async o UI; nessuna consegna/pubblicazione automatica al docente.
-Nessuna data desktop o soglia prestazionale concordata.
-Scala: alcune migliaia di documenti e decine di MB di testo estratto.
-Nessun limite applicativo ai file non significa risorse infinite: verificare ResourceFailure e recovery.
-Ranking, snippet/highlighting, OCR, watcher, OR/NOT, fuzzy e cancel restano fuori v1.
+**Riferimenti:** [baseline](BASELINE.md), [strategia di test](TEST_STRATEGY.md), [PRD](PRD.md), [privacy](SECURITY_AND_PRIVACY.md).

@@ -1,4 +1,6 @@
-# Esperimenti Homework 3
+# Esperimenti v1 e baseline v2
+
+I runner esistenti sono il punto di partenza di [V2-01](../docs/ROADMAP.md): il runner Homework verifica query su sintetici, mentre il corpus M9 combina query attese e misure. La [specifica del corpus ibrido](../docs/TEST_DATASETS.md) definisce la nuova validazione funzionale; i budget prestazionali si decidono in V2-02.
 
 `run_homework3.py` crea otto TXT sintetici in una directory temporanea, esegue dieci query e due regressioni in una sessione CLI reale, confronta gli attesi espliciti e stampa misure/trascrizione in JSON. Nessun dato personale o snapshot è versionato.
 
@@ -45,7 +47,7 @@ Il launcher resta attivo fino alla chiusura della GUI e salva un JSON per proces
 con PID, esito e picco memoria campionato ogni 100 ms. La durata della sessione include
 le attese dell'operatore: **non** è un tempo di build o query. Per la seconda istanza
 usare la stessa workspace; per uno storage indipendente usarne una nuova.
-[Evidenze e limiti M9](../docs/M9_VERIFICATION.md).
+[Evidenze e limiti M9](../docs/archive/v1/M9_VERIFICATION.md).
 
 ## Fault injection separata dal pacchetto
 

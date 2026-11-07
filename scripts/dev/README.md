@@ -1,4 +1,6 @@
-# Avvio e riavvio del progetto da VS Code
+# Avvio e riavvio del desktop attuale da VS Code
+
+Il task avvia il desktop Qt Widgets v1; la [UI Qt Quick v2](../../docs/UX_WINDOWS.md) non è ancora implementata.
 
 Su Windows, aprire la root del repository e scegliere **Terminal → Run Task →
 Local Document Search: avvia / riavvia**. È un solo task: backend e frontend condividono
@@ -74,7 +76,7 @@ Errori del desktop sono in `runtime/desktop-stderr.log`.
 
 Per aggiornare dipendenze, allineare `requirements.lock.txt` ai due `pyproject.toml`, includendo
 le dipendenze transitive, e verificare un avvio pulito. Il lock di sviluppo non sostituisce
-la futura verifica del pacchetto standalone M9.
+la verifica del pacchetto distribuito.
 
 ## Verifiche
 

@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M9 — Distribuzione e accettazione locale
 
 Data: 6 novembre 2026. Uso personale, nessuna pubblicazione e nessun commit automatico.
@@ -136,8 +138,8 @@ controllate restano quelle del runner backend sopra riportate.
 L'arresto forzato è stato effettuato durante estrazione, non durante il commit SQLite.
 I fault test prima/durante/dopo commit restano quelli automatici M5–M7: non vengono
 presentati come rieseguiti in ciascuna finestra del processo compilato.
-Procedura ripetibile: [packaging](../scripts/package/README.md) e
-[esperimenti](../experiments/README.md). Risultati grezzi e corpus sono esclusi da Git.
+Procedura ripetibile: [packaging](../../../scripts/package/README.md) e
+[esperimenti](../../../experiments/README.md). Risultati grezzi e corpus sono esclusi da Git.
 Controlli finali: `git diff --check` e link Markdown locali validi; nessun artefatto,
 snapshot o corpus generato incluso fra le modifiche versionabili.
 

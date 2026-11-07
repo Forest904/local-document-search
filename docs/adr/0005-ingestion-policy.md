@@ -6,4 +6,4 @@
 - **Alternatives considered:** OCR, indicizzare filename dei PDF immagine, seguire symlink, correggere caratteri invalidi automaticamente, imporre limite arbitrario sui file.
 - **Consequences:** comportamento prevedibile e meno false assunzioni sui contenuti; scansioni parzialmente incomplete in presenza di errori, possibili ResourceFailure su file enormi; OCR escluso intenzionalmente.
 - **v1 clarification (2026-11-06):** UTF-8 strict con BOM, markdown-it-py e pypdf con policy in [ADR 0007](0007-analysis-and-readers.md); memoria e ResourceFailure in [ADR 0008](0008-sqlite-snapshots.md).
-- **Related:** [PRD](../PRD.md), [Indexing & Analysis](../INDEXING_AND_ANALYSIS.md).
+- **Related:** [PRD](../archive/v1/PRD.md), [Indexing & Analysis](../archive/v1/INDEXING_AND_ANALYSIS.md).

@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M6 — Sync e lifecycle
 
 Verifica locale del 6 novembre 2026 su Windows, Python 3.12.2, ambiente `backend/.venv` esistente.

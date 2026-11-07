@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M3 — CLI TXT e Homework 3
 
 **Data:** 6 novembre 2026. **Esito:** verificata localmente con i limiti indicati; nessuna verifica CI remota o Linux effettuata in questa sessione.
@@ -45,4 +47,4 @@ backend/.venv/Scripts/python experiments/run_homework3.py
 
 Otto TXT sintetici, 192 byte, zero errori/esclusioni. Dieci query e due regressioni BOTH/clausole miste PASS. La misura registrata per la relazione è **0,016752 s** per il build iniziale completo, una singola esecuzione con cache OS non controllata. Non misura avvio processo o validazione iniziale dell'argomento; non è un benchmark di scala. L'output JSON e la trascrizione della misura sono conservati localmente in `experiments/results/m3.json` (ignorato da Git).
 
-[Relazione compilata](homework-3/REPORT.md), [corpus/runner e attesi](../experiments/run_homework3.py). URL GitHub reale fornito dall'utente e verificato pubblico durante la pianificazione. La relazione non è stata inviata e le modifiche non sono state committate o pubblicate.
+[Relazione compilata](../../homework-3/REPORT.md), [corpus/runner e attesi](../../../experiments/run_homework3.py). URL GitHub reale fornito dall'utente e verificato pubblico durante la pianificazione. La relazione non è stata inviata e le modifiche non sono state committate o pubblicate.

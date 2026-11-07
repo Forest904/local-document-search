@@ -1,88 +1,45 @@
 # Local Document Search
 
-> **Stato: M1–M8 implementate e verificate localmente (v0.1.0).** CLI TXT/Markdown/PDF operativa, discovery ricorsiva, reader UTF-8 rigorosi per TXT/Markdown, build completo e ricerca su snapshot in memoria. Persistenza SQLite e recupero testo per versione disponibili nel backend; sync incrementale, settings, rebuild e pulizia disponibili nella composizione persistente. Job asincroni, ricerca concorrente, lock OS e chiusura con attesa implementati in M7; desktop PySide6 implementato in M8; packaging M9 implementato con verifiche locali. La prova su Windows pulito è rinviata alle versioni successive; il collaudo finale locale M9 è in corso. [Evidenze M9](docs/M9_VERIFICATION.md).
+Ricerca locale in file TXT, Markdown e PDF testuali, per nome e contenuto, con due indici invertiti posizionali proprietari.
 
-Motore di ricerca documentale **locale** per file `.txt`, `.md` e `.pdf` testuali, basato su **due indici invertiti posizionali implementati internamente** (nome e contenuto). Il backend è progettato per essere riutilizzato inizialmente da una CLI (Homework 3 di Ingegneria dei Dati) e anche dalla UI desktop Windows.
+**Disponibile oggi: v1 (pacchetti 0.1.0).** CLI Homework, backend persistente, desktop italiano Qt Widgets e ZIP standalone personale. M9 è parzialmente accettata: vedere [baseline e verifiche mancanti](docs/BASELINE.md). La v2 è progettata, non implementata.
 
-## Ambito della prima versione
+**Evoluzione organica:** v2 prosegue dal codice e dalle verifiche M0–M9 nello stesso repository; [mappa di continuità](docs/BASELINE.md#continuità-da-m0m9-a-v2).
 
-- Una directory attiva alla volta, esplorata ricorsivamente, senza seguire symlink o junction.
-- Un file fisico = un documento. Conversione TXT/Markdown/PDF testuali in un CDM con contenuto testuale unico; nessun OCR.
-- Analyzer distinti per `filename` e `content`, corpus potenzialmente multilingue, positional inverted index costruito senza un motore IR esterno.
-- Snapshot dell'indice immutabili e persistenti, con attivazione atomica; testo estratto persistito per le anteprime di testo completo.
-- Sincronizzazione incrementale con confronto **solo** di percorso, dimensione e `mtime_ns`, all'avvio, dopo nuova selezione e su richiesta manuale.
-- Indicizzazione asincrona, progresso misurabile per byte dei file completati, ricerca disponibile sullo snapshot precedente mentre la sincronizzazione è in corso.
-- Ricerca su entrambi i campi: l'intera query deve soddisfare **almeno un singolo campo**; termini non quotati con semantica AND, query tra virgolette come frase.
+**Primo incremento v2:** [corpus ibrido per test funzionali](docs/TEST_DATASETS.md), costruito a partire dai generatori Homework/M9 esistenti. I documenti Internet non sono ancora acquisiti.
 
-Le caratteristiche elencate sono implementate; le correzioni ID/FR-18 e il collaudo finale M9 sono in verifica.
+**Direzione v2:** prodotto Windows 11 x64 offline, nuova UI Qt Quick, ricerca con rilevanza e anteprime evidenziate, prestazioni misurate e installer completo. [Requisiti](docs/PRD.md) → [roadmap](docs/ROADMAP.md). Il percorso principale di lettura richiede indicativamente 15–20 minuti; i dettagli sono nell'[indice tecnico](docs/README.md).
 
-## Repository
+## Avvio attuale
 
-```text
-local-document-search/
-├── backend/              # Package Python, modelli, contratti e test M1
-│   ├── pyproject.toml
-│   ├── src/local_document_search/
-│   │   ├── domain/
-│   │   ├── application/
-│   │   ├── infrastructure/
-│   │   └── interfaces/
-│   └── tests/
-├── frontend/             # Pacchetto desktop PySide6 e test Qt
-├── experiments/          # Piano delle query e misure dell'homework
-├── docs/                 # PRD, architettura, dominio, contratti, ADR e limiti
-├── .gitignore
-└── README.md
-```
+Da Windows/VS Code: **Terminal → Run Task → Local Document Search: avvia / riavvia**. Il task prepara l'ambiente Python e avvia il desktop attuale; [prerequisiti e comportamento](scripts/dev/README.md).
 
-Installazione e test sono descritti in [backend/README.md](backend/README.md). Con ambiente virtuale attivo:
-
-```powershell
-local-document-search "C:\percorso\documenti"
-```
-
-Esempi di query: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. Senza prefisso si cerca in entrambi i campi; l'intera query deve essere soddisfatta da un singolo campo. EOF o Ctrl+C chiudono la sessione. Tutti i risultati vengono stampati, ordinati per percorso. L'indice è ricostruito in RAM a ogni avvio.
-
-Suite locale M7: risultati e cinque skip di piattaforma in [Verifica M7](docs/M7_VERIFICATION.md). La CI Windows/Linux è configurata, ma non ancora verificata su GitHub.
-
-## Desktop M8
-
-Per lo ZIP personale Windows standalone M9: [build e istruzioni](scripts/package/README.md).
-L'artefatto viene generato in `dist/`; [misure, verifiche e limiti](docs/M9_VERIFICATION.md).
-
-Da VS Code su Windows: **Terminal → Run Task → Local Document Search: avvia / riavvia**.
-Il task prepara automaticamente il virtualenv e le dipendenze anche da una clone pulita,
-salta installazioni già valide e riavvia l'app eventualmente aperta.
-[Script, prerequisiti e gestione del riavvio](scripts/dev/README.md).
-
-Con Python >=3.12 e ambiente virtuale attivo, dalla root:
+Oppure, dalla radice con Python >=3.12 e un ambiente virtuale attivo:
 
 ```powershell
 python -m pip install -e "./backend[dev]" -e "./frontend[dev]"
 local-document-search-desktop
 ```
 
-Leggi l'informativa e premi Continua, poi seleziona una cartella. Ricerca con Invio, pagine da 50,
-testo completo e apertura file; sync e letture asincroni sul backend comune.
-[Istruzioni desktop](frontend/README.md) e [verifica M8](docs/M8_VERIFICATION.md).
-Il pacchetto frontend è separato: l'installazione della sola CLI non richiede Qt.
+Per la sola CLI, senza Qt:
 
-## Da dove partire
+```powershell
+python -m pip install -e "./backend[dev]"
+local-document-search "C:/percorso/documenti"
+```
 
-1. Leggere [docs/PRD.md](docs/PRD.md) e [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-2. Esaminare [docs/DOMAIN_MODEL.md](docs/DOMAIN_MODEL.md), [docs/INTERFACE_CONTRACTS.md](docs/INTERFACE_CONTRACTS.md) e [docs/INDEXING_AND_ANALYSIS.md](docs/INDEXING_AND_ANALYSIS.md).
-3. Consultare le decisioni v1 e le milestone di verifica in [docs/OPEN_DECISIONS.md](docs/OPEN_DECISIONS.md).
-4. Seguire [docs/ROADMAP.md](docs/ROADMAP.md) e il [piano di verifica](docs/TEST_STRATEGY.md).
-5. Per il perimetro minimo del corso, vedere [docs/homework-3/ASSIGNMENT_ALIGNMENT.md](docs/homework-3/ASSIGNMENT_ALIGNMENT.md).
+Esempi: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. AND e frasi devono corrispondere interamente nello stesso campo. La CLI ricostruisce l'indice in memoria a ogni sessione, stampa tutti i risultati per percorso ed esce con EOF o Ctrl+C.
 
-## Repository pubblico e dati locali
+Uso e test: [backend](backend/README.md), [desktop](frontend/README.md). Lo [script di packaging attuale](scripts/package/README.md) genera lo ZIP v1, non l'installer v2.
 
-Repository: https://github.com/Forest904/local-document-search. Le modifiche M8 sono locali finché non vengono committate e pubblicate. Non committare raccolte personali, snapshot o testi estratti dagli utenti. La `.gitignore` copre directory runtime convenzionali; le fixture e il corpus Homework sono sintetici.
+## Progetto e dati
 
-## Conformità all'Homework 3
+Backend e CLI sono in `backend/`, desktop in `frontend/`, automazione in `scripts/`, esperimenti sintetici in `experiments/`. [Ownership e confini](docs/REPOSITORY_LAYOUT.md).
 
-L'esercizio richiede indicizzazione **TXT**, due campi (`nome`, `contenuto`), query da console con supporto alle frasi, circa dieci query di prova e relazione con URL del repository, scelte sugli analyzer, numero di file e tempi. PDF, Markdown, snapshot e UI sono estensioni di progetto. Dieci query e due regressioni sono state eseguite con successo su otto TXT sintetici: [relazione compilata](docs/homework-3/REPORT.md) e [runner riproducibile](experiments/run_homework3.py).
+Il desktop attuale conserva testo estratto e indici in `%LOCALAPPDATA%/LocalDocumentSearch`, anche se un sorgente diventa assente. Nessun cloud; corpus personali, snapshot e testo estratto restano fuori da Git. [Privacy](docs/SECURITY_AND_PRIVACY.md).
 
-## Stato delle decisioni
+La [consegna Homework 3](docs/homework-3/README.md) rimane una baseline di regressione. [Documentazione v1 archiviata](docs/archive/v1/README.md); [decisioni architetturali](docs/adr/README.md).
 
-Gli ADR in [docs/adr](docs/adr/) registrano le decisioni v1: SQLite, pypdf, markdown-it-py e PySide6 Qt Widgets, con ZIP Windows 11 x64. pypdf e markdown-it-py sono operativi in M4; SQLite è operativo nel backend M5 tramite standard library; PySide6 è operativo in M8 e il packaging M9 è disponibile per uso personale. La [roadmap](docs/ROADMAP.md) anticipa la CLI TXT per il corso e conduce al desktop distribuibile.
+## Distribuzione e diritti
+
+La distribuzione pubblica v2 non è ancora disponibile. La politica approvata prevede diritti riservati sul codice del progetto e uso gratuito personale e di studio; l'uso professionale richiede autorizzazione. I termini completi e gli obblighi delle dipendenze devono essere verificati prima del rilascio: questa descrizione non è un contratto di licenza completo. [Politica e gate di rilascio](docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).

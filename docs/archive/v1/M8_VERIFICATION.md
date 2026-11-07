@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M8 — Desktop completo
 
 Data: 6 novembre 2026. Verifica locale su Windows 11 x64 (build 26200), Python 3.12.2,

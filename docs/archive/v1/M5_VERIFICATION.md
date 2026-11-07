@@ -1,3 +1,5 @@
+> Archivio v1 — fotografia documentale del 7 novembre 2026. Stati e risultati sono storici; non descrivono la v2. [Documentazione corrente](../../README.md).
+
 # Verifica M5 — Snapshot persistenti
 
 Data: 6 novembre 2026. Verifica locale, nessuna esecuzione CI remota verificata.

@@ -1,80 +1,19 @@
-# Indexing Pipeline & Text Analysis v1
+# Analisi, indici e ricerca
 
-**Stato:** analyzer, parser e motore puro implementati e verificati localmente in [M2](M2_VERIFICATION.md); discovery TXT e reader UTF-8 implementati in [M3](M3_VERIFICATION.md); Markdown/PDF e discovery multiformato implementati e verificati localmente in [M4](M4_VERIFICATION.md). [ADR 0007](adr/0007-analysis-and-readers.md).
+[Regole v1 complete e fixture](archive/v1/INDEXING_AND_ANALYSIS.md). V2 conserva discovery senza symlink/junction, TXT/MD UTF-8 rigoroso, PDF testuali senza OCR, un testo canonico per file, analyzer distinti e due indici invertiti posizionali proprietari. Il codice usa oggi dizionari Python e `terms.get` per i termini esatti: un albero non offre automaticamente lookup migliore. [Baseline](BASELINE.md).
 
-## 1. Pipeline e responsabilità
+## Vocabolario ordinato v2
 
-Discovery → reader → testo canonico → analyzer per campo → posting nel draft.
-I reader non assegnano DocumentId né costruiscono posting. Application associa testo e descriptor.
-Un documento contiene un solo content: str; nessun offset strutturale di pagina/sezione.
-Nome e contenuto hanno analyzer distinti, indipendenti dal formato del reader.
+Ogni snapshot v2 comprende una struttura secondaria ordinata del vocabolario per `filename` e `content`, coerente con il rispettivo indice primario. Serve a prefissi espliciti e suggerimenti. La scelta concreta ([V2-D02](OPEN_DECISIONS.md)) confronta albero bilanciato, array ordinato e altre rappresentazioni appropriate per lookup, intervalli, costo di build, RAM e persistenza. Una struttura sbilanciata non soddisfa il requisito solo perché è un BST. Le posting posizionali restano la fonte dei match.
 
-## 2. Discovery e reader
+La sintassi dei prefissi, limiti di espansione e suggerimenti saranno fissati in [V2-D03](OPEN_DECISIONS.md) prima del codice. Non introdurre completamento implicito in una query esatta e non cambiare l'input della CLI Homework. Analyzer di query e indicizzazione restano coerenti; una frase richiede posizioni consecutive in un singolo campo.
 
-Scansione ricorsiva ordinata per percorso relativo, suffissi .txt/.md/.pdf riconosciuti senza distinzione maiuscole.
-Non seguire symlink, junction o altri reparse point di directory/file; una radice selezionata che sia un link è rifiutata.
-M3 abilita solo TXT, M4 tutti i formati. Errori di scansione/lettura fanno fallire il job.
-Nessuna lettura di URL, nessun OCR.
+## Risultati v2
 
-| Formato | Regole |
-|---|---|
-| TXT | UTF-8 strict, BOM iniziale ammesso e rimosso; nessun fallback o sostituzione di caratteri |
-| Markdown | Stessa decodifica; markdown-it-py CommonMark con tabelle abilitate, estrazione dai token |
-| PDF | pypdf, extract_text standard per pagina nell'ordine del documento, pagine separate da newline |
+La ricerca determina prima quali documenti corrispondono, valutando ogni campo autonomamente. I filtri formato/cartella riducono i candidati secondo il [contratto](INTERFACE_CONTRACTS.md); rilevanza ordina solo i match rimasti. La formula è [V2-D05](OPEN_DECISIONS.md); ordine deterministico e spareggio stabile sono invarianti già approvati. L'alternativa per percorso preserva l'ordine lessicografico v1 nella UI v2.
 
-Markdown include titoli, paragrafi, liste, celle di tabelle, etichette link, alt immagini e codice inline.
-Esclude blocchi di codice fenced/indentati, front matter iniziale delimitato da righe --- e token HTML grezzi.
-Il front matter è rimosso solo se delimitato e chiuso; senza chiusura si tratta come Markdown normale.
-HTML non viene eseguito/renderizzato: token raw HTML scartati, normali token testuali conservati.
-Destinazioni dei link/immagini non aggiunte al testo; nessun accesso esterno.
-Separare blocchi/celle e contenuti esclusi con whitespace, senza fondere parole adiacenti.
-Testo estratto conservato prima della normalizzazione degli analyzer.
+Snippet ed evidenziazioni derivano da testo estratto persistito e versione acquisita, non dal file sorgente. Offset e selezione delle finestre devono rispettare Unicode e [V2-D06](OPEN_DECISIONS.md). Non promettere coordinate di pagina o fedeltà al layout PDF.
 
-PDF misti: pagine immagine non contribuiscono; se il testo totale è vuoto o solo whitespace → Excluded.
-PDF illeggibili/corrotti o che richiedono password → ExtractionFailed; nessun prompt password.
-Un PDF con testo non-whitespace ma senza token ricercabili resta indicizzato per nome.
-TXT/Markdown vuoti sono documenti validi con zero token contenuto.
-Encoding invalido o errore reader → job FAILED e nessun commit.
+## Ingestione di sorgenti variabili
 
-## 3. Analyzer
-
-1. Per il filename sorgente rimuovere solo il suffisso finale supportato; non applicarlo alla query.
-2. Nel campo filename dividere confini minuscola→maiuscola, acronimo→parola e lettera↔cifra prima del casefold.
-3. Applicare NFC, casefold e NFC al testo; mantenere gli accenti.
-4. Tokenizzare sequenze Unicode di lettere/numeri e segni combinanti associati; segni isolati non sono token.
-5. Punteggiatura, apostrofi, underscore, trattini, punti ed emoji separano; posizioni consecutive da zero.
-6. Nessuno stemming o filtro stop word. Contenuto non suddiviso per CamelCase o lettera/cifra.
-
-Esempi: l'acqua → l, acqua; Report2026Finale.txt → report, 2026, finale;
-HTTPServer.md → http, server; caffè e caffe restano distinti.
-La query Report2026Finale usa lo stesso split filename; la query txt non trova automaticamente tutti i TXT.
-Focus italiano/lingue latine; nessuna segmentazione dedicata per lingue senza separatori.
-
-## 4. Query e posting
-
-Il parser produce clausole di termini o frasi, poi ogni campo applica il proprio analyzer.
-Clausole non quotate: tutti i token richiesti in AND. Clausole quotate: adiacenza e ordine.
-Tutte le clausole devono corrispondere in filename oppure tutte in content; BOTH unisce i documenti, senza duplicati.
-Esempio: machine "deep learning" richiede machine e la frase deep learning nel medesimo campo.
-Una frase t0…tk richiede posizioni p…p+k: termini ripetuti usano occorrenze distinte.
-Posting: term → document_id → posizioni ordinate, strettamente crescenti e zero-based.
-Non condividere contatori di posizione tra campi; interrogare solo snapshot immutabili.
-Grammatica ed errori: [Contratti](INTERFACE_CONTRACTS.md).
-
-## 5. Aggiornamenti
-
-Nuovo: assegnare ID e aggiungere catalogo/posting; modificato: sostituire entrambi i campi preservando ID.
-Rimosso: eliminare manifest, catalogo e posting; invariato: riutilizzare senza rileggere contenuto.
-Escluso: solo manifest, nessun documento/posting. Modifiche solo sul draft.
-Dettagli di persistenza in [Snapshot](SNAPSHOTS_AND_SYNC.md).
-
-## 6. Limiti e verifica
-
-Frasi possono attraversare pagine/paragrafi; ordine PDF non garantisce fedeltà al layout visivo.
-Nessuna provenienza strutturale, snippet, highlighting o ranking nella v1.
-Il testo completo è disponibile tramite GetDocument.
-Test obbligatori e fixture: [Test Strategy](TEST_STRATEGY.md).
-
-## Identità nelle esclusioni (2026-11-07)
-
-INDEXED→EXCLUDED rimuove l'ID; EXCLUDED→INDEXED riceve un ID nuovo, mai uno già usato nella vita dell'indice persistente.
+V2 controlla metadati prima e dopo la lettura/elaborazione per scoprire modifiche osservabili; se cambiano, il job fallisce con retry esplicito e conserva il vecchio snapshot. Il diff rimane path + size + `mtime_ns`, senza hash dei file. Un cambiamento che preserva size e mtime può sfuggire; nessun controllo del filesystem viene introdotto nelle query. [Lifecycle](SNAPSHOTS_AND_SYNC.md).

@@ -6,4 +6,4 @@
 - **Alternatives considered:** CDM gerarchico con pagine/sezioni (maggiore complessità), corpus soltanto TXT (scope troppo ridotto per il prodotto).
 - **Consequences:** analyzer indipendenti dal formato e snippet futuri; perdita delle pagine, maggior spazio disco, phrase queries che possono attraversare confini originari.
 - **v1 clarification (2026-11-06):** testo in SQLite, PDF concatenato in ordine di pagina; snippet e offset per highlighting fuori v1. Vedi [ADR 0007](0007-analysis-and-readers.md) e [ADR 0008](0008-sqlite-snapshots.md).
-- **Related:** [Domain Model](../DOMAIN_MODEL.md), [Privacy](../SECURITY_AND_PRIVACY.md).
+- **Related:** [Domain Model](../archive/v1/DOMAIN_MODEL.md), [Privacy](../archive/v1/SECURITY_AND_PRIVACY.md).

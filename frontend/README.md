@@ -1,6 +1,6 @@
-# Desktop Windows — M8
+# Desktop attuale — Qt Widgets v1
 
-Interfaccia italiana PySide6 Qt Widgets, nello stesso processo del backend M7.
+Interfaccia italiana PySide6 Qt Widgets, nello stesso processo del backend persistente. La [UI Qt Quick v2](../docs/UX_WINDOWS.md) è progettata, non implementata.
 Un pacchetto separato mantiene Qt fuori dall'installazione della CLI Homework.
 
 ## Installazione e avvio
@@ -17,7 +17,7 @@ local-document-search-desktop
 ```
 
 In alternativa: `python -m local_document_search_desktop.main`.
-Packaging standalone e lock delle versioni sono implementati in M9; il nuovo collaudo locale finale è in corso.
+Packaging standalone e lock delle versioni sono implementati nel pacchetto v1; [M9 resta parzialmente accettata](../docs/BASELINE.md).
 Ambiente verificato M8: Windows 11 x64, Python 3.12.2, PySide6 6.12.0.
 
 ## Uso
@@ -48,7 +48,7 @@ I test usano QtTest, Future controllate, worker reali e storage temporaneo; ness
 Widget/controller dipendono dai contratti applicativi. Solo `composition.py` collega il backend
 persistente e l'adapter di apertura file; nessun accesso UI allo storage o agli indici.
 
-[Verifica M8](../docs/M8_VERIFICATION.md) · [UX](../docs/UX_WINDOWS.md) · [Roadmap](../docs/ROADMAP.md)
+[Verifica M8](../docs/archive/v1/M8_VERIFICATION.md) · [UX](../docs/UX_WINDOWS.md) · [Roadmap](../docs/ROADMAP.md)
 
 Distribuzione personale Windows standalone M9: [build e istruzioni](../scripts/package/README.md),
-[evidenze e prova Windows pulito rinviata](../docs/M9_VERIFICATION.md).
+[evidenze e prova Windows pulito rinviata](../docs/archive/v1/M9_VERIFICATION.md).
