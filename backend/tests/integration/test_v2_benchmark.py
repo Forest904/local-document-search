@@ -51,7 +51,11 @@ def test_smoke_runner_complete(tmp_path):
     phases = {event["phase"]: event for event in report["cycles"][0]}
     assert set(phases) == {"build", "reopen", "nochange", "queries", "incremental"}
     assert abs(phases["build"]["actual_text_bytes"] / 24_000 - 1) <= .01
-    assert len(phases["queries"]["queries"]) == len(benchmark.QUERIES)
+    assert len(phases["queries"]["queries"]) == len(benchmark.QUERIES) + 4
+    assert {(item["query"], item["field"]) for item in phases["queries"]["queries"]} >= {
+        ("marcatoremed*", "content"), ("marcatorerar*", "content"),
+        ("frasecom*", "content"), ("marcatoreme", "suggest"),
+    }
     assert phases["reopen"]["process_to_search_ready_seconds"] > 0
     assert not (result / "cycle-1" / "storage").exists()
     assert phases["incremental"]["storage_bytes"] > 0

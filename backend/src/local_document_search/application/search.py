@@ -2,11 +2,13 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Condition
 
-from .contracts import DocumentDetails, InvalidInput, SearchRequest, SearchResponse, SearchResult
+from .contracts import (DocumentDetails, InvalidInput, SearchRequest, SearchResponse,
+                        SearchResult, SuggestRequest, SuggestResponse)
 from .errors import ResourceFailure, SnapshotUnavailable
 from .ports import SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
-from local_document_search.domain.queries import QueryEvaluator, QueryParser
+from local_document_search.domain.analysis import ContentAnalyzer, FilenameAnalyzer
+from local_document_search.domain.queries import QueryEvaluator, QueryParser, SearchField
 
 
 class SearchDocuments:
@@ -28,20 +30,60 @@ class SearchDocuments:
         try:
             with self.snapshots.acquire() as snapshot:
                 try:
-                    query = QueryParser().parse(request.query, request.field)
+                    query = QueryParser().parse(request.query, request.field, request.allow_prefixes)
+                    matches, total = QueryEvaluator().evaluate_page(
+                        query, snapshot, request.offset, request.limit)
                 except ValueError as exc:
                     raise InvalidInput(str(exc)) from exc
-                matches = QueryEvaluator().evaluate(query, snapshot)
                 results = []
-                for match in matches[request.offset:request.offset + request.limit]:
+                for match in matches:
                     metadata = snapshot.catalog.documents[match.document_id].descriptor.metadata
                     results.append(SearchResult(
                         match.document_id, metadata.filename, metadata.relative_path,
                         metadata.format, match.matched_fields,
                     ))
-                return SearchResponse(snapshot.snapshot_id, tuple(results), len(matches))
+                return SearchResponse(snapshot.snapshot_id, tuple(results), total)
         except MemoryError as exc:
             raise ResourceFailure("Memoria insufficiente durante la ricerca") from exc
+
+
+class SuggestTerms:
+    def __init__(self, snapshots: SnapshotRepositoryPort, runtime=None) -> None:
+        self.snapshots = snapshots
+        self.runtime = runtime
+
+    def submit(self, request: SuggestRequest):
+        if self.runtime is None:
+            raise InvalidInput("Runtime asincrono non configurato")
+        return self.runtime.submit(self._execute, request)
+
+    def execute(self, request: SuggestRequest) -> SuggestResponse:
+        if self.runtime is not None:
+            return self.runtime.run(self._execute, request)
+        return self._execute(request)
+
+    def _execute(self, request: SuggestRequest) -> SuggestResponse:
+        try:
+            with self.snapshots.acquire(request.snapshot_id) as snapshot:
+                if not request.text.strip():
+                    return SuggestResponse(snapshot.snapshot_id, ())
+                if any(char in request.text for char in '*"'):
+                    raise InvalidInput("Sintassi non valida per suggerimenti")
+                fields = ((SearchField.FILENAME, FilenameAnalyzer(), snapshot.filename_index),
+                          (SearchField.CONTENT, ContentAnalyzer(), snapshot.content_index))
+                found = set()
+                for field, analyzer, index in fields:
+                    if request.field not in (field, SearchField.BOTH):
+                        continue
+                    tokens = analyzer.analyze(request.text)
+                    if len(tokens) != 1:
+                        raise InvalidInput("Richiesto un solo token per campo")
+                    prefix = tokens[0].term
+                    if len(prefix) >= 2:
+                        found.update(index.terms_with_prefix(prefix, request.limit))
+                return SuggestResponse(snapshot.snapshot_id, tuple(sorted(found)[:request.limit]))
+        except MemoryError as exc:
+            raise ResourceFailure("Memoria insufficiente durante i suggerimenti") from exc
 
 
 class GetDocument:

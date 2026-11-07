@@ -17,7 +17,7 @@ import sys
 import time
 from unittest.mock import patch
 
-from v2_benchmark import QUERIES, expected_paths, verify
+from v2_benchmark import MARKERS, QUERIES, expected_paths, verify
 
 
 def memory():
@@ -91,17 +91,25 @@ def actual_text_bytes(app, manifest):
 
 
 def check_queries(app, manifest):
-    from local_document_search.application.contracts import SearchField, SearchRequest
+    from local_document_search.application.contracts import SearchField, SearchRequest, SuggestRequest
     for query, field in QUERIES:
         page = app.search.execute(SearchRequest(query, SearchField(field), limit=manifest["count"]))
         actual = [r.relative_path.value for r in page.results]
         expected = expected_paths(manifest, query, field)
         if actual != expected:
             raise AssertionError(f"Query errata: {field} {query}: {len(actual)} != {len(expected)}")
+    for prefix, marker in (("marcatoremed*", MARKERS[1]),
+                           ("marcatorerar*", MARKERS[2])):
+        page = app.search.execute(SearchRequest(prefix, SearchField.CONTENT,
+                                                limit=manifest["count"], allow_prefixes=True))
+        if [r.relative_path.value for r in page.results] != expected_paths(manifest, marker, "content"):
+            raise AssertionError(f"Prefisso errato: {prefix}")
+    if app.suggest.execute(SuggestRequest("marcatoreme", SearchField.CONTENT)).terms != (MARKERS[1],):
+        raise AssertionError("Suggerimento errato")
 
 
 def phase(args):
-    from local_document_search.application.contracts import SearchField, SearchRequest
+    from local_document_search.application.contracts import SearchField, SearchRequest, SuggestRequest
     from local_document_search.interfaces.composition import compose_persistent_application
     # The controller verifies every source byte before copying the cycle.
     manifest = json.loads((args.corpus / "manifest.json").read_text(encoding="utf-8"))
@@ -178,9 +186,13 @@ def phase(args):
             elif args.phase == "queries":
                 check_queries(app, manifest)
                 requests = [(q, f, SearchRequest(q, SearchField(f), limit=50)) for q, f in QUERIES]
+                requests.extend((q, "content", SearchRequest(q, SearchField.CONTENT, limit=50,
+                                                                allow_prefixes=True))
+                                for q in ("marcatoremed*", "marcatorerar*", "frasecom*"))
+                requests.append(("marcatoreme", "suggest", SuggestRequest("marcatoreme", SearchField.CONTENT)))
                 for _, _, request in requests:
                     for _ in range(args.warmups):
-                        app.search.execute(request)
+                        (app.suggest if isinstance(request, SuggestRequest) else app.search).execute(request)
                 samples = {(q, f): [] for q, f, _ in requests}
                 rng = random.Random(manifest["seed"])
                 for _ in range(args.samples):
@@ -188,7 +200,7 @@ def phase(args):
                     rng.shuffle(order)
                     for q, f, request in order:
                         begin = time.perf_counter()
-                        app.search.execute(request)
+                        (app.suggest if isinstance(request, SuggestRequest) else app.search).execute(request)
                         samples[q, f].append(time.perf_counter() - begin)
                 result["queries"] = [{"query": q, "field": f, "seconds": values,
                                       "summary": summary(values)} for (q, f), values in samples.items()]

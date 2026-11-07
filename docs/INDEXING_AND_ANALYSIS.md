@@ -4,9 +4,11 @@
 
 ## Vocabolario ordinato v2
 
-Ogni snapshot v2 comprende una struttura secondaria ordinata del vocabolario per `filename` e `content`, coerente con il rispettivo indice primario. Serve a prefissi espliciti e suggerimenti. La scelta concreta ([V2-D02](OPEN_DECISIONS.md)) confronta albero bilanciato, array ordinato e altre rappresentazioni appropriate per lookup, intervalli, costo di build, RAM e persistenza. Una struttura sbilanciata non soddisfa il requisito solo perché è un BST. Le posting posizionali restano la fonte dei match.
+Ogni snapshot comprende una tupla ordinata immutabile delle chiavi di ciascun indice, ricostruita alla riapertura senza cambiare lo schema SQLite. Il dizionario resta per i termini esatti. La scelta V2-D02 confronta albero bilanciato, scansione del dizionario e tupla ordinata su lookup, intervalli, build, RAM e ricostruzione; [misure](V2_03_RETRIEVAL.md). Le posting posizionali restano la fonte dei match.
 
-La sintassi dei prefissi, limiti di espansione e suggerimenti saranno fissati in [V2-D03](OPEN_DECISIONS.md) prima del codice. Non introdurre completamento implicito in una query esatta e non cambiare l'input della CLI Homework. Analyzer di query e indicizzazione restano coerenti; una frase richiede posizioni consecutive in un singolo campo.
+V2-D03 abilita `termine*` solo con opzione esplicita, fuori dalle frasi. Prefisso iniziale/interno/ripetuto, token multipli nel campo, lunghezza normalizzata inferiore a due o oltre 256 espansioni per campo sono input invalidi. Il limite si verifica anche quando un'altra clausola non trova match. AND e BOTH continuano a essere risolti interamente per campo. La CLI Homework resta invariata. [Decisione](adr/0010-v2-retrieval.md).
+
+Lo snapshot conserva l'ordine per percorso dei documenti. La ricerca applicativa calcola il totale su tutti i match e costruisce i risultati della sola pagina richiesta, evitando di ordinare e materializzare tutti i match nelle query ampie. L'API di dominio che restituisce tutti i match mantiene lo stesso ordinamento.
 
 ## Risultati v2
 

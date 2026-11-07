@@ -8,7 +8,7 @@ from local_document_search.application.lifecycle import (
 from local_document_search.infrastructure.settings_storage import SqliteSettingsRepository
 from local_document_search.infrastructure.persistent_storage import PersistentSnapshotRepository
 
-from local_document_search.application.search import GetDocument, SearchDocuments, ReadRuntime
+from local_document_search.application.search import GetDocument, SearchDocuments, SuggestTerms, ReadRuntime
 from local_document_search.application.jobs import RequestSynchronization, GetJobStatus
 from local_document_search.infrastructure.storage_lock import StorageLock
 from local_document_search.application.synchronization import BuildIndex, IndexSynchronizer
@@ -68,6 +68,7 @@ class PersistentApplication:
     status: GetIndexStatus
     clear_local_data: ClearLocalData
     search: SearchDocuments
+    suggest: SuggestTerms
     get_document: GetDocument
     snapshots: PersistentSnapshotRepository
     request_synchronization: RequestSynchronization
@@ -114,7 +115,8 @@ def compose_persistent_application(storage=None):
         return PersistentApplication(
             InitializeApplication(lifecycle), SelectDirectory(lifecycle),
             RunSynchronization(lifecycle), GetIndexStatus(lifecycle), ClearLocalData(lifecycle),
-            SearchDocuments(snapshots, reads), GetDocument(snapshots, reads), snapshots,
+            SearchDocuments(snapshots, reads), SuggestTerms(snapshots, reads),
+            GetDocument(snapshots, reads), snapshots,
             RequestSynchronization(lifecycle), GetJobStatus(lifecycle.jobs), lifecycle, reads, lock)
     except BaseException:
         try:

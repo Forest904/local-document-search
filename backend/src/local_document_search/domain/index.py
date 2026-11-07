@@ -1,6 +1,7 @@
 """Posting e indici immutabili; IndexBuilder in snapshots costruisce il draft."""
 from collections.abc import Mapping
-from dataclasses import dataclass
+from bisect import bisect_left
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from .documents import DocumentId, require_nonnegative
 
@@ -22,6 +23,7 @@ class Posting:
 @dataclass(frozen=True)
 class PositionalIndex:
     terms: Mapping[str, Mapping[DocumentId, Posting]]
+    vocabulary: tuple[str, ...] = field(init=False)
 
     def __post_init__(self) -> None:
         frozen = {}
@@ -30,3 +32,11 @@ class PositionalIndex:
                 raise ValueError("Termine o lista posting vuoti")
             frozen[term] = MappingProxyType(dict(postings))
         object.__setattr__(self, "terms", MappingProxyType(frozen))
+        object.__setattr__(self, "vocabulary", tuple(sorted(frozen)))
+
+    def terms_with_prefix(self, prefix: str, limit: int | None = None) -> tuple[str, ...]:
+        start = bisect_left(self.vocabulary, prefix)
+        end = bisect_left(self.vocabulary, prefix + chr(0x10ffff))
+        if limit is not None:
+            end = min(end, start + limit)
+        return self.vocabulary[start:end]

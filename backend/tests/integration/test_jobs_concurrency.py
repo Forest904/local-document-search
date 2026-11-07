@@ -107,7 +107,7 @@ def test_long_query_keeps_version_through_two_commits(corpus, monkeypatch):
     source, storage = corpus
     with compose_persistent_application(storage) as app:
         old = ready(app, source)
-        with blocked_method(monkeypatch, QueryEvaluator, "evaluate") as (entered, release):
+        with blocked_method(monkeypatch, QueryEvaluator, "evaluate_page") as (entered, release):
             query = app.search.submit(SearchRequest("alpha"))
             assert entered.wait(5)
             for content in ("bravo bravo", "charlie charlie charlie"):
@@ -215,7 +215,7 @@ def test_close_waits_for_job_and_read_and_rejects_admissions(corpus, monkeypatch
     app = compose_persistent_application(storage)
     try:
         ready(app, source)
-        with blocked_method(monkeypatch, QueryEvaluator, "evaluate") as (read_entered, read_release):
+        with blocked_method(monkeypatch, QueryEvaluator, "evaluate_page") as (read_entered, read_release):
             query = app.search.submit(SearchRequest("alpha"))
             assert read_entered.wait(5)
             with blocked_method(monkeypatch, app._lifecycle.synchronizer.discovery, "discover") as (entered, release):
@@ -260,7 +260,7 @@ def test_select_invalidates_new_details_but_existing_query_finishes(corpus, monk
     with compose_persistent_application(storage) as app:
         old = ready(app, source)
         identity = app.search.execute(SearchRequest("alpha")).results[0].document_id
-        with blocked_method(monkeypatch, QueryEvaluator, "evaluate") as (entered, release):
+        with blocked_method(monkeypatch, QueryEvaluator, "evaluate_page") as (entered, release):
             pending = app.search.submit(SearchRequest("alpha"))
             assert entered.wait(5)
             ready(app, other)
@@ -371,7 +371,7 @@ def test_clear_waits_for_async_query_and_removes_operational_state(corpus, monke
     source, storage = corpus
     with compose_persistent_application(storage) as app:
         old = ready(app, source)
-        with blocked_method(monkeypatch, QueryEvaluator, "evaluate") as (entered, release):
+        with blocked_method(monkeypatch, QueryEvaluator, "evaluate_page") as (entered, release):
             query = app.search.submit(SearchRequest("alpha"))
             assert entered.wait(5)
             barrier = Event()
@@ -399,7 +399,7 @@ def test_queued_query_uses_snapshot_at_execution_and_cancel_does_not_leak(corpus
     source, storage = corpus
     with compose_persistent_application(storage) as app:
         old = ready(app, source)
-        with blocked_method(monkeypatch, QueryEvaluator, "evaluate") as (entered, release):
+        with blocked_method(monkeypatch, QueryEvaluator, "evaluate_page") as (entered, release):
             first = app.search.submit(SearchRequest("alpha"))
             assert entered.wait(5)
             queued = app.search.submit(SearchRequest("replacement"))

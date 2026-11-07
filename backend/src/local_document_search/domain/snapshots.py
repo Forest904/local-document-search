@@ -69,6 +69,7 @@ class IndexSnapshot:
     catalog: DocumentCatalog
     filename_index: PositionalIndex
     content_index: PositionalIndex
+    ordered_document_ids: tuple[DocumentId, ...] = field(init=False)
 
     def __post_init__(self) -> None:
         if not all(value.strip() for value in (
@@ -88,10 +89,15 @@ class IndexSnapshot:
                 referenced.add(entry.document_id)
         if referenced != set(documents):
             raise ValueError("Documenti senza entry indicizzata")
+        object.__setattr__(self, "ordered_document_ids", tuple(sorted(
+            documents, key=lambda key: documents[key].descriptor.metadata.relative_path.value,
+        )))
         for index, count_attribute in (
             (self.filename_index, "filename_token_count"),
             (self.content_index, "content_token_count"),
         ):
+            if index.vocabulary != tuple(sorted(index.terms)):
+                raise ValueError("Vocabolario non coerente con i posting")
             seen: dict[DocumentId, set[int]] = {key: set() for key in documents}
             for postings in index.terms.values():
                 for document_id, posting in postings.items():

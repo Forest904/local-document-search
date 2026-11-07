@@ -19,6 +19,7 @@ class SearchRequest:
     field: SearchField = SearchField.BOTH
     limit: int = 50
     offset: int = 0
+    allow_prefixes: bool = False
 
     def __post_init__(self) -> None:
         if not self.query.strip() or not isinstance(self.field, SearchField):
@@ -27,6 +28,30 @@ class SearchRequest:
             raise InvalidInput("limit deve essere un intero positivo")
         if type(self.offset) is not int or self.offset < 0:
             raise InvalidInput("offset deve essere un intero non negativo")
+        if type(self.allow_prefixes) is not bool:
+            raise InvalidInput("allow_prefixes deve essere booleano")
+
+
+@dataclass(frozen=True)
+class SuggestRequest:
+    text: str
+    field: SearchField = SearchField.BOTH
+    limit: int = 10
+    snapshot_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.text, str) or not isinstance(self.field, SearchField):
+            raise InvalidInput("Testo o campo non valido")
+        if type(self.limit) is not int or not 1 <= self.limit <= 50:
+            raise InvalidInput("limit deve essere tra 1 e 50")
+        if self.snapshot_id is not None and (not isinstance(self.snapshot_id, str) or not self.snapshot_id.strip()):
+            raise InvalidInput("snapshot_id non valido")
+
+
+@dataclass(frozen=True)
+class SuggestResponse:
+    snapshot_id: str
+    terms: tuple[str, ...]
         # SearchDocuments traduce gli errori del parser/analyzer in InvalidInput.
 
 

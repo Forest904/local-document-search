@@ -1,6 +1,6 @@
 # Baseline implementata e debito M9
 
-Rilevazione documentale e ispezione del codice: **7 novembre 2026**. Nessuna suite o misura rieseguita durante la riscrittura. V1 corrisponde ai pacchetti `0.1.0`; v2 è approvata come progetto, non implementata.
+Rilevazione documentale e ispezione del codice v1: **7 novembre 2026**. Nessuna suite o misura fu rieseguita durante la riscrittura. V1 corrisponde ai pacchetti `0.1.0`; gli aggiornamenti V2-02 e V2-03 in fondo registrano il progresso successivo, senza cambiare la fotografia storica.
 
 ## Continuità da M0–M9 a v2
 
@@ -68,3 +68,7 @@ con picco working set di 4125 MiB. I risultati e i budget approvati sono
 distinti dalle prove storiche M9 e dalla validazione funzionale V2-01.
 I budget V2-D01 sono approvati nell'[ADR 0014](adr/0014-v2-performance-budgets.md),
 ma il backend v1 misurato ne supera diversi.
+
+## Aggiornamento V2-03
+
+Il backend include vocabolari ordinati per campo ricostruiti con gli snapshot, ricerca con prefissi espliciti e suggerimenti separati per versione. Il formato SQLite e la CLI Homework non sono cambiati. Le misure e lo stato del gate prestazionale sono nella [relazione V2-03](V2_03_RETRIEVAL.md); storage fisico e lifecycle restano V2-04. La tabella iniziale documenta la baseline v1 da cui parte la roadmap.

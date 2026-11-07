@@ -36,7 +36,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T02 | TXT/MD/PDF testuali, PDF protetto/vuoto/misto e TXT/MD vuoti; symlink/junction esclusi; errori distinti dalle esclusioni | V2-04, V2-08 |
 | T03 | AND, frasi, termini ripetuti e BOTH nello stesso campo; match identici a v1 per query esatte | V2-03 |
 | T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
-| T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati | V2-03, V2-05, V2-06 |
+| T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati. Backend V2-03 coperto da `test_v2_retrieval.py`; integrazione digitazione UI in V2-06 | V2-03, V2-05, V2-06 |
 | T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso | V2-05 |
 | T07 | Snippet e highlight Unicode/frasi nella versione del risultato; anteprima sotto carico e versione rimossa gestita | V2-05, V2-06, V2-08 |
 | T08 | Budget approvati su 10.000/300 MB per p95 query, avvio, build, sync, RAM; metodologia e limiti registrati | V2-02, V2-03, V2-04, V2-08 |

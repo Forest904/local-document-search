@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato al 7 novembre 2026:** V2-01 e V2-02 sono completate e verificate localmente; V2-03…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato al 7 novembre 2026:** V2-01, V2-02 e V2-03 sono completate e verificate localmente; V2-04…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
@@ -85,9 +85,11 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 ## V2-03 — Retrieval e vocabolario ordinato
 
-**Ingresso:** budget V2-02; due indici posizionali e lookup esatto su dizionario implementati in v1. La struttura secondaria è obbligatoria, la sua rappresentazione è aperta.
+**Chiusura locale al 7 novembre 2026, revisione di partenza `fa9f73eb72f17509a6bbfa401f58abc0ac35895c` (working tree modificato):** vocabolari ordinati per campo e snapshot, prefissi espliciti e suggerimenti applicativi implementati. V2-D02 e V2-D03 sono risolte nell'[ADR 0010](adr/0010-v2-retrieval.md) dopo il [confronto misurato](V2_03_RETRIEVAL.md). CLI Homework invariata. Backend: 351 passed, 6 skipped; corpus reale opt-in mirato: 6 passed; Homework PASS. Il runner target 10.000 file/299.948.099 byte ha completato tre cicli `PASS`: massimo query p95 36,5 ms entro il budget 100 ms; no-change massimo 0,764 s entro 1 s. Build 729–742 s, avvio circa 110 s, sync incrementale 257–264 s e RAM 4127 MiB sono fuori budget e restano a V2-04/V2-08. Comandi, ambiente, risultati e limiti sono nella [relazione V2-03](V2_03_RETRIEVAL.md); grezzi fuori Git. **V2-03 chiusa localmente per il retrieval**, senza attribuire prove del pacchetto a questa milestone. La revisione finale va registrata dopo il commit.
 
-**Decisioni prima dell'API/codice:** V2-D02 struttura, memoria, persistenza e coerenza per campo; V2-D03 sintassi/limiti dei prefissi e comportamento dei suggerimenti. Confrontare alternative, incluso albero bilanciato e array ordinato: un BST non è assunto più rapido del dizionario per lookup esatto.
+**Ingresso storico:** budget V2-02; due indici posizionali e lookup esatto su dizionario implementati in v1. La struttura secondaria era obbligatoria, con rappresentazione allora aperta.
+
+**Decisioni chiuse:** V2-D02 struttura, memoria, persistenza e coerenza per campo; V2-D03 sintassi/limiti dei prefissi e comportamento dei suggerimenti. Il confronto include albero bilanciato, scansione del dizionario e tupla ordinata: un BST non è assunto più rapido del dizionario per lookup esatto.
 
 **Attività ordinate**
 
