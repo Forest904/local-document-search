@@ -4,6 +4,8 @@ Una specifica approvata non equivale a codice funzionante. Conservare test v1 e 
 
 ## Validazione funzionale V2-01
 
+T20 è automatizzato in `backend/tests/integration/test_v2_corpus.py`: verifica generazione ripetuta, hash dei sintetici e liste complete. T21 è verificato localmente con i 12 reali completi e le 36 query della ground truth, ricontrollate sui testi estratti prima del confronto col motore. La suite reale resta opt-in. Un file reale mancante, alterato o una ground truth assente non è un PASS. [Evidenze e limiti della chiusura V2-01](ROADMAP.md#v2-01--corpus-ibrido-e-validazione-funzionale).
+
 La suite ordinaria usa i sintetici deterministici offline. La suite reale è opt-in e richiede tutti i documenti del manifest verificati tramite hash; se uno è stato saltato o non disponibile, segnala corpus incompleto e non passa. Confronta le liste complete di percorsi attesi per query e campo, comprese frasi e casi senza match. La ground truth viene preparata dopo acquisizione e associata alla versione dei documenti; [provenienza, metodo e limiti](TEST_DATASETS.md). Nessun tempo misurato in questo corpus costituisce un obiettivo di prestazione.
 
 ## Metodo e criteri

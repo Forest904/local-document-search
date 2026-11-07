@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "en/attributing.pdf",
+      "source": "Wikimedia Commons",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Attributing_Creative_Commons_Content_-_A_guide.pdf",
+      "license": "CC-BY-SA-4.0",
+      "license_url": "https://commons.wikimedia.org/wiki/File:Attributing_Creative_Commons_Content_-_A_guide.pdf",
+      "language": "en",
+      "format": "pdf",
+      "sha256": "b9505f32f6b480f30077b9da5f79f5cfdf1cb7a08733c0d803532ce8da675ac0"
+    },
+    {
+      "path": "en/best-practices.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/best-practices.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "en",
+      "format": "md",
+      "sha256": "2b54f9063f13b0616b6451cb31de0cbec6c44c80816fb8f92c7f512f7e8d9670"
+    },
+    {
+      "path": "en/brief-guide.pdf",
+      "source": "Wikimedia Commons",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/A_Brief_Guide_on_Using_CC_Licenses_and_CC_Licensed_Works.pdf",
+      "license": "CC-BY-SA-4.0",
+      "license_url": "https://commons.wikimedia.org/wiki/File:A_Brief_Guide_on_Using_CC_Licenses_and_CC_Licensed_Works.pdf",
+      "language": "en",
+      "format": "pdf",
+      "sha256": "c1a73e9c675eac996177db46be114e6341ea097d2b7c45f53d020603eec7e53d"
+    },
+    {
+      "path": "en/building-community.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/building-community.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "en",
+      "format": "md",
+      "sha256": "bb88b12716d60a50f932b9ea7eba07da858859fbb6c76bec74d177a5c2a29ec4"
+    },
+    {
+      "path": "en/legal.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/legal.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "en",
+      "format": "md",
+      "sha256": "8f3af78697ecf7b2c20cab565aace5922708993f6a1892dbdac5c1984da79450"
+    },
+    {
+      "path": "en/license.txt",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "en",
+      "format": "txt",
+      "sha256": "83cc663721b1bbf538756b65cffb215226e8c6be0fcf4a19a5a29dbb12f0cd5c"
+    },
+    {
+      "path": "en/starting-a-project.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/starting-a-project.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "en",
+      "format": "md",
+      "sha256": "cd790e70862b79269592414ab077bb68c01cd27f3ad75039564faa803e38c32d"
+    },
+    {
+      "path": "it/best-practices.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/it/best-practices.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "it",
+      "format": "md",
+      "sha256": "76272d5af09058edc0d20f27dcb0d4e5039fd1dd7d61d7b00c43017105e39cfb"
+    },
+    {
+      "path": "it/building-community.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/it/building-community.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "it",
+      "format": "md",
+      "sha256": "5e432a90ae5058c3a0bb9cbcb63f5dd0f228b202bb696128680bbd20362dc80a"
+    },
+    {
+      "path": "it/legal.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/it/legal.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "it",
+      "format": "md",
+      "sha256": "85ae78f965c19b8faaf207349eabeba8f38298075654a71e33406308cf15f269"
+    },
+    {
+      "path": "it/starting-a-project.md",
+      "source": "GitHub Open Source Guides",
+      "url": "https://raw.githubusercontent.com/github/opensource.guide/e7ac98e94600c5eea834f9a026c000d26b28df24/_articles/it/starting-a-project.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/github/opensource.guide/blob/e7ac98e94600c5eea834f9a026c000d26b28df24/LICENSE",
+      "language": "it",
+      "format": "md",
+      "sha256": "60fa1cb881dc13ed347fa4c3c69ab1c1034c3fc8f0aea6f59278c5f4ad94b834"
+    },
+    {
+      "path": "it/writing-toolkit.md",
+      "source": "Italia - Guida al linguaggio della Pubblica Amministrazione",
+      "url": "https://raw.githubusercontent.com/italia/writing-toolkit/6223b45e99367d0ed4b68058d2f2bcffd41eabe9/README.md",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/italia/writing-toolkit/blob/6223b45e99367d0ed4b68058d2f2bcffd41eabe9/LICENSE",
+      "language": "it",
+      "format": "md",
+      "sha256": "34cfd4448aaee74431c2781b9dc7298bf55d47c55a114e35408f9f3cfa60d661"
+    }
+  ]
+}

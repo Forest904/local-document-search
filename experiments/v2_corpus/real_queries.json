@@ -1,0 +1,318 @@
+{
+  "schema": 1,
+  "corpus_id": "d35d4e54e00102c67a8e3196c4ed8274eb78cfb5bd6f1343aaf7f3bd6d1a82b9",
+  "queries": [
+    {
+      "query": "legal",
+      "field": "filename",
+      "expected": [
+        "en/legal.md",
+        "it/legal.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "BestPractices",
+      "field": "filename",
+      "expected": [
+        "en/best-practices.md",
+        "it/best-practices.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "building community",
+      "field": "filename",
+      "expected": [
+        "en/building-community.md",
+        "it/building-community.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"starting a project\"",
+      "field": "filename",
+      "expected": [
+        "en/starting-a-project.md",
+        "it/starting-a-project.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"project starting\"",
+      "field": "filename",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "\"brief guide\"",
+      "field": "filename",
+      "expected": [
+        "en/brief-guide.pdf"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "license",
+      "field": "filename",
+      "expected": [
+        "en/license.txt"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "writing toolkit",
+      "field": "filename",
+      "expected": [
+        "it/writing-toolkit.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "en",
+      "field": "filename",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "pdf",
+      "field": "filename",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "\"creative commons\"",
+      "field": "content",
+      "expected": [
+        "en/attributing.pdf",
+        "en/brief-guide.pdf",
+        "en/legal.md",
+        "en/license.txt"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "\"open source\"",
+      "field": "content",
+      "expected": [
+        "en/best-practices.md",
+        "en/building-community.md",
+        "en/legal.md",
+        "en/starting-a-project.md",
+        "it/best-practices.md",
+        "it/building-community.md",
+        "it/legal.md",
+        "it/starting-a-project.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"pubblica amministrazione\"",
+      "field": "content",
+      "expected": [
+        "it/writing-toolkit.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"voice assistants\"",
+      "field": "content",
+      "expected": [
+        "en/attributing.pdf"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "\"title author source license\"",
+      "field": "content",
+      "expected": [
+        "en/attributing.pdf"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo.",
+        "In brief-guide.pdf le iniziali T, A, S, L interrompono la sequenza: titolo e parole presenti non bastano per questa frase."
+      ]
+    },
+    {
+      "query": "\"hand drawn\"",
+      "field": "content",
+      "expected": [
+        "en/brief-guide.pdf"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "\"lawyer client\"",
+      "field": "content",
+      "expected": [
+        "en/license.txt"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"scope creep\"",
+      "field": "content",
+      "expected": [
+        "en/best-practices.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"documentare i tuoi processi\"",
+      "field": "content",
+      "expected": [
+        "it/best-practices.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"canalizzazione del collaboratore\"",
+      "field": "content",
+      "expected": [
+        "it/building-community.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"libero e gratuito\"",
+      "field": "content",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "Wikimedia attribution",
+      "field": "content",
+      "expected": [
+        "en/attributing.pdf",
+        "en/brief-guide.pdf"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "Docker licenza",
+      "field": "content",
+      "expected": [
+        "it/writing-toolkit.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "comunità",
+      "field": "content",
+      "expected": [
+        "it/best-practices.md",
+        "it/building-community.md",
+        "it/legal.md",
+        "it/starting-a-project.md"
+      ],
+      "ambiguities": [
+        "Gli accenti sono preservati: comunità e comunita sono token distinti."
+      ]
+    },
+    {
+      "query": "comunita",
+      "field": "content",
+      "expected": [],
+      "ambiguities": [
+        "Gli accenti sono preservati: comunità e comunita sono token distinti."
+      ]
+    },
+    {
+      "query": "\"source open\"",
+      "field": "content",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "zzv2assenteqzx",
+      "field": "content",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "\"creative commons\" \"public licenses\"",
+      "field": "content",
+      "expected": [
+        "en/license.txt"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"best practices\"",
+      "field": "both",
+      "expected": [
+        "en/attributing.pdf",
+        "en/best-practices.md",
+        "it/best-practices.md"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "\"starting a project\"",
+      "field": "both",
+      "expected": [
+        "en/starting-a-project.md",
+        "it/starting-a-project.md"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "writing Docker",
+      "field": "both",
+      "expected": [],
+      "ambiguities": [
+        "Le clausole distribuite tra filename e content non costituiscono un match BOTH."
+      ]
+    },
+    {
+      "query": "brief adaptation",
+      "field": "both",
+      "expected": [],
+      "ambiguities": [
+        "Le clausole distribuite tra filename e content non costituiscono un match BOTH."
+      ]
+    },
+    {
+      "query": "legal copyright",
+      "field": "both",
+      "expected": [
+        "en/legal.md",
+        "en/license.txt"
+      ],
+      "ambiguities": []
+    },
+    {
+      "query": "\"creative commons\" Wikimedia",
+      "field": "both",
+      "expected": [
+        "en/attributing.pdf",
+        "en/brief-guide.pdf"
+      ],
+      "ambiguities": [
+        "Match sul testo PDF estratto: ordine di lettura e interruzioni di riga seguono l’esportazione; non si presume il layout visivo."
+      ]
+    },
+    {
+      "query": "zzv2assenteqzx",
+      "field": "both",
+      "expected": [],
+      "ambiguities": []
+    },
+    {
+      "query": "\"project starting\"",
+      "field": "both",
+      "expected": [],
+      "ambiguities": []
+    }
+  ]
+}

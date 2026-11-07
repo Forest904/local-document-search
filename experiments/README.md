@@ -1,5 +1,28 @@
 # Esperimenti v1 e baseline v2
 
+## V2-01: corpus funzionale
+
+Da radice repository, con il backend installato:
+
+```powershell
+python experiments/v2_corpus.py synthetic experiments/results/v2-synthetic
+python experiments/v2_corpus.py fetch experiments/results/v2-real
+python experiments/v2_corpus.py verify-real experiments/results/v2-real
+python experiments/v2_corpus.py export-text experiments/results/v2-real experiments/results/v2-real-text-final
+python experiments/v2_corpus.py validate-real experiments/results/v2-real
+```
+
+Il primo comando genera e verifica 13 sintetici TXT/MD/PDF. Usare una destinazione vuota per `synthetic` ed `export-text`. `fetch` usa la cache locale, confronta SHA-256 e non sostituisce file con hash diverso. `verify-real` controlla i 12 file del manifest senza rete; `export-text` produce i testi canonici per la revisione della ground truth secondo il [prompt](v2_corpus/ASTRA_GROUND_TRUTH_PROMPT.md). `validate-real` confronta le 36 query in [real_queries.json](v2_corpus/real_queries.json) e segnala esito incompleto se il file manca. I corpus e i testi esportati stanno in `experiments/results/`, ignorata da Git. [Esiti verificati V2-01](../docs/ROADMAP.md#v2-01--corpus-ibrido-e-validazione-funzionale).
+
+La suite ordinaria include T20. Per ripetere T21 con la ground truth versionata:
+
+```powershell
+$env:LDS_V2_REAL_CORPUS='C:/percorso/assoluto/experiments/results/v2-real'
+python -m pytest backend/tests/integration/test_v2_corpus.py -q
+```
+
+La suite reale è opt-in e non può passare con documenti mancanti, hash errati o ground truth assente. I report JSON riportano identificatore del corpus, hash delle query e revisione del codice; la revisione Git va associata anche allo stato del working tree nell'evidenza finale. Nessuna misura prodotta qui costituisce benchmark V2-02.
+
 I runner esistenti sono il punto di partenza di [V2-01](../docs/ROADMAP.md): il runner Homework verifica query su sintetici, mentre il corpus M9 combina query attese e misure. La [specifica del corpus ibrido](../docs/TEST_DATASETS.md) definisce la nuova validazione funzionale; i budget prestazionali si decidono in V2-02.
 
 `run_homework3.py` crea otto TXT sintetici in una directory temporanea, esegue dieci query e due regressioni in una sessione CLI reale, confronta gli attesi espliciti e stampa misure/trascrizione in JSON. Nessun dato personale o snapshot è versionato.
