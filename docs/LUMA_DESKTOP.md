@@ -17,17 +17,31 @@ frontend. [Specifica UX](UX_WINDOWS.md).
 
 ## Polish successivo
 
-L'icona desktop scelta dall'utente è ora il simbolo nel marchio interno e la
+L'icona desktop scelta dall'utente Ã¨ ora il simbolo nel marchio interno e la
 sorgente dell'ICO. Suggerimenti, menu dei filtri e dialoghi hanno superfici e
 testi esplicitamente coerenti con entrambi i temi. Le etichette delle
-Impostazioni non dipendono più dal colore predefinito del controllo Qt; il
+Impostazioni non dipendono piÃ¹ dal colore predefinito del controllo Qt; il
 catalogo usa termini coerenti per la sincronizzazione anche negli errori.
 I mockup con slogan incorporati rimangono riferimento visivo: il testo
-traducibile è reso dall'interfaccia.
+traducibile Ã¨ reso dall'interfaccia.
 
-La lista risultati usa righe più compatte: margini e distanze ridotti, titolo
+La lista risultati usa righe piÃ¹ compatte: margini e distanze ridotti, titolo
 da 18 px ed estratto limitato a due righe. La riga mantiene un'altezza minima
 di 48 px per l'apertura con un clic e per il focus da tastiera.
+
+## Ritocchi UI successivi
+
+Sostituita la sorgente del marchio con il PNG trasparente fornito dall'utente,
+rigenerando PNG nelle sette dimensioni e ICO. Impostazioni con etichette e
+controlli affiancati; toggle a due segmenti per lingua, tema e ordinamento.
+Le voci del menu campo hanno angoli arrotondati e rispettano il padding del popup.
+
+Verifiche di questa modifica: suite frontend **40 passed**, inclusa regressione
+su tastiera, selezione dei segmenti e reset. Catture native Windows a 900?640
+pixel logici, IT/chiaro ed EN/scuro, controllate per layout, focus e logo;
+PNG sorgente con canale alpha e angolo trasparente. Catture locali in
+`build/ui-polish/`. Backend e installer non ricollaudati per questi ritocchi;
+Narrator resta da verificare.
 
 ## Evidenze e limiti
 
@@ -38,15 +52,15 @@ Verifiche sul sorgente (Windows 11 build 26200, Python 3.12.2, Qt 6.12.0):
   e reset, apertura singola da clic/Invio senza dettagli, focus e scorrimento
   tastiera nelle Impostazioni, estratti sicuri, contrasto e cataloghi IT/EN.
 - Da `backend/`, `.venv/Scripts/python.exe -m pytest`: **384 passed, 6 skipped**.
-  Corpus reale opt-in e casi già esclusi dalla suite ordinaria non sono PASS.
+  Corpus reale opt-in e casi giÃ  esclusi dalla suite ordinaria non sono PASS.
 - `backend/.venv/Scripts/python.exe experiments/run_homework3.py`: **PASS**,
   dieci query e due regressioni con attesi coincidenti.
 - Probe `run_v2_desktop.py` sul corpus sintetico small: **PASS** a scala 1 e 2,
   100 risultati e rispettivamente 6/8 cicli ricerca/apertura durante rebuild.
-  L'opener del probe è uno stub: il risultato non prova l'applicazione esterna
-  e non è un benchmark T08. Report in `experiments/results/luma-native*`.
+  L'opener del probe Ã¨ uno stub: il risultato non prova l'applicazione esterna
+  e non Ã¨ un benchmark T08. Report in `experiments/results/luma-native*`.
 - Catture Windows native di ingresso, caricamento, home, risultati e Impostazioni,
-  incluse dimensione minima 900×640, IT/EN, chiaro/scuro e DPI differenti.
+  incluse dimensione minima 900Ã—640, IT/EN, chiaro/scuro e DPI differenti.
   I font non sono verificabili dalle catture offscreen di questo ambiente:
   la verifica visiva usa il plugin Windows.
 - Prova interattiva dal sorgente su profilo isolato e documenti sintetici:
@@ -58,13 +72,13 @@ Verifiche sul sorgente (Windows 11 build 26200, Python 3.12.2, Qt 6.12.0):
   `e103de792dfb2e841255a238082f2a06b2c67620` e working tree modificato.
   Installer: SHA-256
   `e3dfc34af1ee276b2cad4eec53f8d0d51ec96cae68bb85ccccd0c8c05818cdcf`.
-  L'eseguibile dello ZIP estratto fuori dal repository è rimasto avviato sia al
+  L'eseguibile dello ZIP estratto fuori dal repository Ã¨ rimasto avviato sia al
   primo uso, senza creare dati prima dell'informativa, sia riaprendo un catalogo
-  v2 sintetico isolato. Nessun errore runtime è stato emesso in queste prove.
+  v2 sintetico isolato. Nessun errore runtime Ã¨ stato emesso in queste prove.
 
 Un'esecuzione dei tre test QML con `QT_QPA_PLATFORM=windows` ha riportato
 `3 passed` e un avviso COM `0x8001010d` dal runtime nativo. Non viene considerata
-una prova pulita di accessibilità. La suite offscreen e i probe nativi sono
+una prova pulita di accessibilitÃ . La suite offscreen e i probe nativi sono
 separati; Narrator e tabulazione manuale completa restano da verificare.
 
 Il primo smoke dello standalone ha rilevato un argomento errato al controller

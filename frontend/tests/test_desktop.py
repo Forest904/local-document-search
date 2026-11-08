@@ -218,14 +218,14 @@ def test_direct_open_without_preview_and_obsolete_result(controller):
 
 
 def test_unicode_and_literal_markup(qt):
-    text = '😀 <img src="https://example.invalid/image"> alpha & beta'
+    text = 'ðŸ˜€ <img src="https://example.invalid/image"> alpha & beta'
     start = text.index("alpha")
     html = highlighted(text, (TextRange(start, start + 5),))
     assert "<img" not in html and "&lt;img" in html
     document = QTextDocument()
     document.setHtml(html)
     assert document.toPlainText() == text
-    assert python_cursor("😀alpha", 4) == 3
+    assert python_cursor("ðŸ˜€alpha", 4) == 3
 
 
 @pytest.mark.parametrize("outcome", list(CancelOutcome))
@@ -343,7 +343,7 @@ def test_qml_load_keyboard_search_and_theme(controller, qt):
 def test_real_backend_search_open_restart_clear(qt, tmp_path):
     source = tmp_path / "source"
     source.mkdir()
-    (source / "alpha.txt").write_text("😀 alpha beta <literal>", encoding="utf-8")
+    (source / "alpha.txt").write_text("ðŸ˜€ alpha beta <literal>", encoding="utf-8")
     storage = tmp_path / "storage"
     c = DesktopController(lambda: compose_desktop(storage), lambda *_: None)
     try:
@@ -610,3 +610,43 @@ def test_result_snippet_uses_compact_text_without_losing_highlights():
     rows = result_rows(SearchResponse("N", (item,), 1))
     assert "<br>" not in rows[0]["snippetHtml"]
     assert "<b>alpha</b>" in rows[0]["snippetHtml"] and "&lt;literal&gt;" in rows[0]["snippetHtml"]
+
+
+
+def test_settings_binary_choices_keyboard_and_reset(controller, qt):
+    from PySide6.QtCore import QPointF
+    c, _ = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.navigate("settings")
+        QTest.qWait(40)
+        for name, attribute, expected in (("language", "language", "en"),
+                                          ("theme", "theme", "dark")):
+            control = window.findChild(QObject, name)
+            control.forceActiveFocus()
+            QTest.keyClick(window, Qt.Key_Right)
+            until(lambda: getattr(c.preferences, attribute) == expected)
+            assert control.property("currentIndex") == 1
+            QTest.keyClick(window, Qt.Key_Space)
+            until(lambda: getattr(c.preferences, attribute) != expected)
+            assert control.property("currentIndex") == 0
+        order = window.findChild(QObject, "order")
+        order.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Space)
+        assert c.order.value == "path"
+        c.resetOptions()
+        QTest.qWait(20)
+        assert order.property("currentIndex") == 0
+        assert not order.property("checked")
+        QTest.keyClick(window, Qt.Key_Space)
+        assert c.order.value == "path"
+        # Clicking an already selected segment must not invert the choice.
+        for fraction, expected in ((0.75, "path"), (0.25, "relevance"), (0.25, "relevance")):
+            point = order.mapToScene(QPointF(order.width() * fraction, order.height() / 2))
+            QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier, point.toPoint())
+            assert c.order.value == expected
+    finally:
+        window.hide()
+        engine.deleteLater()

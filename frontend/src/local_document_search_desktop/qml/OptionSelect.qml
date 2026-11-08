@@ -30,13 +30,14 @@ ComboBox {
     delegate: ItemDelegate {
         required property int index
         required property string modelData
-        width: control.width
+        width: control.popup.availableWidth
         text: modelData
         highlighted: control.highlightedIndex === index
         palette.text: control.theme.ink
         palette.buttonText: control.theme.ink
         palette.highlightedText: control.theme.ink
         background: Rectangle {
+            radius: 8
             color: parent.highlighted || parent.hovered ? control.theme.sage : control.theme.surface
         }
     }

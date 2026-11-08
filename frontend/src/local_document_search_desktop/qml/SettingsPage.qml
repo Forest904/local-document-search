@@ -27,7 +27,7 @@ ScrollView {
         else if (position.y + item.height > bottom - 12)
             contentItem.contentY = Math.min(Math.max(0, contentHeight - availableHeight), position.y + item.height - availableHeight + 12);
     }
-    function applyOptions() {
+    function applyOptions(orderIndex) {
         let formats = [];
         if (txt.checked)
             formats.push("txt");
@@ -35,11 +35,11 @@ ScrollView {
             formats.push("md");
         if (pdf.checked)
             formats.push("pdf");
-        desktop.setOptions(["both", "filename", "content"][field.currentIndex], formats, folder.text, order.currentIndex === 0 ? "relevance" : "path");
+        desktop.setOptions(["both", "filename", "content"][field.currentIndex], formats, folder.text, (orderIndex === undefined ? order.currentIndex : orderIndex) === 0 ? "relevance" : "path");
     }
     ColumnLayout {
         width: page.availableWidth - 24
-        spacing: 20
+        spacing: 16
         Label {
             text: page.t.settings
             font.pixelSize: 32
@@ -58,83 +58,94 @@ ScrollView {
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
-        Label {
-            text: page.t.field
-            color: page.theme.ink
-        }
-        OptionSelect {
-            id: field
-            theme: page.theme
-            objectName: "field"
-            model: [page.t.both, page.t.filename, page.t.content]
-            currentIndex: ["both", "filename", "content"].indexOf(page.v.field)
-            Accessible.name: page.t.field
+        GridLayout {
             Layout.fillWidth: true
-            onActivated: page.applyOptions()
-        }
-        Label {
-            text: page.t.formats
-            color: page.theme.ink
-        }
-        RowLayout {
-            CheckBox {
-                id: txt
-                text: "TXT"
-                palette.windowText: page.theme.ink
-                checked: page.v.formats.indexOf("txt") >= 0
-                enabled: !checked || md.checked || pdf.checked
-                onClicked: page.applyOptions()
+            columns: 2
+            columnSpacing: 32
+            rowSpacing: 16
+            Label {
+                text: page.t.field
+                color: page.theme.ink
             }
-            CheckBox {
-                id: md
-                text: "MD"
-                palette.windowText: page.theme.ink
-                checked: page.v.formats.indexOf("md") >= 0
-                enabled: !checked || txt.checked || pdf.checked
-                onClicked: page.applyOptions()
+            OptionSelect {
+                id: field
+                theme: page.theme
+                objectName: "field"
+                model: [page.t.both, page.t.filename, page.t.content]
+                currentIndex: ["both", "filename", "content"].indexOf(page.v.field)
+                Accessible.name: page.t.field
+                Layout.fillWidth: true
+                onActivated: page.applyOptions()
             }
-            CheckBox {
-                id: pdf
-                text: "PDF"
-                palette.windowText: page.theme.ink
-                checked: page.v.formats.indexOf("pdf") >= 0
-                enabled: !checked || txt.checked || md.checked
-                onClicked: page.applyOptions()
+            Label {
+                text: page.t.formats
+                color: page.theme.ink
             }
-        }
-        TextField {
-            id: folder
-            implicitHeight: 44
-            leftPadding: 16
-            rightPadding: 16
-            background: Rectangle {
-                radius: 12
-                color: page.theme.surface
-                border.width: folder.activeFocus ? 2 : 1
-                border.color: folder.activeFocus ? page.theme.accent : page.theme.line
+            RowLayout {
+                CheckBox {
+                    id: txt
+                    text: "TXT"
+                    palette.windowText: page.theme.ink
+                    checked: page.v.formats.indexOf("txt") >= 0
+                    enabled: !checked || md.checked || pdf.checked
+                    onClicked: page.applyOptions()
+                }
+                CheckBox {
+                    id: md
+                    text: "MD"
+                    palette.windowText: page.theme.ink
+                    checked: page.v.formats.indexOf("md") >= 0
+                    enabled: !checked || txt.checked || pdf.checked
+                    onClicked: page.applyOptions()
+                }
+                CheckBox {
+                    id: pdf
+                    text: "PDF"
+                    palette.windowText: page.theme.ink
+                    checked: page.v.formats.indexOf("pdf") >= 0
+                    enabled: !checked || txt.checked || md.checked
+                    onClicked: page.applyOptions()
+                }
             }
-            objectName: "folderFilter"
-            text: page.v.folder
-            placeholderText: page.t.folder
-            color: page.theme.ink
-            placeholderTextColor: page.theme.muted
-            Accessible.name: page.t.folder
-            Layout.fillWidth: true
-            onEditingFinished: if (text !== page.v.folder)
-                page.applyOptions()
-        }
-        Label {
-            text: page.t.order
-            color: page.theme.ink
-        }
-        OptionSelect {
-            id: order
-            theme: page.theme
-            model: [page.t.relevance, page.t.path]
-            currentIndex: page.v.order === "relevance" ? 0 : 1
-            Accessible.name: page.t.order
-            Layout.fillWidth: true
-            onActivated: page.applyOptions()
+            Label {
+                text: page.t.folder
+                color: page.theme.ink
+            }
+            TextField {
+                id: folder
+                implicitHeight: 44
+                leftPadding: 16
+                rightPadding: 16
+                background: Rectangle {
+                    radius: 12
+                    color: page.theme.surface
+                    border.width: folder.activeFocus ? 2 : 1
+                    border.color: folder.activeFocus ? page.theme.accent : page.theme.line
+                }
+                objectName: "folderFilter"
+                text: page.v.folder
+                placeholderText: page.t.folder
+                color: page.theme.ink
+                placeholderTextColor: page.theme.muted
+                Accessible.name: page.t.folder
+                Layout.fillWidth: true
+                onEditingFinished: if (text !== page.v.folder)
+                    page.applyOptions()
+            }
+            Label {
+                text: page.t.order
+                color: page.theme.ink
+            }
+            BinarySelect {
+                id: order
+                objectName: "order"
+                theme: page.theme
+                model: [page.t.relevance, page.t.path]
+                currentIndex: page.v.order === "relevance" ? 0 : 1
+                Accessible.name: page.t.order
+                Layout.fillWidth: true
+                onActivated: function(index) { page.applyOptions(index); }
+            }
         }
         ActionButton {
             theme: page.theme
@@ -223,33 +234,39 @@ ScrollView {
             font.pixelSize: 22
             color: page.theme.ink
         }
-        Label {
-            text: page.t.language
-            color: page.theme.ink
-        }
-        OptionSelect {
-            theme: page.theme
-            objectName: "language"
-            model: ["Italiano", "English"]
-            currentIndex: page.v.language === "it" ? 0 : 1
-            enabled: page.v.ready
-            Accessible.name: page.t.language
+        GridLayout {
             Layout.fillWidth: true
-            onActivated: desktop.savePreferences(currentIndex === 0 ? "it" : "en", page.v.theme)
-        }
-        Label {
-            text: page.t.theme
-            color: page.theme.ink
-        }
-        OptionSelect {
-            theme: page.theme
-            objectName: "theme"
-            model: [page.t.light, page.t.dark]
-            currentIndex: page.v.theme === "light" ? 0 : 1
-            enabled: page.v.ready
-            Accessible.name: page.t.theme
-            Layout.fillWidth: true
-            onActivated: desktop.savePreferences(page.v.language, currentIndex === 0 ? "light" : "dark")
+            columns: 2
+            columnSpacing: 32
+            rowSpacing: 16
+            Label {
+                text: page.t.language
+                color: page.theme.ink
+            }
+            BinarySelect {
+                theme: page.theme
+                objectName: "language"
+                model: ["Italiano", "English"]
+                currentIndex: page.v.language === "it" ? 0 : 1
+                enabled: page.v.ready
+                Accessible.name: page.t.language
+                Layout.fillWidth: true
+                onActivated: function(index) { desktop.savePreferences(index === 0 ? "it" : "en", page.v.theme); }
+            }
+            Label {
+                text: page.t.theme
+                color: page.theme.ink
+            }
+            BinarySelect {
+                theme: page.theme
+                objectName: "theme"
+                model: [page.t.light, page.t.dark]
+                currentIndex: page.v.theme === "light" ? 0 : 1
+                enabled: page.v.ready
+                Accessible.name: page.t.theme
+                Layout.fillWidth: true
+                onActivated: function(index) { desktop.savePreferences(page.v.language, index === 0 ? "light" : "dark"); }
+            }
         }
         Item {
             Layout.preferredHeight: 32
