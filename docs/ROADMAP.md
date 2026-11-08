@@ -187,6 +187,12 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 ## V2-08 — Accettazione della release pubblica
 
+**Preparazione in corso (8 novembre 2026):** branch `v2-08-release-acceptance`.
+La diagnostica del pacchetto e il gate della build pulita sono in preparazione;
+esiti e limiti del candidato sono registrati in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
+La milestone resta aperta per il collaudo sul PC Windows pulito e l'eventuale
+chiusura dei gate manuali V2-06.
+
 **Ingresso:** V2-01…V2-07 chiuse; installer finale da una revisione pulita, termini approvati e inventario dipendenze verificato. M9 v1 rimane storicamente parziale: questa milestone chiude sul prodotto v2 le [lacune trasferite](BASELINE.md#lacune-da-trasferire-non-prove-superate), non riscrive gli esiti v1.
 
 **Attività ordinate**

@@ -16,6 +16,7 @@ import subprocess
 import sys
 import time
 from unittest.mock import patch
+import os
 
 from v2_benchmark import MARKERS, QUERIES, expected_paths, verify
 
@@ -242,14 +243,34 @@ def run(args):
     if args.cycles < 1 or args.samples < 1 or args.warmups < 0 or args.timeout <= 0:
         raise ValueError("cycles/samples/timeout positivi e warmups non negativo richiesti")
     manifest = verify(args.corpus)
+    packaged = bool(getattr(args, "storage_root", None))
+    if packaged:
+        if not getattr(args, "payload_manifest", None):
+            raise ValueError("Manifest del payload obbligatorio")
+        payload = json.loads(args.payload_manifest.read_text(encoding="utf-8"))
+        if payload.get("dirty_worktree") or not payload.get("revision"):
+            raise ValueError("Payload privo di revisione pulita")
+        if args.storage_root.exists() and any(args.storage_root.iterdir()):
+            raise ValueError("Storage di prova non vuoto")
+        personal = Path(os.environ.get("LOCALAPPDATA", "")) / "LocalDocumentSearchV2"
+        if args.storage_root.resolve() == personal.resolve() or args.storage_root.resolve().is_relative_to(personal.resolve()):
+            raise ValueError("Storage personale non utilizzabile per la diagnostica")
+        roots = [args.corpus.resolve(), args.output.resolve(), args.storage_root.resolve()]
+        if len(set(roots)) != 3 or any(a.is_relative_to(b) for a in roots for b in roots if a != b):
+            raise ValueError("Corpus, output e storage devono essere separati")
+        for name in ("run_v2_benchmark.py", "v2_benchmark.py", "m9_corpus.py"):
+            expected = payload.get("files_sha256", {}).get(f"diagnostics/{name}")
+            if expected != hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest():
+                raise ValueError(f"Diagnostica alterata: {name}")
     if args.output.exists():
         raise ValueError("Output già esistente")
     args.output.mkdir(parents=True)
-    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
+    revision = payload["revision"] if packaged else subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    dirty = False if packaged else bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
     report = {"status": "INCOMPLETE", "revision": revision, "dirty": dirty,
               "platform": platform.platform(), "python": sys.version,
-              "hardware": hardware(),
+              "hardware": hardware(), "execution": "packaged" if packaged else "source",
+              "payload_manifest_sha256": hashlib.sha256(args.payload_manifest.read_bytes()).hexdigest() if packaged else None,
               "dependencies": {name: importlib.metadata.version(name) for name in ("pypdf", "markdown-it-py")},
               "corpus_id": hashlib.sha256((args.corpus / "manifest.json").read_bytes()).hexdigest(),
               "experiment_sha256": {name: hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest()
@@ -260,7 +281,9 @@ def run(args):
     def save():
         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     save()
-    temporary_storage = Path(tempfile.mkdtemp(prefix="lds-v2-benchmark-"))
+    temporary_storage = args.storage_root if packaged else Path(tempfile.mkdtemp(prefix="lds-v2-benchmark-"))
+    if packaged:
+        temporary_storage.mkdir(parents=True)
     try:
         for cycle in range(args.cycles):
             root = args.output / f"cycle-{cycle + 1}"
@@ -272,26 +295,43 @@ def run(args):
                 if stage == "incremental":
                     mutate(root / "corpus", manifest)
                 result_path = root / f"{stage}.json"
-                command = [sys.executable, __file__, "_phase", stage, str(root / "corpus"),
+                command = ([sys.executable, "--diagnostic-phase"] if packaged else [sys.executable, __file__, "_phase"])
+                command.extend([stage, str(root / "corpus"),
                            str(storage), str(result_path), "--timeout", str(args.timeout),
-                           "--samples", str(args.samples), "--warmups", str(args.warmups)]
+                           "--samples", str(args.samples), "--warmups", str(args.warmups)])
                 elapsed = time.perf_counter()
                 command.extend(["--parent-start", str(elapsed)])
                 completed = subprocess.run(command, capture_output=True, text=True,
                                            timeout=args.timeout + 120)
-                if completed.returncode:
+                if completed.returncode or not result_path.is_file():
                     raise RuntimeError(f"{stage}: {completed.stderr[-2000:]}")
                 event = json.loads(result_path.read_text(encoding="utf-8"))
                 event["process_seconds"] = time.perf_counter() - elapsed
                 events.append(event)
                 save()
+        if packaged:
+            limits = {"build": ("operation_seconds", 300),
+                      "reopen": ("process_to_search_ready_seconds", 15),
+                      "nochange": ("operation_seconds", 1),
+                      "incremental": ("operation_seconds", 60)}
+            measured = {stage: max(next(event[key] for event in cycle if event["phase"] == stage)
+                                   for cycle in report["cycles"])
+                        for stage, (key, _) in limits.items()}
+            query_p95 = max(q["summary"]["p95_nearest_rank"] for cycle in report["cycles"]
+                            for event in cycle if event["phase"] == "queries" for q in event["queries"])
+            peak_memory = max(event["memory"]["peak_working_set_bytes"] or 0
+                              for cycle in report["cycles"] for event in cycle)
+            report["budgets"] = {"seconds": measured, "query_p95_seconds": query_p95,
+                                 "peak_working_set_bytes": peak_memory}
+            report["budget_status"] = "PASS" if all(measured[stage] <= limit for stage, (_, limit) in limits.items()) and query_p95 <= .1 and peak_memory <= 2560 * 1024**2 else "FAIL"
         report["status"] = "PASS"
     except BaseException as exc:
         report["error"] = repr(exc)
         raise
     finally:
         save()
-        shutil.rmtree(temporary_storage)
+        if not packaged:
+            shutil.rmtree(temporary_storage)
     return report
 
 
@@ -305,6 +345,8 @@ def main():
     execute.add_argument("--samples", type=int, default=100)
     execute.add_argument("--warmups", type=int, default=5)
     execute.add_argument("--timeout", type=int, default=3600)
+    execute.add_argument("--storage-root", type=Path)
+    execute.add_argument("--payload-manifest", type=Path)
     child = sub.add_parser("_phase")
     child.add_argument("phase", choices=("build", "reopen", "nochange", "queries", "incremental"))
     child.add_argument("corpus", type=Path)
@@ -322,6 +364,9 @@ def main():
     diagnostic.add_argument("output", type=Path)
     diagnostic.add_argument("--phase", choices=("build", "reopen", "queries"), default="build")
     args = parser.parse_args()
+    if args.command == "run" and os.environ.get("LDS_PACKAGED_DIAGNOSTIC"):
+        if args.storage_root is None or args.payload_manifest is None:
+            parser.error("--storage-root e --payload-manifest sono obbligatori")
     if args.command == "run":
         print(json.dumps({k: v for k, v in run(args).items() if k != "cycles"}, indent=2))
     elif args.command == "_phase":

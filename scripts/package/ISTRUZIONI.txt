@@ -12,10 +12,10 @@ Le aperture successive recuperano l'indice e sincronizzano in background.
 Inserire termini o frasi tra virgolette e premere Invio o Cerca.
 Usare termine* per un prefisso esplicito. I suggerimenti non eseguono ricerche.
 I termini sono in AND; in Nome e contenuto tutta la query deve corrispondere
-nel nome oppure nel contenuto. Pagine da 50 risultati con estratti evidenziati.
+nel nome oppure nel contenuto. Pagine da 20 risultati con estratti evidenziati.
 Clic sul titolo o Invio sul risultato apre il file nell'app Windows associata.
 
-Impostazioni contiene campo, formati, cartella relativa, ordine, gestione indice,
+Impostazioni contiene campo, formati, ordine, gestione indice,
 lingua IT/EN e tema chiaro/scuro. Filtri solo di sessione, azzerati al cambio
 cartella/riavvio; lingua e tema persistono. Ctrl+L ricerca, Ctrl+O cartella, F5 sync.
 Sync rileva aggiunte/modifiche/rimozioni; nessun controllo continuo.

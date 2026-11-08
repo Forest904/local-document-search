@@ -50,7 +50,8 @@ def validate_payload(folder):
                 "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                 "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
-                "TERMS-IT.txt", "TERMS-EN.txt"]
+                "TERMS-IT.txt", "TERMS-EN.txt", "diagnostics/run_v2_benchmark.py",
+                "diagnostics/v2_benchmark.py", "diagnostics/m9_corpus.py"]
     resources = ROOT / "frontend/src/local_document_search_desktop"
     required.extend("local_document_search_desktop/" + path.relative_to(resources).as_posix()
                     for subdirectory in ("qml", "assets")
@@ -233,7 +234,16 @@ def build_installer(folder, manifest):
     print(f"Installer: {target}\nSHA256: {record['installer_sha256']}", flush=True)
 
 
-def build():
+def clean_revision():
+    status = run(["git", "status", "--porcelain", "--untracked-files=all"],
+                 cwd=ROOT, capture_output=True, text=True).stdout
+    if status.strip():
+        raise RuntimeError("Build release rifiutata: working tree modificato")
+
+
+def build(*, release=False):
+    if release:
+        clean_revision()
     if sys.platform != "win32" or sys.version_info[:3] != (3, 12, 2) or platform.machine() != "AMD64":
         raise RuntimeError("Build fissata a CPython 3.12.2 Windows AMD64")
     compiler = toolchain()
@@ -272,6 +282,10 @@ def build():
     for resource in ("qml", "assets"):
         shutil.copytree(workspace / "local_document_search_desktop" / resource,
                         folder / "local_document_search_desktop" / resource, dirs_exist_ok=True)
+    diagnostics = folder / "diagnostics"
+    diagnostics.mkdir()
+    for name in ("run_v2_benchmark.py", "v2_benchmark.py", "m9_corpus.py"):
+        shutil.copy2(ROOT / "experiments" / name, diagnostics / name)
     remove_unused_qt_modules(folder)
     dumpbin = next(Path(compiler["x64_compilers"][0]["path"]).parent.glob("dumpbin.exe"))
     qt_audit = trim_qt(folder, dumpbin)
@@ -297,8 +311,12 @@ def build():
         for path in sorted((ROOT / directory).rglob("*")):
             if path.is_file() and "__pycache__" not in path.parts:
                 sources[path.relative_to(ROOT).as_posix()] = sha256(path)
+    for name in ("run_v2_benchmark.py", "v2_benchmark.py", "m9_corpus.py"):
+        sources[f"experiments/{name}"] = sha256(ROOT / "experiments" / name)
     for project in ("backend", "frontend"):
         sources[f"{project}/pyproject.toml"] = sha256(ROOT / project / "pyproject.toml")
+    if release and dirty:
+        raise RuntimeError("Working tree modificato durante la build release")
     manifest = {"application": NAME, "revision": revision, "dirty_worktree": bool(dirty),
                 "python": sys.version, "platform": platform.platform(), "toolchain": compiler,
                 "packages": packages, "command": [str(a) for a in command],
@@ -320,9 +338,12 @@ def build():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inside-venv", action="store_true")
+    parser.add_argument("--release", action="store_true")
     args = parser.parse_args()
+    if args.release:
+        clean_revision()
     if args.inside_venv:
-        build()
+        build(release=args.release)
         return
     if sys.version_info[:3] != (3, 12, 2) or sys.maxsize <= 2**32:
         raise RuntimeError("Specificare CPython 3.12.2 x64")
@@ -334,7 +355,7 @@ def main():
     run([python, "-m", "pip", "install", "--no-deps", "--no-build-isolation", "--force-reinstall",
          ROOT / "backend", ROOT / "frontend"])
     run([python, "-m", "pip", "check"])
-    run([python, __file__, "--inside-venv"])
+    run([python, __file__, "--inside-venv", *(["--release"] if args.release else [])])
 
 
 if __name__ == "__main__":

@@ -219,11 +219,11 @@ def full_file_inventory(folder, qt_sources):
             component = "legal-notice"
             version, license_id = "0.2.0", "Various; see file"
             notice, provenance, source = name, "Build inputs and installed package metadata", name
-        elif name == "LocalDocumentSearch.exe" or name.startswith("local_document_search_desktop/") or name in {
+        elif name == "LocalDocumentSearch.exe" or name.startswith(("local_document_search_desktop/", "diagnostics/")) or name in {
                 "ISTRUZIONI.txt", "QT_REPLACEMENT.txt", "TERMS-IT.txt", "TERMS-EN.txt",
                 "THIRD_PARTY_NOTICES.txt", "compilation-report.xml"}:
             component, version, license_id = "local-document-search", "0.2.0", "Project terms; Nuitka runtime exception for EXE"
-            notice, provenance, source = "TERMS-IT.txt", "Project sources and Nuitka 4.1.1 build", "backend/src; frontend/src; scripts/package"
+            notice, provenance, source = "TERMS-IT.txt", "Project sources and Nuitka 4.1.1 build", "backend/src; frontend/src; scripts/package; experiments"
         if component is None:
             raise RuntimeError(f"File runtime privo di attribuzione: {name}")
         if notice and not (folder / notice).is_file():
