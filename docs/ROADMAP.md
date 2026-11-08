@@ -188,8 +188,11 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 ## V2-08 — Accettazione della release pubblica
 
 **Preparazione in corso (8 novembre 2026):** branch `v2-08-release-acceptance`.
-La diagnostica del pacchetto e il gate della build pulita sono in preparazione;
-esiti e limiti del candidato sono registrati in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
+La diagnostica del pacchetto e il gate della build pulita sono implementati;
+il candidato `3b78203` ha CI verde, installer verificato e benchmark compilato
+target a tre cicli entro i budget, con uno scostamento precedente registrato.
+Il kit di collaudo è stato copiato sulla chiavetta con 30 hash verificati.
+Esiti e limiti sono in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
 La milestone resta aperta per il collaudo sul PC Windows pulito e l'eventuale
 chiusura dei gate manuali V2-06.
 
