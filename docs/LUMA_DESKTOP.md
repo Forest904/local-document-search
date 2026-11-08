@@ -43,6 +43,34 @@ PNG sorgente con canale alpha e angolo trasparente. Catture locali in
 `build/ui-polish/`. Backend e installer non ricollaudati per questi ritocchi;
 Narrator resta da verificare.
 
+## Ritocchi UI successivi ? secondo intervento
+
+Marchio statico con icona esistente e scritta grafica fornita dall'utente;
+variante chiara per il tema scuro. Ricerca con lente nel campo su home e risultati;
+selezionare un suggerimento completa la query e avvia ricerca e cambio pagina.
+Impostazioni in due colonne dove utile: aspetto in cima con icone, campo e formati
+affiancati, comandi dell'indice su una riga. Filtro sottocartella e recupero non
+sono esposti, ma i contratti backend restano disponibili. Reset e pulizia sono
+in fondo. Lo slogan della home ? rimosso.
+
+Verifiche: test frontend e catture native Windows IT/chiaro ed EN/scuro a 900?640,
+compresa la parte inferiore scorrevole delle Impostazioni, in `build/ui-polish-v2/`.
+Narrator e pacchetto finale restano da verificare.
+
+## Durata della ricerca
+
+Il riepilogo dei risultati mostra il tempo trascorso dall'invio della ricerca
+alla risposta pubblicata nella UI, inclusa l'attesa del worker. Il valore e
+arrotondato a tre decimali, con virgola in italiano e punto in inglese.
+Risposte obsolete non pubblicano tempi; una nuova query azzera la misura.
+
+## Paginazione risultati
+
+La ricerca desktop richiede 20 risultati per pagina. Le frecce, solo con piu
+pagine, sono icone centrate ai lati del riepilogo localizzato della pagina e
+dell'intervallo dei risultati. I testi visibili delle pagine QML usano il catalogo;
+restano fissi solo il marchio e gli identificatori di formato TXT/MD/PDF.
+
 ## Evidenze e limiti
 
 Verifiche sul sorgente (Windows 11 build 26200, Python 3.12.2, Qt 6.12.0):

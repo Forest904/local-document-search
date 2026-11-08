@@ -22,24 +22,34 @@ senza cambiare ricerca backend o CLI Homework.
    e sincronizzare in background. Sorgente assente: cercare sullo snapshot
    disponibile e spiegare che l'indice puÃ² essere obsoleto.
 5. **Home:** marchio Luma, Â«Ritrova ciÃ² che cerchiÂ», barra, Cerca e Impostazioni.
-   Invio esegue; digitare produce soltanto suggerimenti sullo snapshot corrente.
-6. **Risultati:** barra in alto, conteggio, lista e pagine da 50. Percorso,
-   formato, titolo ed estratto evidenziato provengono dallo snapshot. Clic o
+   Invio e il pulsante con lente dentro il campo eseguono la ricerca; digitare
+   produce soltanto suggerimenti sullo snapshot corrente. Selezionarne uno
+   completa la query e avvia la ricerca nella pagina risultati.
+   Il pulsante Impostazioni compare solo nella home.
+6. **Risultati:** barra in alto, conteggio con durata della ricerca in secondi,
+   lista e pagine da 20. Percorso,
+   formato, titolo ed estratto evidenziato provengono dallo snapshot.
+   Le frecce di pagina appaiono solo oltre 20 risultati, centrate con pagina
+   corrente e intervallo dei risultati in italiano o inglese. Clic o
+   Invio nella barra di ricerca vuota torna alla home senza avviare una ricerca.
+   Esc torna alla home dalla pagina risultati anche con una query presente.
    Invio sul risultato apre il file nell'app Windows associata. Nessuna anteprima
    interna nÃ© richiesta del testo completo per selezionare/aprire un risultato.
-7. **Impostazioni:** Ricerca, Cartella e indice, Aspetto e lingua. Campo, formati,
-   sottocartella e ordine sono qui; sync, rebuild, recupero, diagnostiche e
-   pulizia mantengono i vincoli di lifecycle. Pulizia con conferma esplicita.
-   Etichette e controlli sono affiancati in righe compatte. Lingua, tema e ordine
-   usano toggle a due segmenti con alternative sempre visibili; campo usa un
-   menu a voci arrotondate e formati mantiene la selezione multipla. Tab sposta
+7. **Impostazioni:** Aspetto e lingua, Ricerca, Cartella e indice. Campo, formati
+   e ordine sono qui; sync, rebuild e diagnostiche sono disponibili. Pulizia
+   con conferma esplicita. Il recupero resta nel backend.
+   Lingua e tema precedono la ricerca; campo e formati occupano due colonne.
+   Il filtro per sottocartella non e esposto nella UI. Reset e pulizia sono in fondo.
+   Lingua, tema e ordine usano toggle a due segmenti con alternative sempre
+   visibili e icone per lingua e tema; campo usa un menu a voci arrotondate.
+   I formati mantengono la selezione multipla. Tab sposta
    il focus, Spazio alterna il toggle e le frecce sinistra/destra scelgono il segmento.
 
 Filtri limitati alla sessione, azzerati al cambio directory/riavvio: entrambi i
-campi, TXT/MD/PDF, nessuna sottocartella, rilevanza. Almeno un formato selezionato.
+campi, TXT/MD/PDF e rilevanza. Almeno un formato selezionato.
 Home e risultati mostrano il riepilogo delle restrizioni e il reset. Cambiare
 opzioni aggiorna una ricerca giÃ  eseguita dalla prima pagina. Nessuna sintassi
-nuova come `type:pdf`. Il marchio torna alla home; Indietro dalle Impostazioni
+nuova come `type:pdf`. Il marchio e statico; Indietro dalle Impostazioni
 recupera schermata e query. `Ctrl+L` focalizza la ricerca, `Ctrl+O` sceglie una
 cartella, `F5` sincronizza. I comandi incompatibili con job/chiusura sono bloccati.
 Risposte obsolete ignorate; operazioni pesanti nei worker.
@@ -52,6 +62,7 @@ Chiaro predefinito: avorio `#FAF9F6`, bianco, grafite `#252826`, verde
 superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle
 superfici e corrispondenze in grassetto, senza marcatori gialli pesanti.
 
+Nella home compare il marchio con la nuova scritta grafica, senza slogan.
 IT/EN e tema persistono nel catalogo v2; la pulizia li azzera. Asset originali
 SVG/PNG e ICO locali, rigenerabili con `scripts/dev/generate_luma_assets.py`.
 Il naming non implica una verifica della disponibilitÃ  commerciale del marchio.

@@ -16,6 +16,9 @@ from .i18n import catalog, translate
 from .models import ResultsModel, python_cursor, result_rows
 
 
+PAGE_SIZE = 20
+
+
 class DesktopController(QObject):
     changed = Signal()
     preferencesChanged = Signal()
@@ -43,6 +46,7 @@ class DesktopController(QObject):
         self.folder = None
         self.order = SearchOrder.RELEVANCE
         self.offset = 0
+        self.search_duration = None
         self.terms = []
         self.message_key = ""
         self.closing = self.closed = False
@@ -94,12 +98,14 @@ class DesktopController(QObject):
                 "selectedPath": self.selected.relative_path.value if self.selected else "",
                 "total": self.response.total_matches if self.response else 0,
                 "hasResponse": self.response is not None, "offset": self.offset,
+                "pageSize": PAGE_SIZE,
+                "searchDuration": self.search_duration if self.search_duration is not None else -1,
                 "canPrevious": searchable and self.response is not None and self.offset > 0,
-                "canNext": searchable and self.response is not None and self.offset + 50 < self.response.total_matches,
+                "canNext": searchable and self.response is not None and self.offset + PAGE_SIZE < self.response.total_matches,
                 "reading": self.read_future is not None or bool(self.queued_reads),
                 "progress": self.job.progress if self.job and self.job.progress is not None else -1,
                 "phase": self.tr(self.job.phase.value) if self.job and running else "",
-                "counts": f"{self.job.files_completed} / {self.job.files_total or '—'}" if self.job and running else "",
+                "counts": f"{self.job.files_completed} / {self.job.files_total or 'â€”'}" if self.job and running else "",
                 "diagnostics": self.diagnostics()}
 
     def options_summary(self):
@@ -110,7 +116,7 @@ class DesktopController(QObject):
             parts.append(" / ".join(sorted(f.value.upper() for f in self.formats)))
         if self.folder:
             parts.append(self.folder)
-        return " · ".join(parts)
+        return " Â· ".join(parts)
 
     @Slot(str)
     def navigate(self, screen):
@@ -142,7 +148,7 @@ class DesktopController(QObject):
         # Translation only: reasons never determine operational behavior.
         for item in report.diagnostics:
             from .i18n import diagnostic_text
-            lines.append(f"{item.relative_path or '—'} · {self.tr(item.phase.value)} · "
+            lines.append(f"{item.relative_path or 'â€”'} Â· {self.tr(item.phase.value)} Â· "
                          f"{diagnostic_text(item.reason, item.category, self.preferences.language)}")
         return "\n".join(lines)
 
@@ -194,6 +200,7 @@ class DesktopController(QObject):
         self.generation += 1
         self.suggest_generation += 1
         self.response = self.selected = None
+        self.search_duration = None
         self.offset = 0
         self.terms = []
         self.queued_reads.clear()
@@ -262,7 +269,7 @@ class DesktopController(QObject):
         self.generation += 1
         self.selected = None
         try:
-            request = SearchRequest(self.query, self.field, offset=offset, allow_prefixes=True,
+            request = SearchRequest(self.query, self.field, offset=offset, limit=PAGE_SIZE, allow_prefixes=True,
                                     formats=self.formats, folder=self.folder, order=self.order,
                                     snapshot_id=self.state.active_snapshot_id)
         except InvalidInput as exc:
@@ -270,6 +277,8 @@ class DesktopController(QObject):
             return
         token = self.generation
         session = self.session
+        started = time.perf_counter()
+        self.search_duration = None
 
         def execute():
             response = session.search.execute(request)
@@ -281,6 +290,7 @@ class DesktopController(QObject):
                 self.search_page(0)
                 return
             self.response, self.offset = response, offset
+            self.search_duration = max(0.0, time.perf_counter() - started)
             self.model.replace(rows)
             self.message_key = ""
 
@@ -289,9 +299,9 @@ class DesktopController(QObject):
     @Slot(int)
     def page(self, direction):
         if direction < 0 and self.view["canPrevious"]:
-            self.search_page(max(0, self.offset - 50))
+            self.search_page(max(0, self.offset - PAGE_SIZE))
         elif direction > 0 and self.view["canNext"]:
-            self.search_page(self.offset + 50)
+            self.search_page(self.offset + PAGE_SIZE)
 
     def suggestion_span(self):
         before = self.query[:self.cursor]
@@ -333,6 +343,13 @@ class DesktopController(QObject):
             self.editQuery(text, cursor)
             self.debounce.stop()
             self.queryReplacement.emit(text, cursor)
+
+    @Slot(int)
+    def acceptSuggestionAndSearch(self, index):
+        before = self.query
+        self.acceptSuggestion(index)
+        if self.query != before:
+            self.search()
 
     @Slot(int)
     def openResult(self, index):

@@ -18,12 +18,6 @@ Item {
             large: true
             Layout.alignment: Qt.AlignHCenter
         }
-        Label {
-            text: desktop.labels.discover
-            color: page.theme.muted
-            font.pixelSize: 20
-            Layout.alignment: Qt.AlignHCenter
-        }
         SearchBox {
             id: search
             theme: page.theme

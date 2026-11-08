@@ -10,7 +10,7 @@ ApplicationWindow {
     height: Math.min(820, Screen.desktopAvailableHeight - 60)
     minimumWidth: 900
     minimumHeight: 640
-    title: "Local Document Search"
+    title: root.t.windowTitle
     property var v: desktop.view
     property var t: desktop.labels
     property bool dark: v.theme === "dark"
@@ -59,6 +59,11 @@ ApplicationWindow {
         onActivated: root.focusSearch()
     }
     Shortcut {
+        sequence: "Escape"
+        enabled: root.v.screen === "results"
+        onActivated: desktop.navigate("home")
+    }
+    Shortcut {
         sequence: "Ctrl+O"
         enabled: v.canManage
         onActivated: dialogs.choose()
@@ -76,6 +81,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             Brand {
                 theme: design
+                resultsHeader: root.v.screen === "results"
                 visible: root.v.screen === "results" || root.v.screen === "settings"
             }
             Label {
@@ -94,7 +100,7 @@ ApplicationWindow {
                 theme: design
                 iconName: root.v.screen === "settings" ? "back" : "settings"
                 text: root.v.screen === "settings" ? root.t.back : root.t.settings
-                visible: root.v.initialized && root.v.screen !== "onboarding"
+                visible: root.v.initialized && (root.v.screen === "home" || root.v.screen === "settings")
                 onClicked: desktop.navigate(root.v.screen === "settings" ? "back" : "settings")
             }
         }

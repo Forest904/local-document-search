@@ -1,21 +1,17 @@
 import QtQuick
-import QtQuick.Controls.Basic
 
-Button {
+Item {
     id: brand
     required property var theme
     property bool large: false
-    text: "Luma"
-    Accessible.name: "Luma \u2014 " + desktop.labels.home
-    implicitWidth: large ? 220 : 112
+    property bool resultsHeader: false
+    implicitWidth: large ? 264 : resultsHeader ? 130 : 122
     implicitHeight: large ? 80 : 44
-    background: Rectangle {
-        color: "transparent"
-        radius: 12
-        border.color: brand.activeFocus ? brand.theme.accent : "transparent"
-    }
-    contentItem: Row {
-        spacing: brand.large ? 16 : 8
+    Accessible.role: Accessible.StaticText
+    Accessible.name: "Luma"
+    Row {
+        anchors.centerIn: parent
+        spacing: brand.large ? -20 : brand.resultsHeader ? 2 : -6
         Image {
             width: brand.large ? 64 : 32
             height: width
@@ -25,14 +21,21 @@ Button {
             sourceSize.height: brand.large ? 128 : 64
             smooth: true
         }
-        Text {
-            text: "Luma"
-            color: brand.theme.ink
-            font.family: "Segoe UI"
-            font.pixelSize: brand.large ? 56 : 28
-            font.weight: Font.DemiBold
+        Rectangle {
+            width: brand.large ? 220 : 96
+            height: brand.large ? 80 : 44
+            clip: true
             anchors.verticalCenter: parent.verticalCenter
+            radius: 8
+            color: "transparent"
+            Image {
+                width: brand.large ? 294 : 126
+                height: parent.height
+                x: brand.large ? -34 : -14
+                source: "../assets/luma-wordmark-" + (brand.theme.dark ? "dark" : "light") + ".png"
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
         }
     }
-    onClicked: desktop.navigate("home")
 }

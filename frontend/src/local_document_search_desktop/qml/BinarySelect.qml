@@ -6,6 +6,7 @@ Switch {
     id: control
     required property var theme
     required property var model
+    property var icons: []
     property int currentIndex: 0
     signal activated(int index)
     checked: currentIndex === 1
@@ -41,15 +42,22 @@ Switch {
                 Layout.preferredWidth: 1
                 radius: 8
                 color: control.currentIndex === index ? control.theme.sage : "transparent"
-                Text {
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    text: modelData
-                    font: control.font
-                    color: control.theme.ink
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 8
+                    Image {
+                        visible: control.icons.length > index
+                        width: visible ? 20 : 0
+                        height: 20
+                        source: visible ? "../assets/" + control.icons[index] + ".svg" : ""
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Text {
+                        text: modelData
+                        font: control.font
+                        color: control.theme.ink
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
                 MouseArea {
                     anchors.fill: parent

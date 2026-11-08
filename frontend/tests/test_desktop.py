@@ -124,7 +124,7 @@ def test_privacy_precedes_factory_and_typing_only_suggests(controller):
     c.search()
     until(lambda: bool(s.search.calls))
     request = s.search.calls[0][0][0]
-    assert request.limit == 50 and request.allow_prefixes
+    assert request.limit == 20 and request.allow_prefixes
     assert request.order.value == "relevance"
 
 
@@ -159,12 +159,12 @@ def test_obsolete_results_and_errors_ignored(controller, change, error):
         future.set_result(SearchResponse("N", (), 5))
     if change == "options":
         until(lambda: len(s.search.calls) == 2)
-        assert c.response is None and not c.message_key
+        assert c.response is None and c.view["searchDuration"] == -1 and not c.message_key
         s.search.calls[-1][1].set_result(SearchResponse("N", (), 0))
         until(lambda: c.response is not None)
     else:
         until(lambda: c.read_future is None)
-        assert c.response is None and not c.message_key
+        assert c.response is None and c.view["searchDuration"] == -1 and not c.message_key
 
 
 def test_bounded_suggestions_and_latest_query(controller):
@@ -191,9 +191,9 @@ def test_filters_pagination_and_snapshot_restart(controller):
     assert request.folder == "work" and request.formats == {DocumentFormat.TXT, DocumentFormat.MARKDOWN}
     c.page(1)
     until(lambda: len(s.search.calls) == 2)
-    assert s.search.calls[-1][0][0].offset == 50
+    assert s.search.calls[-1][0][0].offset == 20
     s.search.calls[-1][1].set_result(SearchResponse("N", (), 120))
-    until(lambda: c.offset == 50)
+    until(lambda: c.offset == 20)
     s.state = replace(s.state, active_snapshot_id="N2")
     c.apply_state(s.state)
     until(lambda: len(s.search.calls) == 3)
@@ -201,6 +201,67 @@ def test_filters_pagination_and_snapshot_restart(controller):
     s.search.calls[-1][1].set_result(SearchResponse("N2", (), 0))
     until(lambda: c.response is not None)
     assert not c.view["canNext"] and not c.view["canPrevious"]
+
+
+def test_results_show_elapsed_time_in_both_languages(controller, qt):
+    import re
+
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.editQuery("alpha", 5)
+        c.search()
+        until(lambda: bool(s.search.calls))
+        summary = window.findChild(QObject, "resultsSummary")
+        assert summary.property("text") == c.labels["searching"]
+        QTest.qWait(30)
+        s.search.calls[-1][1].set_result(SearchResponse("N", (), 75))
+        until(lambda: c.response is not None and c.read_future is None)
+        assert c.view["searchDuration"] >= 0.02
+        assert re.fullmatch(r"Risultati 75 in [0-9]+,[0-9]{3} secondi",
+                            summary.property("text"))
+        c.savePreferences("en", "light")
+        until(lambda: c.preferences.language == "en")
+        assert re.fullmatch(r"Results 75 in [0-9]+\.[0-9]{3} seconds",
+                            summary.property("text"))
+        c.editQuery("beta", 4)
+        assert c.view["searchDuration"] == -1
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_pagination_visibility_and_labels(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        for total in (0, 19, 20, 21):
+            search(c, s, total=total)
+            until(lambda: c.response is not None and c.response.total_matches == total
+                  and c.read_future is None)
+            pagination = window.findChild(QObject, "pagination")
+            QTest.qWait(20)
+            assert pagination.property("visible") == (total > 20)
+            assert c.view["canNext"] == (total > 20)
+        summary = window.findChild(QObject, "pageSummary")
+        assert summary.property("text") == "Pagina 1 \u00b7 Risultati 1\u201320 / 21"
+        c.page(1)
+        until(lambda: len(s.search.calls) == 5)
+        assert s.search.calls[-1][0][0].offset == 20
+        s.search.calls[-1][1].set_result(SearchResponse("N", (), 21))
+        until(lambda: c.offset == 20)
+        assert summary.property("text") == "Pagina 2 \u00b7 Risultati 21\u201321 / 21"
+        assert not c.view["canNext"] and c.view["canPrevious"]
+        c.savePreferences("en", "light")
+        until(lambda: c.preferences.language == "en")
+        assert summary.property("text") == "Page 2 \u00b7 Results 21\u201321 / 21"
+    finally:
+        window.hide()
+        engine.deleteLater()
 
 
 def test_direct_open_without_preview_and_obsolete_result(controller):
@@ -218,14 +279,14 @@ def test_direct_open_without_preview_and_obsolete_result(controller):
 
 
 def test_unicode_and_literal_markup(qt):
-    text = 'ðŸ˜€ <img src="https://example.invalid/image"> alpha & beta'
+    text = '😀 <img src="https://example.invalid/image"> alpha & beta'
     start = text.index("alpha")
     html = highlighted(text, (TextRange(start, start + 5),))
     assert "<img" not in html and "&lt;img" in html
     document = QTextDocument()
     document.setHtml(html)
     assert document.toPlainText() == text
-    assert python_cursor("ðŸ˜€alpha", 4) == 3
+    assert python_cursor("😀alpha", 4) == 3
 
 
 @pytest.mark.parametrize("outcome", list(CancelOutcome))
@@ -340,10 +401,94 @@ def test_qml_load_keyboard_search_and_theme(controller, qt):
         engine.deleteLater()
 
 
+def test_settings_entry_is_only_on_home(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        navigation = window.findChild(QObject, "settingsNavigation")
+        assert navigation.property("visible")
+        c.navigate("settings")
+        assert navigation.property("visible")
+        c.navigate("back")
+        assert c.view["screen"] == "home"
+        search(c, s, total=1)
+        assert c.view["screen"] == "results"
+        assert not navigation.property("visible")
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_empty_results_query_returns_home_on_enter(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.editQuery("alpha", 5)
+        c.search()
+        until(lambda: bool(s.search.calls))
+        s.search.calls[-1][1].set_result(SearchResponse("N", (), 1))
+        until(lambda: c.response is not None)
+        query = window.findChild(QObject, "query")
+        query.forceActiveFocus()
+        query.selectAll()
+        QTest.keyClick(window, Qt.Key_Backspace)
+        assert c.query == ""
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: c.view["screen"] == "home")
+        assert len(s.search.calls) == 1
+        assert c.query == ""
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+@pytest.mark.parametrize("focus_name", ["query", "results"])
+def test_escape_from_results_returns_home(controller, qt, focus_name):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, total=1, items=(result(),))
+        window.findChild(QObject, focus_name).forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: c.view["screen"] == "home")
+        assert c.query == "alpha"
+        assert len(s.search.calls) == 1
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_escape_from_results_suggestions_returns_home(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, total=1)
+        c.editQuery("al", 2)
+        c.suggest()
+        until(lambda: bool(s.suggest.calls))
+        s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("alpha",)))
+        until(lambda: c.terms == ["alpha"])
+        window.findChild(QObject, "suggestions").forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: c.view["screen"] == "home")
+        assert c.query == "al"
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
 def test_real_backend_search_open_restart_clear(qt, tmp_path):
     source = tmp_path / "source"
     source.mkdir()
-    (source / "alpha.txt").write_text("ðŸ˜€ alpha beta <literal>", encoding="utf-8")
+    (source / "alpha.txt").write_text("😀 alpha beta <literal>", encoding="utf-8")
     storage = tmp_path / "storage"
     c = DesktopController(lambda: compose_desktop(storage), lambda *_: None)
     try:
@@ -611,6 +756,72 @@ def test_result_snippet_uses_compact_text_without_losing_highlights():
     assert "<br>" not in rows[0]["snippetHtml"]
     assert "<b>alpha</b>" in rows[0]["snippetHtml"] and "&lt;literal&gt;" in rows[0]["snippetHtml"]
 
+
+
+def test_suggestion_selection_starts_search(controller, qt):
+    c, s = controller
+    start(c)
+    c.editQuery("al", 2)
+    c.suggest()
+    until(lambda: bool(s.suggest.calls))
+    s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("alpha",)))
+    until(lambda: c.terms == ["alpha"])
+    c.acceptSuggestionAndSearch(0)
+    until(lambda: bool(s.search.calls))
+    assert c.query == "alpha" and c.view["screen"] == "results"
+    assert s.search.calls[-1][0][0].query == "alpha"
+
+
+def test_search_icon_click_runs_from_home_and_results(controller, qt):
+    from PySide6.QtCore import QPoint
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        for text in ("alpha", "beta"):
+            c.editQuery(text, len(text))
+            QTest.qWait(40)
+            button = window.findChild(QObject, "searchButton")
+            point = button.mapToScene(button.boundingRect().center())
+            QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier,
+                             QPoint(round(point.x()), round(point.y())))
+            until(lambda: len(s.search.calls) == (1 if text == "alpha" else 2))
+            assert c.view["screen"] == "results"
+            assert s.search.calls[-1][0][0].query == text
+            s.search.calls[-1][1].set_result(SearchResponse("N", (), 0))
+            until(lambda: c.read_future is None)
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_qml_suggestion_click_searches_and_opens_results(controller, qt):
+    from PySide6.QtCore import QPoint
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.editQuery("al", 2)
+        c.suggest()
+        until(lambda: bool(s.suggest.calls))
+        s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("alpha",)))
+        until(lambda: c.terms == ["alpha"])
+        suggestions = window.findChild(QObject, "suggestions")
+        QTest.qWait(40)
+        item = suggestions.property("currentItem")
+        if item is None:
+            suggestions.setProperty("currentIndex", 0)
+            item = suggestions.property("currentItem")
+        point = item.mapToScene(item.boundingRect().center())
+        QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier,
+                         QPoint(round(point.x()), round(point.y())))
+        until(lambda: bool(s.search.calls))
+        assert c.query == "alpha" and c.view["screen"] == "results"
+    finally:
+        window.hide()
+        engine.deleteLater()
 
 
 def test_settings_binary_choices_keyboard_and_reset(controller, qt):

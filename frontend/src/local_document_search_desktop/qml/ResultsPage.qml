@@ -20,7 +20,13 @@ ColumnLayout {
         Layout.fillWidth: true
     }
     Label {
-        text: page.v.reading ? desktop.labels.searching : page.v.hasResponse ? desktop.labels.results + " \u00b7 " + page.v.total : desktop.labels.enter
+        objectName: "resultsSummary"
+        text: page.v.reading ? desktop.labels.searching
+              : page.v.hasResponse && page.v.searchDuration >= 0
+                ? desktop.labels.results + " " + page.v.total + " " + desktop.labels.resultsIn
+                  + " " + page.v.searchDuration.toFixed(3).replace(".", page.v.language === "it" ? "," : ".")
+                  + " " + desktop.labels.seconds
+                : desktop.labels.enter
         color: page.theme.muted
     }
     ListView {
@@ -51,24 +57,37 @@ ColumnLayout {
         }
     }
     RowLayout {
+        objectName: "pagination"
+        visible: page.v.hasResponse && page.v.total > page.v.pageSize
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 12
         ActionButton {
+            objectName: "previousPage"
             theme: page.theme
             iconName: "back"
-            text: desktop.labels.previous
+            text: ""
+            Accessible.name: desktop.labels.previous
+            leftPadding: 12
+            rightPadding: 12
             enabled: page.v.canPrevious
             onClicked: desktop.page(-1)
         }
         Label {
-            text: page.v.hasResponse ? (page.v.total ? String(page.v.offset + 1) + "\u2013" + Math.min(page.v.offset + 50, page.v.total) + " / " + page.v.total : "0") : ""
+            objectName: "pageSummary"
+            text: desktop.labels.page + " " + (Math.floor(page.v.offset / page.v.pageSize) + 1)
+                  + " \u00b7 " + desktop.labels.results + " " + (page.v.offset + 1)
+                  + "\u2013" + Math.min(page.v.offset + page.v.pageSize, page.v.total)
+                  + " / " + page.v.total
             color: page.theme.muted
         }
-        Item {
-            Layout.fillWidth: true
-        }
         ActionButton {
+            objectName: "nextPage"
             theme: page.theme
             iconName: "next"
-            text: desktop.labels.next
+            text: ""
+            Accessible.name: desktop.labels.next
+            leftPadding: 12
+            rightPadding: 12
             enabled: page.v.canNext
             onClicked: desktop.page(1)
         }

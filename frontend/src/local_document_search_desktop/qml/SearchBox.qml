@@ -9,6 +9,10 @@ ColumnLayout {
     property var t: desktop.labels
     function submit() {
         desktop.editQuery(query.text, query.cursorPosition);
+        if (box.v.screen === "results" && query.text.trim() === "") {
+            desktop.navigate("home");
+            return;
+        }
         desktop.search();
     }
     function focusQuery() {
@@ -16,48 +20,59 @@ ColumnLayout {
         query.selectAll();
     }
     spacing: 8
-    RowLayout {
+    TextField {
+        id: query
+        objectName: "query"
         Layout.fillWidth: true
-        spacing: 12
-        TextField {
-            id: query
-            objectName: "query"
-            Layout.fillWidth: true
-            implicitHeight: 56
-            leftPadding: 24
-            rightPadding: 24
-            font.pixelSize: 17
-            color: box.theme.ink
-            placeholderTextColor: box.theme.muted
-            placeholderText: box.t.query
-            text: box.v.query
-            Accessible.name: box.t.search
-            enabled: box.v.searchable
-            selectByMouse: true
-            background: Rectangle {
-                radius: 28
-                color: box.theme.surface
-                border.color: query.activeFocus ? box.theme.accent : box.theme.line
-                border.width: query.activeFocus ? 2 : 1
-            }
-            onTextEdited: desktop.editQuery(text, cursorPosition)
-            onCursorPositionChanged: Qt.callLater(function () {
-                if (query.activeFocus)
-                    desktop.editQuery(query.text, query.cursorPosition);
-            })
-            onAccepted: box.submit()
-            Keys.onDownPressed: if (suggestions.count) {
-                suggestions.currentIndex = 0;
-                suggestions.forceActiveFocus();
-            }
+        implicitHeight: 56
+        leftPadding: 24
+        rightPadding: 72
+        font.pixelSize: 17
+        color: box.theme.ink
+        placeholderTextColor: box.theme.muted
+        placeholderText: box.t.query
+        text: box.v.query
+        Accessible.name: box.t.search
+        enabled: box.v.searchable
+        selectByMouse: true
+        background: Rectangle {
+            radius: 28
+            color: box.theme.surface
+            border.color: query.activeFocus ? box.theme.accent : box.theme.line
+            border.width: query.activeFocus ? 2 : 1
         }
-        ActionButton {
+        onTextEdited: desktop.editQuery(text, cursorPosition)
+        onCursorPositionChanged: Qt.callLater(function () {
+            if (query.activeFocus)
+                desktop.editQuery(query.text, query.cursorPosition);
+        })
+        onAccepted: box.submit()
+        Keys.onDownPressed: if (suggestions.count) {
+            suggestions.currentIndex = 0;
+            suggestions.forceActiveFocus();
+        }
+        Button {
             objectName: "searchButton"
-            iconName: "search"
-            theme: box.theme
-            text: box.t.search
-            primary: true
+            anchors.right: parent.right
+            anchors.rightMargin: 6
+            anchors.verticalCenter: parent.verticalCenter
+            width: 44
+            height: 44
             enabled: box.v.searchable && query.text.trim() !== ""
+            Accessible.name: box.t.search
+            background: Rectangle {
+                radius: 22
+                color: parent.down ? box.theme.lavender : box.theme.sage
+                border.width: parent.activeFocus ? 2 : 0
+                border.color: box.theme.accent
+                opacity: parent.enabled ? 1 : 0.5
+            }
+            contentItem: Image {
+                source: "../assets/search-" + (box.theme.dark ? "dark" : "light") + ".svg"
+                sourceSize.width: 20
+                sourceSize.height: 20
+                fillMode: Image.PreserveAspectFit
+            }
             onClicked: box.submit()
         }
     }
@@ -80,8 +95,13 @@ ColumnLayout {
             border.color: box.theme.line
             border.width: 1
         }
-        Keys.onReturnPressed: desktop.acceptSuggestion(currentIndex)
-        Keys.onEscapePressed: query.forceActiveFocus()
+        Keys.onReturnPressed: desktop.acceptSuggestionAndSearch(currentIndex)
+        Keys.onEscapePressed: {
+            if (box.v.screen === "results")
+                desktop.navigate("home");
+            else
+                query.forceActiveFocus();
+        }
         delegate: ItemDelegate {
             required property int index
             required property string modelData
@@ -98,7 +118,7 @@ ColumnLayout {
                 color: parent.highlighted || parent.hovered ? box.theme.sage : box.theme.backdrop
                 radius: 8
             }
-            onClicked: desktop.acceptSuggestion(index)
+            onClicked: desktop.acceptSuggestionAndSearch(index)
         }
     }
     Connections {
