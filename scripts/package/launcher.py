@@ -1,8 +1,22 @@
 """Entry point standalone e diagnostica esplicita del pacchetto."""
 from pathlib import Path
+import argparse
+import cProfile
+import concurrent.futures
+import importlib.metadata
+import math
 import os
+import platform
+import pstats
+import random
 import runpy
+import shutil
+import statistics
+import subprocess
 import sys
+import tempfile
+import textwrap
+import unittest.mock
 
 from local_document_search_desktop.main import main
 
