@@ -15,7 +15,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-NAME = "LocalDocumentSearch-0.1.0-windows-x64"
+NAME = "LocalDocumentSearch-v2-06-prototype-windows-x64"
 
 
 def sha256(path):
@@ -38,7 +38,8 @@ def safe_clean(path):
 
 def validate_payload(folder):
     required = ["LocalDocumentSearch.exe", "python312.dll", "PySide6/QtCore.pyd",
-                "PySide6/QtGui.pyd", "PySide6/QtWidgets.pyd",
+                "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
+                "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                 "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt"]
     missing = [name for name in required if not (folder / name).is_file()]
@@ -113,6 +114,8 @@ def build():
     safe_clean(workspace)
     workspace.mkdir(parents=True)
     shutil.copy2(HERE / "launcher.py", workspace)
+    shutil.copytree(ROOT / "frontend/src/local_document_search_desktop/qml",
+                    workspace / "local_document_search_desktop/qml")
     config = configparser.ConfigParser()
     config.read(HERE / "pysidedeploy.spec", encoding="utf-8")
     config["app"]["project_dir"] = str(workspace)
@@ -122,7 +125,9 @@ def build():
     command = [Path(sys.executable).with_name("pyside6-deploy.exe"), "-c",
                workspace / "pysidedeploy.spec", "--no-install", "--force", "--keep-deployment-files"]
     with (workspace / "deploy.log").open("w", encoding="utf-8") as log:
-        run(command, cwd=workspace, stdout=log, stderr=subprocess.STDOUT)
+        environment = dict(os.environ)
+        environment["PATH"] = str(Path(sys.executable).parent) + os.pathsep + environment.get("PATH", "")
+        run(command, cwd=workspace, stdout=log, stderr=subprocess.STDOUT, env=environment)
     candidates = list((workspace / "deployment").glob("*.dist"))
     if len(candidates) != 1:
         raise RuntimeError(f"Output standalone inatteso: {candidates}; consultare deploy.log")

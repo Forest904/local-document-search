@@ -1,6 +1,6 @@
-# Packaging attuale v1 — ZIP personale Windows x64
+# Prototipo standalone Qt Quick V2-06 — ZIP Windows x64
 
-Questa procedura genera lo ZIP v1, non l’[installer offline v2](../../docs/ROADMAP.md). M9 resta [parzialmente accettata](../../docs/BASELINE.md).
+Questa procedura genera un prototipo Qt Quick per verificare runtime, moduli e risorse QML. L'[installer offline v2](../../docs/ROADMAP.md) e il collaudo pubblico restano V2-07/V2-08. M9 resta [parzialmente accettata](../../docs/BASELINE.md).
 
 Da PowerShell, nella radice del repository:
 
@@ -21,7 +21,7 @@ Python e tutte le dipendenze; backend e frontend vengono installati senza editab
 Nuitka può scaricare il proprio strumento di analisi DLL nella cache utente.
 Il pacchetto include i runtime Microsoft necessari; nessun installer o updater.
 
-Output: `dist/LocalDocumentSearch-0.1.0-windows-x64.zip` e relativo `.sha256`.
+Output: `dist/LocalDocumentSearch-v2-06-prototype-windows-x64.zip` e relativo `.sha256`.
 Log, configurazione risolta e report Nuitka restano in `build/package/`.
 Lo ZIP include istruzioni, licenze, report compilatore e `BUILD-MANIFEST.json`:
 revisione, stato dirty, hash dei sorgenti, versioni, toolchain, comando e hash dei file.
@@ -58,6 +58,8 @@ pagine da 50, anteprima e apertura, add/modify/remove, restart/no-change,
 errori con snapshot precedente, doppia istanza, chiusura durante job,
 arresto forzato e recovery, sorgente assente e pulizia dei soli dati app.
 Misurare il processo compilato separatamente dal benchmark backend.
-Esiti e limiti effettivi: [M9_VERIFICATION](../../docs/archive/v1/M9_VERIFICATION.md).
+Esiti e limiti del prototipo Qt Quick: [V2_06_DESKTOP](../../docs/V2_06_DESKTOP.md).
+La prova M9 v1 resta [storica](../../docs/archive/v1/M9_VERIFICATION.md).
 
-Per decisione dell'utente del 2026-11-07 la prova Windows pulito/account standard distinto è rinviata alle versioni successive. M9 richiede il collaudo dello ZIP finale sul PC attuale; la prova locale non dimostra portabilità su ambiente pulito.
+La prova su Windows pulito/account standard distinto appartiene a V2-08.
+L'avvio del prototipo sul PC di sviluppo non dimostra portabilità su ambiente pulito.

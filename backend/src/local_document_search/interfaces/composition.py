@@ -23,6 +23,7 @@ from local_document_search.infrastructure.readers.registry import DocumentReader
 from local_document_search.domain.documents import DocumentFormat
 from local_document_search.infrastructure.snapshot_storage import InMemorySnapshotRepository
 from local_document_search.application.errors import StorageFailure
+from local_document_search.application.preferences import GetDesktopPreferences, SaveDesktopPreferences
 from local_document_search.infrastructure.sqlite_snapshot_storage import storage_directory
 
 from local_document_search.application.ports import (
@@ -90,6 +91,8 @@ class PersistentApplication:
     _lifecycle: ApplicationLifecycle
     _reads: ReadRuntime
     _storage_lock: StorageLock
+    get_preferences: GetDesktopPreferences | None = None
+    save_preferences: SaveDesktopPreferences | None = None
     _close_lock: Lock = field(default_factory=Lock)
     _closed: bool = False
 
@@ -148,7 +151,9 @@ def compose_persistent_application(storage=None, *, v2=False, read_workers=None)
             SearchDocuments(snapshots, reads), SuggestTerms(snapshots, reads),
             GetDocument(snapshots, reads), snapshots,
             RequestSynchronization(lifecycle), GetJobStatus(lifecycle.jobs),
-            CancelSynchronization(lifecycle.jobs), lifecycle, reads, lock)
+            CancelSynchronization(lifecycle.jobs), lifecycle, reads, lock,
+            GetDesktopPreferences(settings) if v2 else None,
+            SaveDesktopPreferences(settings) if v2 else None)
     except BaseException:
         try:
             if lifecycle is not None:

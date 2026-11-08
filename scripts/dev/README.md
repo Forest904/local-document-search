@@ -1,6 +1,6 @@
-# Avvio e riavvio del desktop attuale da VS Code
+# Avvio e riavvio del desktop Qt Quick v2 da VS Code
 
-Il task avvia il desktop Qt Widgets v1; la [UI Qt Quick v2](../../docs/UX_WINDOWS.md) non è ancora implementata.
+Il task avvia il desktop Qt Quick v2 con il backend v2 nello stesso processo. [UX e verifiche](../../docs/V2_06_DESKTOP.md).
 
 Su Windows, aprire la root del repository e scegliere **Terminal → Run Task →
 Local Document Search: avvia / riavvia**. È un solo task: backend e frontend condividono

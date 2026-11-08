@@ -1,6 +1,6 @@
 # Documentazione
 
-**V1 implementata; v2 approvata come progetto, non implementata.** Lo stato reale, il debito M9 e la continuità del lavoro M0–M9 sono raccolti nella [baseline](BASELINE.md). Non confondere un ADR accettato con una verifica eseguita.
+**V1 archiviata; v2 in corso.** V2-01–V2-05 sono chiuse localmente e il desktop V2-06 è implementato con [verifiche ancora aperte](V2_06_DESKTOP.md). Lo stato reale, il debito M9 e la continuità M0–M9 sono nella [baseline](BASELINE.md). Un ADR accettato non prova una verifica eseguita.
 
 ## Percorso principale
 

@@ -1,0 +1,463 @@
+"""Coordinamento desktop: contratti applicativi nei worker, Qt nel thread GUI."""
+from concurrent.futures import ThreadPoolExecutor
+import re
+import time
+
+from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QUrl
+
+from local_document_search.application.contracts import (
+    SearchRequest, SearchField, SearchOrder, SuggestRequest, JobState, InvalidInput,
+)
+from local_document_search.application.errors import SnapshotUnavailable
+from local_document_search.application.preferences import DesktopPreferences
+from local_document_search.domain.documents import DocumentFormat
+
+from .i18n import catalog, translate
+from .models import ResultsModel, highlighted, python_cursor, result_rows
+
+
+class DesktopController(QObject):
+    changed = Signal()
+    preferencesChanged = Signal()
+    closeReady = Signal()
+    queryReplacement = Signal(str, int)
+
+    def __init__(self, factory, opener, parent=None):
+        super().__init__(parent)
+        self.factory, self.opener = factory, opener
+        self.session = self.state = self.job = self.response = self.selected = None
+        self.preferences = DesktopPreferences()
+        self.model = ResultsModel(self)
+        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="desktop-control")
+        self.reader = ThreadPoolExecutor(max_workers=1, thread_name_prefix="desktop-read")
+        self.control_future = self.read_future = None
+        self.queued_control = None
+        self.queued_reads = {}
+        self.generation = self.detail_generation = self.suggest_generation = 0
+        self.query = ""
+        self.cursor = 0
+        self.field = SearchField.BOTH
+        self.formats = None
+        self.folder = None
+        self.order = SearchOrder.RELEVANCE
+        self.offset = 0
+        self.terms = []
+        self.preview_html = ""
+        self.message_key = ""
+        self.closing = self.closed = False
+        self.last_poll = 0.0
+        self.last_report = None
+        self.timer = QTimer(self)
+        self.timer.setInterval(40)
+        self.timer.timeout.connect(self.tick)
+        self.timer.start()
+        self.debounce = QTimer(self)
+        self.debounce.setSingleShot(True)
+        self.debounce.setInterval(200)
+        self.debounce.timeout.connect(self.suggest)
+
+    @Property(QObject, constant=True)
+    def results(self):
+        return self.model
+
+    @Property('QVariantMap', notify=preferencesChanged)
+    def labels(self):
+        return catalog(self.preferences.language)
+
+    @Property('QVariantMap', notify=changed)
+    def view(self):
+        state = self.state
+        running = bool(state and state.job and state.job.status in (JobState.PENDING, JobState.RUNNING))
+        busy = bool(self.queued_control or self.control_future is not None and self.control_future[3] != "poll")
+        ready = self.session is not None and not busy and not self.closing
+        searchable = bool(ready and state and state.search_available)
+        status = "closing" if self.closing else (
+            "old" if running and state.search_available else
+            self.job.state.value if self.job else "ready" if searchable else "building" if state and state.active_directory else "welcome")
+        return {"initialized": self.session is not None, "busy": busy,
+                "closing": self.closing, "closed": self.closed, "ready": ready,
+                "canManage": ready and not running, "searchable": searchable,
+                "running": running, "canCancel": ready and running,
+                "directory": state.active_directory if state and state.active_directory else "",
+                "status": self.tr(status), "message": self.tr(self.message_key) if self.message_key else "",
+                "language": self.preferences.language, "theme": self.preferences.theme,
+                "suggestions": self.terms, "preview": self.preview_html,
+                "selectedPath": self.selected.relative_path.value if self.selected else "",
+                "total": self.response.total_matches if self.response else 0,
+                "hasResponse": self.response is not None, "offset": self.offset,
+                "canPrevious": searchable and self.response is not None and self.offset > 0,
+                "canNext": searchable and self.response is not None and self.offset + 50 < self.response.total_matches,
+                "reading": self.read_future is not None or bool(self.queued_reads),
+                "progress": self.job.progress if self.job and self.job.progress is not None else -1,
+                "phase": self.tr(self.job.phase.value) if self.job and running else "",
+                "counts": f"{self.job.files_completed} / {self.job.files_total or '—'}" if self.job and running else "",
+                "diagnostics": self.diagnostics()}
+
+    def tr(self, key):
+        return translate(key, self.preferences.language)
+
+    def diagnostics(self):
+        if not self.last_report:
+            return ""
+        report = self.last_report
+        lines = [self.tr("complete" if report.complete else "incomplete"),
+                 f"{self.tr('excluded')}: {report.excluded}"]
+        # Translation only: reasons never determine operational behavior.
+        for item in report.diagnostics:
+            from .i18n import diagnostic_text
+            lines.append(f"{item.relative_path or '—'} · {self.tr(item.phase.value)} · "
+                         f"{diagnostic_text(item.reason, item.category, self.preferences.language)}")
+        return "\n".join(lines)
+
+    def error(self, exc):
+        self.message_key = type(exc).__name__
+        self.changed.emit()
+
+    def control(self, operation, success, kind="control"):
+        if self.closing or self.queued_control:
+            return False
+        if self.control_future:
+            if self.control_future[3] == "poll" and kind != "poll":
+                self.queued_control = (operation, success, kind)
+                self.changed.emit()
+                return True
+            return False
+        self.control_future = (self.executor.submit(operation), success, self.error, kind)
+        self.changed.emit()
+        return True
+
+    @Slot()
+    def initialize(self):
+        if self.session or self.closing:
+            return
+
+        def create():
+            session = self.factory()
+            try:
+                preferences = session.get_preferences.execute()
+                try:
+                    state = session.initialize.execute()
+                    error = None
+                except SnapshotUnavailable as exc:
+                    state, error = session.status.execute(), exc
+                return session, state, preferences, error
+            except BaseException:
+                session.close()
+                raise
+
+        def ready(value):
+            self.session, state, self.preferences, error = value
+            self.preferencesChanged.emit()
+            self.apply_state(state)
+            self.message_key = type(error).__name__ if error else ""
+
+        self.control(create, ready)
+
+    def invalidate(self):
+        self.generation += 1
+        self.detail_generation += 1
+        self.suggest_generation += 1
+        self.response = self.selected = None
+        self.offset = 0
+        self.preview_html = ""
+        self.terms = []
+        self.queued_reads.clear()
+        self.model.replace([])
+        self.changed.emit()
+
+    @Slot(str, int)
+    def editQuery(self, text, cursor):
+        if text != self.query:
+            self.query = text
+            self.invalidate()
+            self.message_key = ""
+        self.cursor = python_cursor(text, cursor)
+        self.suggest_generation += 1
+        self.terms = []
+        self.debounce.start()
+        self.changed.emit()
+
+    @Slot(str, 'QVariantList', str, str)
+    def setOptions(self, field, formats, folder, order):
+        try:
+            values = (SearchField(field), frozenset(DocumentFormat(value) for value in formats),
+                      folder.strip() or None, SearchOrder(order))
+            self.field, self.formats, self.folder, self.order = values
+            self.invalidate()
+        except ValueError as exc:
+            self.error(exc)
+
+    def enqueue_read(self, kind, operation, success, token, current):
+        if self.closing:
+            return
+        self.queued_reads[kind] = (operation, success, token, current)
+        self.start_read()
+
+    def start_read(self):
+        if self.read_future or not self.queued_reads or self.closing:
+            return
+        kind = next((key for key in ("search", "detail", "suggest") if key in self.queued_reads))
+        operation, success, token, current = self.queued_reads.pop(kind)
+        if token != current():
+            return
+        self.read_future = (self.reader.submit(operation), success, token, current, kind)
+        self.changed.emit()
+
+    @Slot()
+    def search(self):
+        self.search_page(0)
+
+    def search_page(self, offset):
+        if not self.view["searchable"]:
+            return
+        self.debounce.stop()
+        self.suggest_generation += 1
+        self.terms = []
+        self.generation += 1
+        self.detail_generation += 1
+        self.selected = None
+        self.preview_html = ""
+        try:
+            request = SearchRequest(self.query, self.field, offset=offset, allow_prefixes=True,
+                                    formats=self.formats, folder=self.folder, order=self.order,
+                                    snapshot_id=self.state.active_snapshot_id)
+        except InvalidInput as exc:
+            self.error(exc)
+            return
+        token = self.generation
+        session = self.session
+
+        def execute():
+            response = session.search.execute(request)
+            return response, result_rows(response)
+
+        def complete(value):
+            response, rows = value
+            if response.snapshot_id != self.state.active_snapshot_id:
+                self.search_page(0)
+                return
+            self.response, self.offset = response, offset
+            self.model.replace(rows)
+            self.message_key = ""
+
+        self.enqueue_read("search", execute, complete, token, lambda: self.generation)
+
+    @Slot(int)
+    def page(self, direction):
+        if direction < 0 and self.view["canPrevious"]:
+            self.search_page(max(0, self.offset - 50))
+        elif direction > 0 and self.view["canNext"]:
+            self.search_page(self.offset + 50)
+
+    def suggestion_span(self):
+        before = self.query[:self.cursor]
+        if before.count('"') % 2:
+            return None
+        match = re.search(r"[^\W_]+$", before, re.UNICODE)
+        if not match or len(match[0]) < 2:
+            return None
+        if match.start() and before[match.start() - 1] not in ' \t\n':
+            return None
+        after = re.match(r"[^\W_]*", self.query[self.cursor:])[0]
+        end = self.cursor + len(after)
+        if self.query[end:end + 1] == "*":
+            return None
+        return match.start(), end, match[0]
+
+    def suggest(self):
+        span = self.suggestion_span()
+        if not span or not self.view["searchable"]:
+            return
+        request = SuggestRequest(span[2], self.field, 10, self.state.active_snapshot_id)
+        token = (self.generation, self.suggest_generation)
+        session = self.session
+
+        def complete(response):
+            if response.snapshot_id == self.state.active_snapshot_id:
+                self.terms = list(response.terms)
+
+        self.enqueue_read("suggest", lambda: session.suggest.execute(request), complete,
+                          token, lambda: (self.generation, self.suggest_generation))
+
+    @Slot(int)
+    def acceptSuggestion(self, index):
+        span = self.suggestion_span()
+        if span and 0 <= index < len(self.terms):
+            term = self.terms[index]
+            text = self.query[:span[0]] + term + self.query[span[1]:]
+            cursor = len((self.query[:span[0]] + term).encode("utf-16-le")) // 2
+            self.editQuery(text, cursor)
+            self.debounce.stop()
+            self.queryReplacement.emit(text, cursor)
+
+    @Slot(int)
+    def selectResult(self, index):
+        if not self.response or not 0 <= index < len(self.response.results) or self.closing:
+            return
+        self.detail_generation += 1
+        self.selected = self.response.results[index]
+        self.preview_html = ""
+        item, snapshot, session = self.selected, self.response.snapshot_id, self.session
+        query, field = self.query, self.field
+        token = (self.generation, self.detail_generation)
+
+        def execute():
+            details = session.get_document.execute(item.document_id, snapshot, query, field, True)
+            return highlighted(details.extracted_text, details.content_highlights)
+
+        def complete(value):
+            self.preview_html = value
+
+        self.enqueue_read("detail", execute, complete, token,
+                          lambda: (self.generation, self.detail_generation))
+
+    def apply_state(self, state):
+        previous = self.state
+        changed_directory = previous and previous.active_directory != state.active_directory
+        changed_snapshot = previous and previous.active_snapshot_id != state.active_snapshot_id
+        rerun = bool(self.response or self.read_future and self.read_future[4] == "search")
+        self.state = state
+        if changed_directory or changed_snapshot:
+            self.invalidate()
+            if changed_directory:
+                self.job = self.last_report = None
+            elif rerun and self.query.strip() and not self.closing:
+                self.search_page(0)
+        if state.warning:
+            self.message_key = state.warning
+
+    @Slot(str)
+    def chooseDirectory(self, url):
+        if not self.view["canManage"]:
+            return
+        path = QUrl(url).toLocalFile()
+        if self.control(lambda: self.session.select_directory.execute(path), self.apply_state):
+            self.invalidate()
+
+    @Slot(str)
+    def action(self, name):
+        if not self.session or self.closing:
+            return
+        if name == "cancel" and self.view["canCancel"]:
+            job_id = self.state.job.job_id
+            self.control(lambda: self.session.cancel_synchronization.execute(job_id),
+                         lambda outcome: setattr(self, "message_key", outcome.value))
+            return
+        if not self.view["canManage"]:
+            return
+        operations = {"sync": self.session.request_synchronization.execute,
+                      "retry": self.session.request_synchronization.execute,
+                      "rebuild": self.session.rebuild.execute,
+                      "recover": self.session.recover_previous.execute,
+                      "clear": self.session.clear_local_data.execute}
+        if name not in operations:
+            return
+
+        def execute():
+            operations[name]()
+            return self.session.status.execute(), self.session.get_preferences.execute()
+
+        def complete(value):
+            state, self.preferences = value
+            self.preferencesChanged.emit()
+            self.message_key = ""
+            self.apply_state(state)
+            if name == "clear":
+                self.job = self.last_report = None
+                self.invalidate()
+
+        self.control(execute, complete)
+
+    @Slot(str, str)
+    def savePreferences(self, language, theme):
+        try:
+            value = DesktopPreferences(language, theme)
+        except InvalidInput as exc:
+            self.error(exc)
+            return
+        if self.session:
+            def complete(saved):
+                self.preferences = saved
+                self.preferencesChanged.emit()
+                self.message_key = ""
+            self.control(lambda: self.session.save_preferences.execute(value), complete)
+
+    @Slot()
+    def openSelected(self):
+        if self.selected and self.view["searchable"]:
+            try:
+                self.opener(self.state.active_directory, self.selected.relative_path)
+            except Exception as exc:
+                self.error(exc)
+
+    def poll(self):
+        session = self.session
+
+        def execute():
+            state = session.status.execute()
+            job = session.job_status.execute(state.job.job_id) if state.job else None
+            return state, job
+
+        def complete(value):
+            state, job = value
+            self.job = job
+            if job and job.report:
+                self.last_report = job.report
+            self.apply_state(state)
+
+        self.control(execute, complete, "poll")
+
+    @Slot()
+    def requestClose(self):
+        if self.closing or self.closed:
+            return
+        self.closing = True
+        self.queued_control = None
+        self.debounce.stop()
+        self.invalidate()
+
+    def tick(self):
+        if self.control_future and self.control_future[0].done():
+            future, success, failure, kind = self.control_future
+            self.control_future = None
+            try:
+                success(future.result())
+            except Exception as exc:
+                failure(exc)
+                if kind == "close":
+                    self.closing = False
+            self.changed.emit()
+        if self.read_future and self.read_future[0].done():
+            future, success, token, current, kind = self.read_future
+            self.read_future = None
+            if not self.closing and token == current():
+                try:
+                    success(future.result())
+                except Exception as exc:
+                    if isinstance(exc, SnapshotUnavailable) and kind == "search":
+                        self.response = None
+                        self.model.replace([])
+                    self.error(exc)
+            self.changed.emit()
+        if self.closed:
+            return
+        if self.closing:
+            if self.control_future is None and self.read_future is None:
+                def finished(_):
+                    self.closed = True
+                    self.reader.shutdown(wait=False)
+                    self.executor.shutdown(wait=False)
+                    self.timer.stop()
+                    self.changed.emit()
+                    self.closeReady.emit()
+                self.control_future = (self.executor.submit(lambda: self.session.close() if self.session else None),
+                                       finished, self.error, "close")
+            return
+        if self.queued_control and not self.control_future:
+            operation, success, kind = self.queued_control
+            self.queued_control = None
+            self.control(operation, success, kind)
+        self.start_read()
+        if self.session and not self.control_future and time.monotonic() - self.last_poll >= 0.25:
+            self.last_poll = time.monotonic()
+            self.poll()

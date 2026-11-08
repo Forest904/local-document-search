@@ -36,4 +36,6 @@ Una pagina successiva deve appartenere a una sola versione. Se lo snapshot è ca
 
 Lingua e tema sono preferenze persistenti nello storage v2, separate dagli snapshot. Cambiarle non genera un indice nuovo. La prima installazione v2 non importa preferenze o indici v1. Installer/upgrade/disinstallazione operano su file applicativi v2; conservano i dati v2 salvo scelta esplicita di eliminarli, senza toccare v1 o sorgenti. Nessun endpoint di rete fa parte del contratto.
 
+**V2-06 implementato:** `DesktopPreferences(language="it", theme="light")` ammette `it/en` e `light/dark`; `GetDesktopPreferences.execute()` e `SaveDesktopPreferences.execute(value)` usano una porta applicativa e la tabella preferenze del catalogo v2, indipendente dallo snapshot. Valori non validi danno `InvalidInput`; errori persistenti danno `StorageFailure`. `ClearLocalData` cancella anche lingua e tema dopo conferma UI, riportando i default. La UI esegue richieste in worker, mostra solo risposte del contesto e dello snapshot correnti e richiede `RELEVANCE` esplicitamente; i default CLI/API non cambiano.
+
 Le decisioni di ranking e snippet sono nell'[ADR 0010](adr/0010-v2-retrieval.md). [Decisioni ancora aperte](OPEN_DECISIONS.md), [scenari](TEST_STRATEGY.md).

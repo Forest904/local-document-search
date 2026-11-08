@@ -5,6 +5,7 @@ from threading import RLock
 
 from local_document_search.application.ports import Settings, LastCheck, SyncOutcome
 from local_document_search.application.errors import StorageFailure
+from local_document_search.application.preferences import DesktopPreferences
 from .sqlite_snapshot_storage import storage_directory, _failure
 
 
@@ -13,6 +14,7 @@ class SqliteSettingsRepository:
         self.directory = storage_directory(directory)
         self.lock = RLock()
         self.db = None
+        self.desktop_preferences = database_name == "control-v2.sqlite3"
         try:
             self.directory.mkdir(parents=True, exist_ok=True)
             self.db = sqlite3.connect(self.directory / database_name, isolation_level=None,
@@ -29,6 +31,10 @@ class SqliteSettingsRepository:
                 CREATE TABLE IF NOT EXISTS owned(name TEXT PRIMARY KEY);
                 PRAGMA user_version=1;
                 COMMIT;""")
+            if self.desktop_preferences:
+                self.db.execute("""CREATE TABLE IF NOT EXISTS desktop_preferences(
+                    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                    language TEXT NOT NULL, theme TEXT NOT NULL)""")
             if (legacy_detection and self.selected() is None and (self.directory / "snapshots.sqlite3").exists()
                     and not self.db.execute("SELECT 1 FROM settings").fetchone()
                     and not self.db.execute("SELECT 1 FROM owned WHERE name='snapshots.sqlite3'").fetchone()):
@@ -67,7 +73,27 @@ class SqliteSettingsRepository:
     def clear(self):
         with self.lock:
             try:
-                self.db.execute("DELETE FROM settings")
+                with self.db:
+                    self.db.execute("BEGIN IMMEDIATE")
+                    self.db.execute("DELETE FROM settings")
+                    if self.desktop_preferences:
+                        self.db.execute("DELETE FROM desktop_preferences")
+            except sqlite3.Error as exc:
+                raise _failure(exc) from exc
+
+    def load_preferences(self):
+        with self.lock:
+            try:
+                row = self.db.execute("SELECT language,theme FROM desktop_preferences WHERE singleton=1").fetchone()
+                return DesktopPreferences(*row) if row else DesktopPreferences()
+            except (sqlite3.Error, ValueError) as exc:
+                raise _failure(exc) from exc
+
+    def save_preferences(self, value):
+        with self.lock:
+            try:
+                self.db.execute("INSERT OR REPLACE INTO desktop_preferences VALUES (1,?,?)",
+                                (value.language, value.theme))
             except sqlite3.Error as exc:
                 raise _failure(exc) from exc
 

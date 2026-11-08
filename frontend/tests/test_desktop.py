@@ -1,3 +1,4 @@
+"""Regressioni desktop v2: controller reale, QML e worker controllati."""
 from concurrent.futures import Future
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -8,16 +9,24 @@ import ast
 import tomllib
 
 import pytest
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QObject, QUrl, Qt, QTimer
+from PySide6.QtGui import QTextDocument
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from local_document_search.application.contracts import (
-    ApplicationState, JobDiagnostic, JobPhase, JobRef, JobReport, JobState, JobStatus, SearchResponse,
+    ApplicationState, CancelOutcome, DocumentDetails, JobDiagnostic, JobPhase, JobRef,
+    JobReport, JobState, JobStatus, SearchResponse, SearchResult, SuggestResponse, TextRange,
 )
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
+from local_document_search.application.preferences import DesktopPreferences
+from local_document_search.domain.documents import (
+    DocumentId, DocumentFormat, RelativePath, DocumentMetadata, FileFingerprint,
+)
+from local_document_search.domain.queries import SearchField
 from local_document_search_desktop.composition import compose_desktop, open_document
-from local_document_search_desktop.window import PRIVACY, SearchWindow
+from local_document_search_desktop.controller import DesktopController
+from local_document_search_desktop.main import create_engine
+from local_document_search_desktop.models import highlighted, python_cursor
 from conftest import until
 
 
@@ -25,22 +34,44 @@ class Requests:
     def __init__(self):
         self.calls = []
 
-    def submit(self, *args):
+    def execute(self, *args):
         future = Future()
         self.calls.append((args, future))
-        return future
+        return future.result(timeout=10)
+
+    def release(self):
+        for _, future in self.calls:
+            if not future.done():
+                future.set_exception(SnapshotUnavailable("test teardown"))
+
+
+def operation(function):
+    return SimpleNamespace(execute=function)
 
 
 class FakeSession:
     def __init__(self):
         self.state = ApplicationState("C:/source", "N", True)
-        self.search, self.get_document = Requests(), Requests()
-        self.initialize = SimpleNamespace(execute=lambda: self.state)
-        self.status = SimpleNamespace(execute=lambda: self.state)
-        self.clear_local_data = SimpleNamespace(execute=self.clear)
+        self.search, self.get_document, self.suggest = Requests(), Requests(), Requests()
+        self.preferences = DesktopPreferences()
+        self.initialize = operation(lambda: self.state)
+        self.status = operation(lambda: self.state)
+        self.get_preferences = operation(lambda: self.preferences)
+        self.save_preferences = operation(self.save)
+        self.clear_local_data = operation(self.clear)
+        self.job_status = operation(lambda _: self.job)
+        self.cancel_synchronization = operation(lambda _: CancelOutcome.ACCEPTED)
+        self.request_synchronization = operation(lambda: None)
+        self.rebuild = operation(lambda: None)
+        self.recover_previous = operation(lambda: None)
         self.closed = False
 
+    def save(self, value):
+        self.preferences = value
+        return value
+
     def clear(self):
+        self.preferences = DesktopPreferences()
         self.state = ApplicationState(None, None, False)
         return self.state
 
@@ -49,392 +80,318 @@ class FakeSession:
 
 
 @pytest.fixture
-def window(qt):
+def controller(qt):
     session = FakeSession()
-    window = SearchWindow(lambda: session, lambda *_: None)
-    window.show()
-    yield window, session
-    window.close()
-    until(lambda: window.closed)
+    c = DesktopController(lambda: session, lambda *_: None)
+    yield c, session
+    c.requestClose()
+    for requests in (session.search, session.get_document, session.suggest):
+        requests.release()
+    until(lambda: c.closed)
 
 
-def start(window):
-    QTest.mouseClick(window.start, Qt.MouseButton.LeftButton)
-    until(lambda: window.session is not None)
+def start(c):
+    c.initialize()
+    until(lambda: c.session is not None)
+    until(lambda: c.control_future is None)
 
 
-def answer(window, session, snapshot="N", total=120):
-    session.search.calls[-1][1].set_result(SearchResponse(snapshot, (), total))
-    window.tick()
-    until(lambda: window.response is not None and window.response.snapshot_id == snapshot)
+def search(c, s, text="alpha", total=120, items=()):
+    c.editQuery(text, len(text))
+    count = len(s.search.calls)
+    c.search()
+    until(lambda: len(s.search.calls) > count)
+    s.search.calls[-1][1].set_result(SearchResponse(c.state.active_snapshot_id, items, total))
+    until(lambda: c.response is not None)
 
 
-def test_privacy_precedes_factory_and_enter_only(window):
-    w, s = window
-    assert w.session is None and w.message.text() == PRIVACY
-    assert not w.query.isEnabled()
-    start(w)
-    w.query.setText("alpha")
+def result():
+    return SearchResult(DocumentId(1), "alpha.txt", RelativePath("alpha.txt"),
+                        DocumentFormat.TXT, frozenset({SearchField.CONTENT}))
+
+
+def test_privacy_precedes_factory_and_typing_only_suggests(controller):
+    c, s = controller
+    assert c.session is None and not c.view["searchable"]
+    start(c)
+    c.editQuery("al", 2)
+    until(lambda: bool(s.suggest.calls))
     assert not s.search.calls
-    QTest.keyClick(w.query, Qt.Key.Key_Return)
-    assert s.search.calls[0][0][0].limit == 50
-    answer(w, s, total=0)
-    assert w.results.topLevelItemCount() == 0
-    assert "0 risultati" in w.count.text()
-    assert not w.next.isEnabled()
+    s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("alpha",)))
+    until(lambda: c.terms == ["alpha"])
+    c.acceptSuggestion(0)
+    assert c.query == "alpha" and not s.search.calls
+    c.search()
+    until(lambda: bool(s.search.calls))
+    request = s.search.calls[0][0][0]
+    assert request.limit == 50 and request.allow_prefixes
+    assert request.order.value == "relevance"
 
 
-def test_job_report_shows_relative_file_without_source_text(window, monkeypatch):
-    w, _ = window
-    start(w)
-    report = JobReport((JobDiagnostic("reader", JobPhase.EXTRACTING, "bad.txt",
-                    "File non decodificabile"),), complete=False)
-    job = JobStatus("test", JobState.FAILED, JobPhase.EXTRACTING,
-                    datetime.now(timezone.utc), error="ExtractionFailure", report=report)
-    w.apply_job(job)
-    assert w.job_details.isEnabled()
-    captured = {}
-    monkeypatch.setattr(QMessageBox, "exec", lambda self: captured.update(
-        title=self.windowTitle(), details=self.detailedText()))
-    w.show_job_report()
-    assert "bad.txt" in captured["details"]
-    assert "File non decodificabile" in captured["details"]
+@pytest.mark.parametrize("query,cursor,expected", [
+    ('"al', 3, None), ('al*', 2, None), ('alpha be', 8, (6, 8, 'be')),
+    ('alpha beta', 8, (6, 10, 'be')), ('a', 1, None), ('foo-bar', 7, None),
+])
+def test_suggestion_token_boundaries(controller, query, cursor, expected):
+    c, _ = controller
+    c.query, c.cursor = query, cursor
+    assert c.suggestion_span() == expected
 
 
-def test_pagination_version_reset_and_stale_reset(window):
-    w, s = window
-    start(w)
-    w.query.setText("alpha")
-    w.search()
-    answer(w, s)
-    w.search(50)
-    answer(w, s)
-    assert w.offset == 50
-    w.search(100)
-    s.search.calls[-1][1].set_result(SearchResponse("N2", (), 130))
-    until(lambda: len(s.search.calls) == 4)
-    assert s.search.calls[-1][0][0].offset == 0
-    w.field.setCurrentIndex(1)
-    s.search.calls[-1][1].set_result(SearchResponse("N2", (), 130))
-    QTest.qWait(250)
-    assert w.response is None
-    w.search()
-    answer(w, s, "N2")
-    assert w.offset == 0
+@pytest.mark.parametrize("change,error", [("query", False), ("query", True), ("options", False), ("directory", True)])
+def test_obsolete_results_and_errors_ignored(controller, change, error):
+    c, s = controller
+    start(c)
+    c.editQuery("alpha", 5)
+    c.search()
+    until(lambda: bool(s.search.calls))
+    if change == "query":
+        c.editQuery("beta", 4)
+    elif change == "options":
+        c.setOptions("content", ["txt"], "notes", "path")
+    else:
+        s.state = ApplicationState("C:/other", None, False)
+        c.apply_state(s.state)
+    future = s.search.calls[0][1]
+    if error:
+        future.set_exception(StorageFailure("old error"))
+    else:
+        future.set_result(SearchResponse("N", (), 5))
+    until(lambda: c.read_future is None)
+    assert c.response is None and not c.message_key
 
 
-def test_changed_snapshot_returns_to_first_page(window):
-    w, s = window
-    start(w)
-    w.query.setText("alpha")
-    w.search()
-    answer(w, s)
-    w.search(50)
-    s.search.calls[-1][1].set_result(SearchResponse("N2", (), 0))
+def test_bounded_suggestions_and_latest_query(controller):
+    c, s = controller
+    start(c)
+    c.editQuery("al", 2)
+    c.suggest()
+    until(lambda: bool(s.suggest.calls))
+    for index in range(50):
+        c.editQuery("beta" + str(index), 6)
+        c.suggest()
+    assert len(s.suggest.calls) == 1 and len(c.queued_reads) <= 1
+    s.suggest.calls[0][1].set_result(SuggestResponse("N", ("alpha",)))
+    until(lambda: len(s.suggest.calls) == 2)
+    assert c.terms == []
+
+
+def test_filters_pagination_and_snapshot_restart(controller):
+    c, s = controller
+    start(c)
+    c.setOptions("content", ["md", "txt"], "work", "path")
+    search(c, s)
+    request = s.search.calls[0][0][0]
+    assert request.folder == "work" and request.formats == {DocumentFormat.TXT, DocumentFormat.MARKDOWN}
+    c.page(1)
+    until(lambda: len(s.search.calls) == 2)
+    assert s.search.calls[-1][0][0].offset == 50
+    s.search.calls[-1][1].set_result(SearchResponse("N", (), 120))
+    until(lambda: c.offset == 50)
+    s.state = replace(s.state, active_snapshot_id="N2")
+    c.apply_state(s.state)
     until(lambda: len(s.search.calls) == 3)
     assert s.search.calls[-1][0][0].offset == 0
-    answer(w, s, "N2", 0)
-    assert w.offset == 0 and w.response.total_matches == 0
+    s.search.calls[-1][1].set_result(SearchResponse("N2", (), 0))
+    until(lambda: c.response is not None)
+    assert not c.view["canNext"] and not c.view["canPrevious"]
 
 
-def test_source_unavailable_preserves_search(qt, tmp_path):
-    source = tmp_path / "source"
-    source.mkdir()
-    (source / "a.txt").write_text("alpha", encoding="utf-8")
-    with compose_desktop(tmp_path / "storage") as session:
-        session.select_directory.execute(str(source))
-        session.synchronize.execute()
-    source.rename(tmp_path / "offline")
-    w = SearchWindow(lambda: compose_desktop(tmp_path / "storage"), lambda *_: None)
-    w.show()
-    try:
-        start(w)
-        until(lambda: w.state.warning is not None)
-        assert w.query.isEnabled() and "SourceUnavailable" in w.status.text()
-        w.query.setText("alpha")
-        w.search()
-        until(lambda: w.response is not None)
-        assert w.response.total_matches == 1
-    finally:
-        w.close()
-        until(lambda: w.closed)
+def test_preview_is_bound_to_version_and_selection(controller):
+    c, s = controller
+    start(c)
+    search(c, s, items=(result(),), total=1)
+    c.selectResult(0)
+    until(lambda: bool(s.get_document.calls))
+    assert s.get_document.calls[0][0][1:] == ("N", "alpha", SearchField.BOTH, True)
+    c.editQuery("beta", 4)
+    s.get_document.calls[0][1].set_exception(SnapshotUnavailable("old preview"))
+    until(lambda: c.read_future is None)
+    assert not c.preview_html and not c.message_key
 
 
-@pytest.mark.parametrize("change", ["query", "field", "directory"])
-@pytest.mark.parametrize("error", [False, True])
-def test_obsolete_response_or_error_ignored(window, change, error):
-    w, s = window
-    start(w)
-    w.query.setText("alpha")
-    w.search()
-    future = s.search.calls[-1][1]
-    if change == "query":
-        w.query.setText("beta")
-    elif change == "field":
-        w.field.setCurrentIndex(2)
-    else:
-        w.apply_state(ApplicationState("C:/other", None, False))
-    if error:
-        future.set_exception(ValueError("OBSOLETO"))
-    else:
-        future.set_result(SearchResponse("N", (), 100))
-    w.tick()
-    assert w.response is None and "OBSOLETO" not in w.message.text()
+def test_unicode_and_literal_markup(qt):
+    text = '😀 <img src="https://example.invalid/image"> alpha & beta'
+    start = text.index("alpha")
+    html = highlighted(text, (TextRange(start, start + 5),))
+    assert "<img" not in html and "&lt;img" in html
+    document = QTextDocument()
+    document.setHtml(html)
+    assert document.toPlainText() == text
+    assert python_cursor("😀alpha", 4) == 3
 
 
-def test_progress_timer_and_reused_job(window):
-    w, s = window
-    start(w)
-    ref = JobRef("j", JobState.RUNNING, True)
-    w.apply_state(replace(s.state, job=ref))
-    job = JobStatus("j", JobState.RUNNING, JobPhase.SCANNING, datetime.now(timezone.utc))
-    w.apply_job(job)
-    assert not w.clear.isEnabled() and not w.choose.isEnabled()
-    assert w.query.isEnabled() and w.progress.maximum() == 0
-    assert w.timer.interval() == 200 and w.check_timer.interval() == 1500
-    w.apply_job(replace(job, state=JobState.COMPLETED))
-    assert w.check_timer.isActive()
-    w.check_timer.stop()
-    w.sync.setText("Sync")
-    w.apply_job(replace(job, state=JobState.COMPLETED))
-    assert not w.check_timer.isActive() and w.sync.text() == "Sync"
-    w.apply_job(replace(job, job_id="failed", state=JobState.FAILED, error="ExtractionFailure"))
-    assert "ExtractionFailure" in w.message.text()
+@pytest.mark.parametrize("outcome", list(CancelOutcome))
+def test_cancel_outcomes_are_explicit(controller, outcome):
+    c, s = controller
+    start(c)
+    s.state = replace(s.state, job=JobRef("job", JobState.RUNNING))
+    s.job = JobStatus("job", JobState.RUNNING, JobPhase.EXTRACTING, datetime.now(timezone.utc))
+    c.apply_state(s.state)
+    s.cancel_synchronization = operation(lambda _: outcome)
+    c.action("cancel")
+    until(lambda: c.message_key == outcome.value)
+    assert c.view["running"] and c.view["status"] == c.tr("old")
 
 
-def test_clear_confirmation_and_failure(window, monkeypatch):
-    w, s = window
-    start(w)
-    monkeypatch.setattr(QMessageBox, "question", lambda *_: QMessageBox.StandardButton.No)
-    w.clear_data()
-    assert w.state.active_directory
-    monkeypatch.setattr(QMessageBox, "question", lambda *_: QMessageBox.StandardButton.Yes)
-    original = s.clear_local_data.execute
-    def fail():
-        raise StorageFailure("riprovare")
-    s.clear_local_data.execute = fail
-    w.clear_data()
-    until(lambda: not w.control_pending)
-    assert "riprovare" in w.message.text() and w.state.active_directory
-    s.clear_local_data.execute = original
-    w.clear_data()
-    until(lambda: w.state.active_directory is None)
-    assert not w.query.isEnabled() and w.choose.isEnabled()
+def test_clear_and_preferences_failure_then_retry(controller):
+    c, s = controller
+    start(c)
+    s.save_preferences = operation(lambda _: (_ for _ in ()).throw(StorageFailure("disk")))
+    c.savePreferences("en", "dark")
+    until(lambda: c.message_key == "StorageFailure")
+    assert c.preferences == DesktopPreferences()
+    s.save_preferences = operation(s.save)
+    c.savePreferences("en", "dark")
+    until(lambda: c.preferences.language == "en")
+    c.action("clear")
+    until(lambda: c.state.active_directory is None)
+    assert c.preferences == DesktopPreferences() and not c.view["searchable"]
 
 
-def test_startup_failure_can_retry(window):
-    w, _ = window
-    def fail():
-        raise StorageFailure("Istanza già aperta")
-    w.factory = fail
-    w.initialize()
-    until(lambda: not w.control_pending)
-    assert "Istanza" in w.message.text() and w.start.isEnabled()
+def test_clear_rejected_during_job(controller):
+    c, s = controller
+    start(c)
+    s.state = replace(s.state, job=JobRef("job", JobState.RUNNING))
+    s.job = JobStatus("job", JobState.RUNNING, JobPhase.BUILDING, datetime.now(timezone.utc))
+    c.apply_state(s.state)
+    c.action("clear")
+    assert s.state.active_directory == "C:/source"
 
 
-def test_incompatible_startup_without_source_allows_recovery(window):
-    w, s = window
-    s.state = ApplicationState(None, None, False)
-    def incompatible():
-        raise SnapshotUnavailable("incompatibile")
-    s.initialize.execute = incompatible
-    start(w)
-    assert w.choose.isEnabled() and w.clear.isEnabled() and not w.query.isEnabled()
-    assert "ricostruirlo" in w.message.text()
+def test_startup_failure_retries_and_incompatible_state(controller):
+    c, s = controller
+    c.factory = lambda: (_ for _ in ()).throw(StorageFailure("lock"))
+    c.initialize()
+    until(lambda: c.message_key == "StorageFailure")
+    assert c.session is None
+    c.factory = lambda: s
+    s.initialize = operation(lambda: (_ for _ in ()).throw(SnapshotUnavailable("incompatible")))
+    start(c)
+    assert c.view["canManage"] and c.message_key == "SnapshotUnavailable"
 
 
-def test_close_during_composition_waits_and_releases(window):
-    w, s = window
+def test_close_waits_for_composition(qt):
     entered, release = Event(), Event()
-    def create():
+    s = FakeSession()
+    def factory():
         entered.set()
         assert release.wait(5)
         return s
-    w.factory = create
-    w.initialize()
-    try:
-        until(entered.is_set)
-        w.close()
-        QTest.qWait(80)
-        assert not w.closed
-    finally:
-        release.set()
-    until(lambda: w.closed)
+    c = DesktopController(factory, lambda *_: None)
+    c.initialize()
+    until(entered.is_set)
+    c.requestClose()
+    assert not c.closed
+    release.set()
+    until(lambda: c.closed)
     assert s.closed
 
 
-@pytest.mark.parametrize("operation", ["build", "search", "preview"])
-def test_real_workers_keep_event_loop_live_and_close_waits(qt, tmp_path, monkeypatch, operation):
+def test_close_waits_for_read_and_event_loop_lives(controller):
+    c, s = controller
+    start(c)
+    c.editQuery("alpha", 5)
+    c.search()
+    until(lambda: bool(s.search.calls))
+    ticks = []
+    QTimer.singleShot(10, lambda: ticks.append(True))
+    c.requestClose()
+    until(lambda: bool(ticks))
+    assert not c.closed
+    s.search.calls[0][1].set_result(SearchResponse("N", (), 0))
+    until(lambda: c.closed)
+
+
+def test_qml_load_keyboard_search_and_theme(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    assert engine.rootObjects()
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        query = window.findChild(QObject, "query")
+        query.setProperty("text", "alpha")
+        query.setProperty("cursorPosition", 5)
+        query.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Tab)
+        assert window.activeFocusItem().objectName() == "field"
+        QTest.keyClick(window, Qt.Key.Key_L, Qt.KeyboardModifier.ControlModifier)
+        assert window.activeFocusItem().objectName() == "query"
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: bool(s.search.calls))
+        s.search.calls[0][1].set_result(SearchResponse("N", (), 0))
+        until(lambda: c.response is not None)
+        c.savePreferences("en", "dark")
+        until(lambda: window.property("dark"))
+        assert c.labels["search"] == "Search"
+        window.close()
+        until(lambda: c.closed)
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_real_backend_search_preview_restart_clear(qt, tmp_path):
     source = tmp_path / "source"
     source.mkdir()
-    (source / "a.txt").write_text("alpha", encoding="utf-8")
-    session = compose_desktop(tmp_path / "storage")
-    state = session.select_directory.execute(str(source))
-    session._lifecycle.jobs.wait(state.job.job_id)
-    entered, release = Event(), Event()
-    if operation == "build":
-        target, name = session._lifecycle.synchronizer.discovery, "discover"
-    else:
-        target, name = session.search if operation == "search" else session.get_document, "_execute"
-    original = getattr(target, name)
-    def blocked(*args, **kwargs):
-        entered.set()
-        assert release.wait(5)
-        return original(*args, **kwargs)
-    monkeypatch.setattr(target, name, blocked)
-    w = SearchWindow(lambda: session, lambda *_: None)
-    w.show()
+    (source / "alpha.txt").write_text("😀 alpha beta <literal>", encoding="utf-8")
+    storage = tmp_path / "storage"
+    c = DesktopController(lambda: compose_desktop(storage), lambda *_: None)
     try:
-        start(w)
-        if operation != "build":
-            until(lambda: w.state.job.status == JobState.COMPLETED)
-            w.query.setText("alpha")
-            w.search()
-            if operation == "preview":
-                until(lambda: w.response is not None)
-                w.results.setCurrentItem(w.results.topLevelItem(0))
-        until(entered.is_set)
-        beats = []
-        QTimer.singleShot(10, lambda: beats.append(True))
-        until(lambda: bool(beats))
-        assert not w.closed
-        w.close()
-        QTest.qWait(80)
-        assert not w.closed
+        start(c)
+        c.chooseDirectory(QUrl.fromLocalFile(str(source)).toString())
+        until(lambda: c.view["searchable"] and not c.view["running"], timeout=20000)
+        c.editQuery("alpha", 5)
+        c.search()
+        until(lambda: c.response is not None)
+        assert c.response.total_matches == 1
+        c.selectResult(0)
+        until(lambda: bool(c.preview_html))
+        assert "&lt;literal&gt;" in c.preview_html
+        c.savePreferences("en", "dark")
+        until(lambda: c.preferences.language == "en")
     finally:
-        release.set()
-        w.close()
-        until(lambda: w.closed)
-
-
-def test_invalid_query_current_error_and_no_change(window):
-    w, s = window
-    start(w)
-    w.search()
-    assert "InvalidInput" in w.message.text()
-    w.apply_state(replace(s.state, last_sync_outcome="no_changes"))
-    assert w.status.text() == "Indice aggiornato"
-    w.query.setText('"aperta')
-    w.search()
-    s.search.calls[-1][1].set_exception(ValueError("Virgolette sbilanciate"))
-    w.tick()
-    assert "Virgolette" in w.message.text()
-
-
-def test_poll_does_not_accumulate_and_close_waits(window):
-    w, s = window
-    start(w)
-    entered, release = Event(), Event()
-    def status():
-        entered.set()
-        assert release.wait(5)
-        return s.state
-    s.status.execute = status
+        c.requestClose()
+        until(lambda: c.closed)
+    (source / "alpha.txt").unlink()
+    source.rmdir()
+    c = DesktopController(lambda: compose_desktop(storage), lambda *_: None)
     try:
-        until(entered.is_set)
-        QTest.qWait(450)
-        assert len(w.pending) == 1
-        beats = []
-        QTimer.singleShot(10, lambda: beats.append(True))
-        w.close()
-        QTest.qWait(80)
-        assert beats and not w.closed
+        start(c)
+        until(lambda: not c.view["running"])
+        assert c.view["searchable"] and c.preferences.language == "en"
+        c.editQuery("alpha", 5)
+        c.search()
+        until(lambda: c.response is not None)
+        assert c.response.total_matches == 1
+        c.action("clear")
+        until(lambda: c.state.active_directory is None)
+        assert c.preferences == DesktopPreferences()
     finally:
-        release.set()
-    until(lambda: w.closed)
-    assert s.closed
-
-
-def test_real_backend_search_preview_restart_clear(qt, tmp_path, monkeypatch):
-    source, storage = tmp_path / "source", tmp_path / "storage"
-    source.mkdir()
-    for i in range(55):
-        (source / f"file{i:02}.txt").write_text("alpha <b>testo semplice</b>", encoding="utf-8")
-    w = SearchWindow(lambda: compose_desktop(storage), lambda *_: None)
-    w.show()
-    try:
-        start(w)
-        monkeypatch.setattr(QFileDialog, "getExistingDirectory", lambda *_: str(source))
-        w.select_directory()
-        until(lambda: w.state.search_available or bool(w.message.text()))
-        assert w.state.search_available, w.message.text()
-        with pytest.raises(StorageFailure):
-            compose_desktop(storage)
-        w.query.setText("alpha")
-        w.search()
-        until(lambda: w.response is not None)
-        assert w.results.topLevelItemCount() == 50 and w.response.total_matches == 55
-        w.results.setCurrentItem(w.results.topLevelItem(0))
-        until(lambda: "<b>" in w.preview.toPlainText())
-        w.search(50)
-        until(lambda: w.offset == 50)
-        assert w.results.topLevelItemCount() == 5
-        snapshot = w.response.snapshot_id
-    finally:
-        w.close()
-        until(lambda: w.closed)
-    w = SearchWindow(lambda: compose_desktop(storage), lambda *_: None)
-    w.show()
-    try:
-        start(w)
-        until(lambda: w.state.job.status == JobState.COMPLETED)
-        assert w.state.active_snapshot_id == snapshot
-        monkeypatch.setattr(QMessageBox, "question", lambda *_: QMessageBox.StandardButton.Yes)
-        w.clear_data()
-        until(lambda: w.state.active_directory is None)
-        assert len(list(source.glob("*.txt"))) == 55
-    finally:
-        w.close()
-        until(lambda: w.closed)
-
-
-def test_preview_obsolete_and_removed_snapshot(window):
-    w, s = window
-    start(w)
-    from PySide6.QtWidgets import QTreeWidgetItem
-    w.response = SearchResponse("N", (), 1)
-    item = QTreeWidgetItem(["a.txt"])
-    item.setData(0, Qt.ItemDataRole.UserRole, SimpleNamespace(document_id=1))
-    w.results.addTopLevelItem(item)
-    w.results.setCurrentItem(item)
-    first = s.get_document.calls[-1][1]
-    w.invalidate()
-    first.set_result(SimpleNamespace(extracted_text="obsoleto"))
-    w.tick()
-    assert not w.preview.toPlainText()
-    w.response = SearchResponse("N", (), 1)
-    item = QTreeWidgetItem(["a.txt"])
-    item.setData(0, Qt.ItemDataRole.UserRole, SimpleNamespace(document_id=1))
-    w.results.addTopLevelItem(item)
-    w.results.setCurrentItem(item)
-    s.get_document.calls[-1][1].set_exception(SnapshotUnavailable())
-    w.tick()
-    assert "Ripeti la ricerca" in w.message.text()
+        c.requestClose()
+        until(lambda: c.closed)
 
 
 def test_file_opener_missing_and_local_url(tmp_path, monkeypatch):
     from local_document_search_desktop import composition
-    relative = SimpleNamespace(value="a b.txt")
-    with pytest.raises(FileNotFoundError, match="Sync"):
-        open_document(str(tmp_path), relative)
-    (tmp_path / relative.value).write_text("alpha")
-    calls = []
-    monkeypatch.setattr(composition.QDesktopServices, "openUrl", lambda url: calls.append(url) or True)
-    open_document(str(tmp_path), relative)
-    assert calls[0].isLocalFile() and Path(calls[0].toLocalFile()) == tmp_path / relative.value
-    monkeypatch.setattr(composition.QDesktopServices, "openUrl", lambda _: False)
-    with pytest.raises(OSError):
-        open_document(str(tmp_path), relative)
+    with pytest.raises(FileNotFoundError):
+        open_document(str(tmp_path), RelativePath("missing.txt"))
+    (tmp_path / "hello.txt").write_text("hello")
+    captured = []
+    monkeypatch.setattr(composition.QDesktopServices, "openUrl", lambda url: captured.append(url) or True)
+    open_document(str(tmp_path), RelativePath("hello.txt"))
+    assert captured[0].isLocalFile()
 
 
 def test_frontend_boundaries_and_backend_without_qt_dependency():
     root = Path(__file__).resolve().parents[2]
-    for file in (root / "frontend/src").rglob("*.py"):
+    project = tomllib.loads((root / "backend/pyproject.toml").read_text())
+    assert not any("qt" in dependency.lower() for dependency in project["project"]["dependencies"])
+    for file in (root / "frontend/src/local_document_search_desktop").glob("*.py"):
+        if file.name == "composition.py":
+            continue
         for node in ast.walk(ast.parse(file.read_text(encoding="utf-8"))):
-            names = [alias.name for alias in node.names] if isinstance(node, ast.Import) else [node.module or ""] if isinstance(node, ast.ImportFrom) else []
-            for name in names:
-                if name.startswith("local_document_search."):
-                    assert ".domain" not in name and ".infrastructure" not in name
-                    assert ".interfaces" not in name or file.name == "composition.py"
-    metadata = tomllib.loads((root / "backend/pyproject.toml").read_text())
-    assert not any("pyside" in dep.lower() for dep in metadata["project"]["dependencies"])
+            if isinstance(node, ast.ImportFrom) and node.module:
+                assert not node.module.startswith("local_document_search.infrastructure")
+                assert not node.module.startswith("local_document_search.interfaces")

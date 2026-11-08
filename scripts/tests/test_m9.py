@@ -51,7 +51,8 @@ def test_error_fixtures_are_separate(tmp_path):
 def payload(tmp_path):
     folder = tmp_path / "payload"
     for name in ["LocalDocumentSearch.exe", "python312.dll", "PySide6/QtCore.pyd",
-                 "PySide6/QtGui.pyd", "PySide6/QtWidgets.pyd",
+                 "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
+                 "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                  "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                  "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt"]:
         path = folder / name

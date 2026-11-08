@@ -4,11 +4,11 @@ from pathlib import Path
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
-from local_document_search.interfaces.composition import compose_persistent_application
+from local_document_search.interfaces.composition import compose_v2_application
 
 
 def compose_desktop(storage=None):
-    return compose_persistent_application(storage)
+    return compose_v2_application(storage)
 
 
 def open_document(directory, relative_path):

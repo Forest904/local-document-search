@@ -1,6 +1,6 @@
 # Esperienza desktop v2 — Windows 11
 
-**Direzione approvata, non implementata.** Il desktop attuale usa Qt Widgets; [UX v1](archive/v1/UX_WINDOWS.md). La v2 usa PySide6/Qt Quick e QML, con ispirazione dall'app desktop ChatGPT per chiarezza, spaziatura e qualità visiva. La funzione centrale rimane la ricerca documentale.
+**Direzione approvata, implementata dal sorgente in V2-06.** La v2 usa PySide6/Qt Quick e QML; [UX v1](archive/v1/UX_WINDOWS.md) resta storica. L'app desktop ChatGPT è riferimento di chiarezza, spaziatura e qualità visiva. La funzione centrale rimane la ricerca documentale. Prove e limiti sono nel [rapporto V2-06](V2_06_DESKTOP.md).
 
 ## Flussi
 

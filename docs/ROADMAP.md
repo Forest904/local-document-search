@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata con prove dal sorgente e flussi sul prototipo standalone, ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07…V2-08 restano progettate. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
@@ -142,6 +142,8 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 **Riferimenti:** [contratti](INTERFACE_CONTRACTS.md), [analisi](INDEXING_AND_ANALYSIS.md), [ADR 0010](adr/0010-v2-retrieval.md), [test](TEST_STRATEGY.md).
 
 ## V2-06 — Desktop Qt Quick
+
+**Avanzamento locale all'8 novembre 2026, revisione di partenza `2ad36c1aeff3ecd0cc5c478ccd401e20861d9dd0` (working tree modificato):** desktop Qt Quick/QML, controller asincrono, ricerca e anteprima per snapshot, preferenze IT/EN e chiaro/scuro nello storage v2 implementati. Backend 384 passed/6 skipped, frontend 27 passed, script 17 passed, Homework PASS e `pip check` PASS. Il probe sorgente sul corpus sintetico target 10.000 file ha completato ricerca/anteprima durante rebuild; massimo intervallo osservato nel loop UI 635 ms, comprese le catture. Il prototipo ZIP standalone è costruito, verificato tramite 2.829 hash e provato fuori dal repository con storage isolato: indicizzazione, ricerca e anteprima sul corpus small. DPI 100/150/200% e contrasto dei colori principali verificati; esiti e limiti nel [rapporto](V2_06_DESKTOP.md). **V2-06 resta aperta**: mancano prove manuali complete con Narrator e tabulazione; il pacchetto finale resta V2-08.
 
 **Ingresso:** contratti backend V2-05; desktop v1 Qt Widgets esistente. Il design può essere esplorato dopo V2-02, ma non si dichiara integrato prima dei contratti.
 

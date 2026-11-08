@@ -7,12 +7,14 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QGuiApplication
 
 
 @pytest.fixture(scope="session")
 def qt():
-    return QApplication.instance() or QApplication([])
+    app = QGuiApplication.instance() or QGuiApplication([])
+    app.setQuitOnLastWindowClosed(False)
+    return app
 
 
 def until(predicate, timeout=8000):

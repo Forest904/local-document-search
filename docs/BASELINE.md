@@ -80,3 +80,7 @@ La composizione backend `compose_v2_application` usa uno storage SQLite separato
 ## Avanzamento V2-05
 
 Il backend offre filtri per formato/cartella, ordinamento per rilevanza o percorso, snippet e intervalli di evidenziazione dalla versione acquisita. Ricerca e dettagli accettano uno `snapshot_id` esplicito; la CLI conserva i default v1. [Decisioni](adr/0010-v2-retrieval.md) e [contratti](INTERFACE_CONTRACTS.md). La tabella iniziale resta la fotografia storica v1; la prova della UI e del pacchetto appartiene a V2-06/V2-08.
+
+## Avanzamento V2-06
+
+Il desktop corrente usa Qt Quick/QML e la composizione backend v2. Lingua e tema sono salvati nel catalogo v2 separatamente dagli snapshot; la pulizia li azzera. La tabella iniziale conserva la fotografia storica v1. [Rapporto e limiti della verifica](V2_06_DESKTOP.md). L'installer e il collaudo sul pacchetto finale restano V2-07/V2-08.

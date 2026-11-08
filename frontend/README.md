@@ -1,54 +1,54 @@
-# Desktop attuale — Qt Widgets v1
+# Desktop Qt Quick v2
 
-Interfaccia italiana PySide6 Qt Widgets, nello stesso processo del backend persistente. La [UI Qt Quick v2](../docs/UX_WINDOWS.md) è progettata, non implementata.
-Un pacchetto separato mantiene Qt fuori dall'installazione della CLI Homework.
+PySide6/Qt Quick con QML e backend v2 nello stesso processo. Il comando
+`local-document-search-desktop` conserva l'avvio; la CLI Homework resta nel
+pacchetto backend senza dipendenze Qt.
 
-## Installazione e avvio
+## Avvio e uso
 
-Per setup e riavvio automatici usa il task VS Code **Local Document Search: avvia / riavvia**:
-[istruzioni e script](../scripts/dev/README.md). Backend e frontend sono nello stesso processo.
-
-Da root del repository, con Python >=3.12 e un ambiente virtuale attivo:
+Da root con Python 3.12 x64:
 
 ```powershell
 python -m pip install -e "./backend[dev]" -e "./frontend[dev]"
-python -m pip check
 local-document-search-desktop
 ```
 
-In alternativa: `python -m local_document_search_desktop.main`.
-Packaging standalone e lock delle versioni sono implementati nel pacchetto v1; [M9 resta parzialmente accettata](../docs/BASELINE.md).
-Ambiente verificato M8: Windows 11 x64, Python 3.12.2, PySide6 6.12.0.
+Il task VS Code **Local Document Search: avvia / riavvia** usa l'ambiente
+`backend/.venv` e lo stesso comando. Al primo avvio leggere l'informativa,
+premere **Continua**, scegliere una cartella e attendere la prima indicizzazione.
+Le aperture successive recuperano lo snapshot e avviano il sync automatico.
+La ricerca resta disponibile sullo snapshot precedente della stessa cartella
+durante il sync o se la sorgente è temporaneamente assente.
 
-## Uso
+Premere **Invio** per cercare. Scrivere `termine*` per un prefisso esplicito;
+i suggerimenti durante digitazione non avviano la ricerca. La sidebar offre
+campo, formati TXT/MD/PDF, cartella relativa ricorsiva e ordine. La rilevanza
+è predefinita; il percorso è l'alternativa. Selezionare un risultato per
+l'anteprima del testo acquisito, poi **Apri file** per l'applicazione Windows
+predefinita. L'anteprima non riproduce il layout PDF.
 
-- Leggi l'informativa e premi **Continua**: recupera l'ultima cartella e avvia il sync automatico.
-- **Scegli cartella** avvia la prima indicizzazione ricorsiva di TXT, Markdown e PDF testuali.
-- Scegli Nome, Contenuto o Entrambi; premi Invio per cercare termini AND e frasi tra virgolette.
-- Usa Precedente/Successiva per le pagine da 50; seleziona un risultato per il testo completo.
-- **Apri file** usa l'applicazione predefinita di Windows. File assente: messaggio e proposta Sync.
-- **Sync** controlla i cambiamenti; non è presente un watcher. Durante il job resta consultabile l'indice precedente della stessa cartella.
-- **Elimina dati locali** richiede conferma ed è disabilitato durante il job. Non elimina i sorgenti.
-- La chiusura attende job e letture senza bloccare la finestra; nessun cancel.
+**Scorciatoie:** `Ctrl+L` mette a fuoco la ricerca, `Ctrl+O` apre la selezione
+cartella, `F5` avvia il sync, `Invio` esegue la ricerca o seleziona un risultato
+attivo, `Tab` attraversa i controlli. La finestra ha dimensione minima
+900×640 pixel logici e sidebar scorrevole.
 
-Il testo estratto è persistito in `%LOCALAPPDATA%/LocalDocumentSearch`, anche quando il sorgente
-diventa assente. Nessun cloud, cifratura aggiuntiva, ranking, snippet o highlighting.
-Un'altra istanza sullo stesso storage viene rifiutata; chiudila e riprova Continua.
+Italiano e tema chiaro sono iniziali. Lingua e tema si salvano nello storage
+v2 separatamente dagli snapshot. **Elimina dati locali** richiede conferma
+e azzera anche queste preferenze; non modifica sorgenti o dati v1.
+Il job può essere annullato prima del commit. Rebuild e recupero della versione
+precedente sono operazioni esplicite.
 
-## Test e confini
+## Verifiche
 
 ```powershell
 cd frontend
-python -m pytest
+../backend/.venv/Scripts/python.exe -m pytest
 ```
 
-I test usano `QT_QPA_PLATFORM=offscreen` per impostazione predefinita.
-Per finestre native Windows: `$env:QT_QPA_PLATFORM = "windows"` prima di pytest.
-I test usano QtTest, Future controllate, worker reali e storage temporaneo; nessun corpus personale.
-Widget/controller dipendono dai contratti applicativi. Solo `composition.py` collega il backend
-persistente e l'adapter di apertura file; nessun accesso UI allo storage o agli indici.
+I test Qt usano `QT_QPA_PLATFORM=offscreen` per default; impostare
+`QT_QPA_PLATFORM=windows` per controlli nativi. Il probe
+`experiments/run_v2_desktop.py` usa un corpus sintetico esistente, storage
+temporaneo e report/catture fuori Git. Le prove del prototipo standalone sono
+distinte dal futuro installer V2-07 e dall'accettazione V2-08.
 
-[Verifica M8](../docs/archive/v1/M8_VERIFICATION.md) · [UX](../docs/UX_WINDOWS.md) · [Roadmap](../docs/ROADMAP.md)
-
-Distribuzione personale Windows standalone M9: [build e istruzioni](../scripts/package/README.md),
-[evidenze e prova Windows pulito rinviata](../docs/archive/v1/M9_VERIFICATION.md).
+[Rapporto V2-06](../docs/V2_06_DESKTOP.md) · [UX](../docs/UX_WINDOWS.md)

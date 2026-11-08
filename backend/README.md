@@ -53,7 +53,7 @@ Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argome
 - Infrastructure: discovery, reader TXT/Markdown/PDF, `InMemorySnapshotRepository` e `SqliteSnapshotRepository`.
 - Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
 
-Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; Il desktop Qt Widgets v1 usa il backend persistente. SQLite usa la standard library; PySide6 non viene installato.
+Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; il desktop Qt Quick v2 usa `compose_v2_application`. SQLite usa la standard library; PySide6 non viene installato col solo backend.
 
 Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
 
