@@ -76,3 +76,7 @@ Il backend include vocabolari ordinati per campo ricostruiti con gli snapshot, r
 ## Avanzamento V2-04
 
 La composizione backend `compose_v2_application` usa uno storage SQLite separato, con versioni immutabili di documento e posting compressi. Sono implementati cancel cooperativo, verifica dei metadati in ingestione e recovery/rebuild espliciti. La composizione v1 e la CLI restano disponibili per regressione. Le [misure V2-04](V2_04_STORAGE.md) chiudono localmente il gate prestazionale target; la tabella iniziale resta la fotografia storica v1.
+
+## Avanzamento V2-05
+
+Il backend offre filtri per formato/cartella, ordinamento per rilevanza o percorso, snippet e intervalli di evidenziazione dalla versione acquisita. Ricerca e dettagli accettano uno `snapshot_id` esplicito; la CLI conserva i default v1. [Decisioni](adr/0010-v2-retrieval.md) e [contratti](INTERFACE_CONTRACTS.md). La tabella iniziale resta la fotografia storica v1; la prova della UI e del pacchetto appartiene a V2-06/V2-08.

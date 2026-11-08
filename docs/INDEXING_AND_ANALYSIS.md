@@ -12,9 +12,9 @@ Lo snapshot conserva l'ordine per percorso dei documenti. La ricerca applicativa
 
 ## Risultati v2
 
-La ricerca determina prima quali documenti corrispondono, valutando ogni campo autonomamente. I filtri formato/cartella riducono i candidati secondo il [contratto](INTERFACE_CONTRACTS.md); rilevanza ordina solo i match rimasti. La formula è [V2-D05](OPEN_DECISIONS.md); ordine deterministico e spareggio stabile sono invarianti già approvati. L'alternativa per percorso preserva l'ordine lessicografico v1 nella UI v2.
+La ricerca determina prima quali documenti corrispondono, valutando ogni campo autonomamente. I filtri formato/cartella riducono i candidati secondo il [contratto](INTERFACE_CONTRACTS.md); rilevanza ordina solo i match rimasti. La formula [V2-D05](adr/0010-v2-retrieval.md) dà priorità al nome, poi alla frequenza di posizioni distinte nei soli campi che soddisfano tutta la query, quindi al percorso. L'alternativa per percorso preserva l'ordine lessicografico v1 nella UI v2.
 
-Snippet ed evidenziazioni derivano da testo estratto persistito e versione acquisita, non dal file sorgente. Offset e selezione delle finestre devono rispettare Unicode e [V2-D06](OPEN_DECISIONS.md). Non promettere coordinate di pagina o fedeltà al layout PDF.
+Snippet ed evidenziazioni derivano da testo estratto persistito e versione acquisita, non dal file sorgente. La mappatura dei token restituisce intervalli Unicode `[start, end)` sul testo originale; i prefissi evidenziano il token completo e le frasi l'intervallo dei token consecutivi. [V2-D06](adr/0010-v2-retrieval.md) fissa una finestra massima di 240 caratteri. Non promettere coordinate di pagina o fedeltà al layout PDF.
 
 ## Ingestione di sorgenti variabili
 

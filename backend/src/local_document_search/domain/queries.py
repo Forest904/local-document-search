@@ -126,6 +126,42 @@ class SearchMatch:
 
 
 class QueryEvaluator:
+    def matched_ids_by_field(self, query: SearchQuery,
+                             snapshot: IndexSnapshot) -> dict[SearchField, set[DocumentId]]:
+        return self._matched_ids_by_field(query, snapshot)
+
+    def score(self, query: SearchQuery, snapshot: IndexSnapshot, document_id: DocumentId,
+              matched_fields: frozenset[SearchField]) -> tuple[int, int]:
+        """Priorità al nome e frequenza delle posizioni distinte nei campi completi."""
+        analyzed = _analyze(query)
+        positions_by_field = []
+        for field in (SearchField.FILENAME, SearchField.CONTENT):
+            if field not in matched_fields:
+                continue
+            index = snapshot.filename_index if field is SearchField.FILENAME else snapshot.content_index
+            positions = set()
+            for clause, terms in zip(query.clauses, analyzed[field]):
+                if isinstance(clause, PrefixClause):
+                    for term in index.terms_with_prefix(terms[0], 257):
+                        posting = index.terms[term].get(document_id)
+                        if posting:
+                            positions.update(posting.positions)
+                elif isinstance(clause, PhraseClause):
+                    postings = [index.terms.get(term, {}).get(document_id) for term in terms]
+                    if all(postings):
+                        starts = set(postings[0].positions)
+                        for offset, posting in enumerate(postings[1:], 1):
+                            starts.intersection_update(position - offset for position in posting.positions)
+                        for start in starts:
+                            positions.update(range(start, start + len(terms)))
+                else:
+                    for term in terms:
+                        posting = index.terms.get(term, {}).get(document_id)
+                        if posting:
+                            positions.update(posting.positions)
+            positions_by_field.append(len(positions))
+        return (int(SearchField.FILENAME in matched_fields), sum(positions_by_field))
+
     def evaluate(self, query: SearchQuery, snapshot: IndexSnapshot) -> tuple[SearchMatch, ...]:
         by_field = self._matched_ids_by_field(query, snapshot)
         return tuple(self._make_match(key, by_field) for key in snapshot.ordered_document_ids

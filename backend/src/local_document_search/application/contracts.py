@@ -13,6 +13,11 @@ class InvalidInput(ValueError):
     """Parametri della richiesta non validi."""
 
 
+class SearchOrder(str, Enum):
+    PATH = "path"
+    RELEVANCE = "relevance"
+
+
 @dataclass(frozen=True)
 class SearchRequest:
     query: str
@@ -20,6 +25,10 @@ class SearchRequest:
     limit: int = 50
     offset: int = 0
     allow_prefixes: bool = False
+    formats: frozenset[DocumentFormat] | None = None
+    folder: str | None = None
+    order: SearchOrder = SearchOrder.PATH
+    snapshot_id: str | None = None
 
     def __post_init__(self) -> None:
         if not self.query.strip() or not isinstance(self.field, SearchField):
@@ -30,6 +39,52 @@ class SearchRequest:
             raise InvalidInput("offset deve essere un intero non negativo")
         if type(self.allow_prefixes) is not bool:
             raise InvalidInput("allow_prefixes deve essere booleano")
+        if self.formats is not None:
+            try:
+                formats = frozenset(self.formats)
+            except TypeError as exc:
+                raise InvalidInput("Formati non validi") from exc
+            if not formats or any(not isinstance(value, DocumentFormat) for value in formats):
+                raise InvalidInput("Formati non validi")
+            object.__setattr__(self, "formats", formats)
+        if self.folder is not None:
+            if (not isinstance(self.folder, str) or not self.folder or
+                any(part in ("", ".", "..") for part in self.folder.split("/")) or
+                any(char in self.folder for char in ("\\", ":", "\x00"))):
+                raise InvalidInput("Cartella relativa non valida")
+        if not isinstance(self.order, SearchOrder):
+            raise InvalidInput("Ordine non valido")
+        if self.snapshot_id is not None and (not isinstance(self.snapshot_id, str) or not self.snapshot_id.strip()):
+            raise InvalidInput("snapshot_id non valido")
+
+
+@dataclass(frozen=True)
+class TextRange:
+    start: int
+    end: int
+
+    def __post_init__(self) -> None:
+        require_nonnegative(self.start, "start")
+        if type(self.end) is not int or self.end <= self.start:
+            raise ValueError("Intervallo non valido")
+
+
+@dataclass(frozen=True)
+class SearchSnippet:
+    text: str
+    start: int
+    truncated_before: bool
+    truncated_after: bool
+    highlights: tuple[TextRange, ...] = ()
+
+    def __post_init__(self) -> None:
+        require_nonnegative(self.start, "start")
+        object.__setattr__(self, "highlights", tuple(self.highlights))
+        if not isinstance(self.text, str) or any(
+            not isinstance(value, TextRange) or value.end > len(self.text)
+            for value in self.highlights
+        ):
+            raise ValueError("Snippet non valido")
 
 
 @dataclass(frozen=True)
@@ -62,6 +117,8 @@ class SearchResult:
     relative_path: RelativePath
     format: DocumentFormat
     matched_fields: frozenset[SearchField]
+    snippet: SearchSnippet | None = None
+    filename_highlights: tuple[TextRange, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "matched_fields", frozenset(self.matched_fields))
@@ -91,6 +148,8 @@ class DocumentDetails:
     document_id: DocumentId
     metadata: DocumentMetadata
     extracted_text: str
+    filename_highlights: tuple[TextRange, ...] = ()
+    content_highlights: tuple[TextRange, ...] = ()
 
 
 @dataclass(frozen=True)

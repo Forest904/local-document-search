@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato all'8 novembre 2026:** V2-01, V2-02, V2-03 e V2-04 sono completate e verificate localmente; V2-05…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
@@ -123,6 +123,8 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 **Riferimenti:** [snapshot](SNAPSHOTS_AND_SYNC.md), [contratti](INTERFACE_CONTRACTS.md), [ADR 0012](adr/0012-v2-lifecycle-storage.md), [debito M9](BASELINE.md).
 
 ## V2-05 — Ricerca applicativa e contratti
+
+**Chiusura locale all'8 novembre 2026, revisione di partenza `b91e2a33ff2de8faf08f4dcadb7314f92576fb83` (working tree modificato):** filtri formato/cartella, ranking su posting, snippet e highlighting Unicode dal testo acquisito, ricerca e anteprima vincolate allo snapshot. V2-D05 e V2-D06 sono risolte nell'[ADR 0010](adr/0010-v2-retrieval.md). Suite backend: 380 passed, 6 skipped; corpus reale opt-in mirato: 6 passed; Homework PASS. Probe prestazionale small (100 file, 299.521 byte estratti, un ciclo, 10 campioni/query, 2 warm-up): `PASS`, peggior p95 query 18,7 ms. Comando: `python experiments/run_v2_benchmark.py run experiments/results/v2-small experiments/results/v2-05-small-probe-fast --cycles 1 --samples 10 --warmups 2`; report locale fuori Git. Il probe non dimostra il budget target 10.000/300 MB né il collaudo del pacchetto. **V2-05 chiusa localmente** per T05–T07/T18 backend; UI e pacchetto restano V2-06/V2-08. La revisione finale va registrata dopo il commit.
 
 **Ingresso:** motore V2-03 e storage/lifecycle V2-04; `SearchDocuments`, `GetDocument` e DTO v1 sono la base, la CLI conserva i suoi default.
 

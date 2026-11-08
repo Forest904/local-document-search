@@ -37,8 +37,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T03 | AND, frasi, termini ripetuti e BOTH nello stesso campo; match identici a v1 per query esatte | V2-03 |
 | T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
 | T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati. Backend V2-03 coperto da `test_v2_retrieval.py`; integrazione digitazione UI in V2-06 | V2-03, V2-05, V2-06 |
-| T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso | V2-05 |
-| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; anteprima sotto carico e versione rimossa gestita | V2-05, V2-06, V2-08 |
+| T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso. Backend: `test_v2_search_application.py` | V2-05 |
+| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; backend: `test_v2_search_application.py`. Anteprima UI sotto carico resta V2-06/V2-08 | V2-05, V2-06, V2-08 |
 | T08 | Budget approvati su 10.000/300 MB per p95 query, avvio, build, sync, RAM; metodologia e limiti registrati | V2-02, V2-03, V2-04, V2-08 |
 | T09 | Add/modify/remove, no-change, A→B→A, rebuild, fault commit, recovery; mai snapshot parziale o directory errata | V2-04, V2-08 |
 | T10 | Cancel durante estrazione/build conserva N e produce CANCELLED; cancel al commit rifiutato; pulizia durante job rifiutata | V2-04, V2-06, V2-08 |
