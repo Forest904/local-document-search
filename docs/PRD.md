@@ -6,7 +6,7 @@
 
 V1 soddisfa l'Homework e offre un desktop per interagirvi. V2 evolve lo stesso prodotto, gli stessi package e il backend già implementato: aggiunge capacità di ricerca, rinnova la presentazione e completa la distribuzione. La [mappa M0–M9 → v2](BASELINE.md#continuità-da-m0m9-a-v2) mostra cosa viene riutilizzato; V2-01 parte dai generatori e dalle verifiche già presenti per costruire il corpus ibrido funzionale. V2 deve permettere a utenti Windows non tecnici di installare e usare un prodotto completo senza Python preinstallato, servizi remoti o configurazione di sviluppo. L'uso personale, di studio e interno è gratuito, anche per imprese e professionisti; vendita, integrazione in prodotti distribuiti e offerta come servizio a terzi richiedono autorizzazione scritta.
 
-Il percorso principale è: installare offline → scegliere una cartella → indicizzare → cercare → leggere il contesto → aprire il file. Le aperture successive recuperano l'indice e sincronizzano in background. La UI espone attese, errori e recupero senza richiedere conoscenze tecniche.
+Il percorso principale è: installare offline → scegliere una cartella → indicizzare → cercare → leggere gli estratti → aprire il file. Le aperture successive recuperano l'indice e sincronizzano in background. La UI espone attese, errori e recupero senza richiedere conoscenze tecniche.
 
 ## Requisiti e accettazione
 
@@ -20,12 +20,12 @@ Gli ID sono stabili. I riferimenti Txx sono scenari della [strategia di test](TE
 | V2-R04 | Indice secondario ordinato sul vocabolario | Coerenza con entrambi i campi e snapshot; confronto misurato della struttura scelta | V2-03 / T04 |
 | V2-R05 | Prefissi espliciti e suggerimenti durante digitazione | Suggerimenti separati dalla query, riferiti allo snapshot; nessuna espansione implicita della ricerca esatta | V2-03, V2-05, V2-06 / T05 |
 | V2-R06 | Filtri per formato e cartella; rilevanza e percorso | Filtri coerenti con totale/pagine; ranking dei soli match, deterministico con spareggio stabile | V2-05 / T06 |
-| V2-R07 | Snippet ed evidenziazione nei risultati e nell'anteprima | Testo e corrispondenze della versione richiesta, senza rilettura dei sorgenti | V2-05, V2-06 / T07 |
+| V2-R07 | Snippet ed evidenziazione nei risultati | Testo e corrispondenze della versione richiesta, senza rilettura dei sorgenti | V2-05, V2-06 / T07 |
 | V2-R08 | Target 10.000 file / 300 MB di testo estratto | Budget approvati su corpus e hardware definiti per p95 query, avvio, build, sync e RAM; verifica sul pacchetto | V2-02, V2-03, V2-04, V2-08 / T08 |
 | V2-R09 | Snapshot immutabili, commit atomico e single-writer | Ricerca sul precedente della stessa cartella; nessun candidato parziale dopo errore o recovery | V2-04, V2-08 / T09 |
 | V2-R10 | Annullamento cooperativo prima del commit | Esito annullato distinto da errore, vecchio snapshot preservato; richiesta tardiva rifiutata esplicitamente | V2-04, V2-06 / T10 |
 | V2-R11 | Rilevare variazioni dei metadati durante ingestione | Variazione rilevata interrompe il candidato e offre retry; nessun hash o controllo dei sorgenti durante query | V2-04 / T11 |
-| V2-R12 | Desktop Qt Quick/QML minimale e professionale | Sidebar, ricerca centrale, risultati e anteprima; Invio esegue, rilevanza predefinita; UI utilizzabile sotto carico | V2-06 / T12 |
+| V2-R12 | Desktop Qt Quick/QML minimale e professionale | Ingresso guidato, home Luma, lista ad apertura diretta e Impostazioni separate; Invio esegue, rilevanza predefinita; UI utilizzabile sotto carico | V2-06 / T12 |
 | V2-R13 | Italiano/inglese, temi e accessibilità | Preferenze persistenti, tastiera completa, focus e contrasto, DPI e Narrator sui flussi principali | V2-06 / T13 |
 | V2-R14 | Storage v2 separato, nessuna migrazione automatica | Nuova selezione cartella; v1 non letta, modificata o rimossa dalla gestione dati v2 | V2-04, V2-07 / T14 |
 | V2-R15 | Installer offline per utente con wizard | Nessuna elevazione; Python, Qt, plugin e runtime necessari inclusi; aggiornamento da installer completo | V2-07, V2-08 / T15 |

@@ -5,12 +5,12 @@ import os
 import sys
 import tempfile
 
-from PySide6.QtCore import QUrl
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
-from .composition import compose_desktop, open_document
+from .composition import compose_desktop, open_document, has_local_session
 from .controller import DesktopController
 
 
@@ -21,6 +21,7 @@ def create_engine(controller):
     packaged = Path(sys.executable).parent / "local_document_search_desktop" / "qml" / "Main.qml"
     if not source.is_file() and packaged.is_file():
         source = packaged
+    QGuiApplication.instance().setWindowIcon(QIcon(str(source.parent.parent / "assets" / "luma.ico")))
     engine.load(QUrl.fromLocalFile(str(source)))
     return engine
 
@@ -42,6 +43,8 @@ def main():
         (Path(tempfile.gettempdir()) / "lds-v2-06-qml-error.log").write_text(
             f"source={Path(__file__)}\nexe={sys.executable}\n", encoding="utf-8")
         return 1
+    if has_local_session():
+        QTimer.singleShot(0, controller.initialize)
     result = app.exec()
     if running_mutex:
         ctypes.windll.kernel32.CloseHandle(running_mutex)

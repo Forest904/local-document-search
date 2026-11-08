@@ -38,12 +38,12 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
 | T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati. Backend V2-03 coperto da `test_v2_retrieval.py`; integrazione digitazione UI in V2-06 | V2-03, V2-05, V2-06 |
 | T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso. Backend: `test_v2_search_application.py` | V2-05 |
-| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; backend: `test_v2_search_application.py`. Anteprima UI sotto carico resta V2-06/V2-08 | V2-05, V2-06, V2-08 |
+| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; backend: `test_v2_search_application.py`. Estratti e apertura diretta UI sotto carico restano V2-06/V2-08 | V2-05, V2-06, V2-08 |
 | T08 | Budget approvati su 10.000/300 MB per p95 query, avvio, build, sync, RAM; metodologia e limiti registrati | V2-02, V2-03, V2-04, V2-08 |
 | T09 | Add/modify/remove, no-change, A→B→A, rebuild, fault commit, recovery; mai snapshot parziale o directory errata | V2-04, V2-08 |
 | T10 | Cancel durante estrazione/build conserva N e produce CANCELLED; cancel al commit rifiutato; pulizia durante job rifiutata | V2-04, V2-06, V2-08 |
 | T11 | Sorgente modificato durante lettura con metadati diversi: fallimento/retry; size+mtime identici resta limite dichiarato | V2-04 |
-| T12 | UI usabile durante build, ricerca e anteprima; query/filtri/directory obsolete non sovrascrivono stato corrente | V2-06, V2-08 |
+| T12 | UI Luma usabile durante build, ricerca e apertura diretta; query/filtri/directory obsolete non sovrascrivono stato corrente | V2-06, V2-08 |
 | T13 | Italiano/inglese, temi persistenti, tastiera, focus, contrasto, DPI e Narrator su flussi principali | V2-06, V2-08 |
 | T14 | Prima selezione v2 e upgrade v2 senza leggere, alterare o cancellare dati v1 | V2-04, V2-07 |
 | T15 | Wizard IT/EN install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi, reinstallazione consentita, downgrade bloccato e avvio riuscito | V2-07, V2-08 |
@@ -66,3 +66,13 @@ chiusura locale V2-06; il pacchetto finale appartiene a V2-08.
 Le regressioni backend V2-04 in `backend/tests/integration/test_v2_lifecycle.py` coprono riapertura, versioni, isolamento v1, cancel, metadati e recovery esplicito. Il runner V2-02 usa la composizione v2 per le misure di storage. T08 è verificata localmente su tre cicli target `PASS` entro i budget approvati; le prove sul sorgente non chiudono il collaudo del pacchetto V2-08.
 
 Le [lacune M9-G01…G07](BASELINE.md) richiedono prove sul pacchetto v2 finale. Test del sorgente, mock e collaudo dello ZIP v1 non sostituiscono questa prova. V2-08 è chiusa solo se tutti i requisiti applicabili hanno esiti registrati; un limite accettato rimane documentato. Durante la sola riscrittura documentale non si rieseguono suite o benchmark applicativi.
+
+## Regressioni Luma
+
+T12/T13 includono onboarding senza snapshot, errore/cancel e retry, home dopo
+attivazione, recupero automatico v2 e sync non bloccante. Verificare navigazione
+home/risultati/Impostazioni con query preservata, filtri/reset di sessione,
+apertura singola da clic/Invio senza richiesta dei dettagli, file mancante,
+risposte obsolete, IT/EN, temi, asset e QML nel payload. Il rendering offscreen
+verifica caricamento e binding; la resa dei font Windows richiede il plugin
+nativo. Narrator e collaudo finale rimangono prove distinte.

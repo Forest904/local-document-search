@@ -84,3 +84,10 @@ Il backend offre filtri per formato/cartella, ordinamento per rilevanza o percor
 ## Avanzamento V2-06
 
 Il desktop corrente usa Qt Quick/QML e la composizione backend v2. Lingua e tema sono salvati nel catalogo v2 separatamente dagli snapshot; la pulizia li azzera. La tabella iniziale conserva la fotografia storica v1. [Rapporto e limiti della verifica](V2_06_DESKTOP.md). L'installer e il collaudo sul pacchetto finale restano V2-07/V2-08.
+
+## Redesign Luma
+
+La UI successiva a V2-06 usa ingresso guidato, home minimale, lista con apertura
+diretta e Impostazioni separate. I filtri sono di sessione; temi e lingue
+persistono. [Stato e verifiche](LUMA_DESKTOP.md). Le prove dei precedenti
+installer rimangono storiche e non certificano il nuovo payload.

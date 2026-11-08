@@ -8,7 +8,7 @@ def highlighted(text, ranges):
     # Escaping prima del markup: nessuna risorsa, link o HTML dai documenti.
     parts, cursor = [], 0
     for span in ranges:
-        parts.extend((escape(text[cursor:span.start]), '<b style="background-color:#f5cf65;color:#202020">',
+        parts.extend((escape(text[cursor:span.start]), '<b>',
                       escape(text[span.start:span.end]), '</b>'))
         cursor = span.end
     parts.append(escape(text[cursor:]))
@@ -21,7 +21,7 @@ def python_cursor(text, utf16_position):
 
 class ResultsModel(QAbstractListModel):
     roles = {Qt.UserRole + 1: b"nameHtml", Qt.UserRole + 2: b"pathText",
-             Qt.UserRole + 3: b"snippetHtml", Qt.UserRole + 4: b"accessibleText"}
+             Qt.UserRole + 3: b"snippetHtml", Qt.UserRole + 4: b"accessibleText", Qt.UserRole + 5: b"formatText"}
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -49,10 +49,10 @@ def result_rows(response):
     rows = []
     for item in response.results:
         snippet = item.snippet
-        rows.append({"nameHtml": highlighted(item.filename, item.filename_highlights),
+        rows.append({"formatText": item.format.value.upper(), "nameHtml": highlighted(item.filename, item.filename_highlights),
                      "pathText": item.relative_path.value,
                      "snippetHtml": (("…" if snippet.truncated_before else "") +
-                                     highlighted(snippet.text, snippet.highlights) +
+                                     highlighted(snippet.text, snippet.highlights).replace("<br>", " ") +
                                      ("…" if snippet.truncated_after else "")) if snippet else "",
                      "accessibleText": item.relative_path.value + "\n" + (snippet.text if snippet else "")})
     return rows

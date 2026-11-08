@@ -1,5 +1,6 @@
 """Catalogo locale completo per i flussi desktop, senza servizi remoti."""
 MESSAGES = {
+    "appName": ("LOCAL DOCUMENT SEARCH", "LOCAL DOCUMENT SEARCH"),
     "app": ("Ricerca documenti", "Document search"),
     "tagline": ("I tuoi documenti, sul tuo dispositivo.", "Your documents, on your device."),
     "choose": ("Scegli cartella…", "Choose folder…"),
@@ -56,11 +57,11 @@ MESSAGES = {
     "excluded": ("Esclusi", "Excluded"),
     "failure": ("Operazione non riuscita. Riprova.", "Operation failed. Try again."),
     "InvalidInput": ("Query o opzioni non valide. Controlla frasi, prefissi e filtri.", "Invalid query or options. Check phrases, prefixes and filters."),
-    "SourceUnavailable": ("Cartella sorgente non disponibile. Verifica il percorso e riprova Sync; l’indice precedente resta consultabile.", "Source folder unavailable. Check the path and retry Sync; the previous index remains searchable."),
+    "SourceUnavailable": ("Cartella sorgente non disponibile. Verifica il percorso e riprova la sincronizzazione; l’indice precedente resta consultabile.", "Source folder unavailable. Check the path and synchronize again; the previous index remains searchable."),
     "SnapshotUnavailable": ("Versione non disponibile. Ripeti la ricerca oppure usa ricostruzione o recupero.", "Version unavailable. Search again, rebuild or recover the index."),
     "StorageFailure": ("Impossibile accedere ai dati locali. Controlla spazio, permessi e altre istanze; riprova.", "Cannot access local data. Check space, permissions and other instances; retry."),
     "ResourceFailure": ("Risorse insufficienti. Libera memoria e riprova.", "Insufficient resources. Free memory and retry."),
-    "ExtractionFailure": ("Acquisizione non riuscita o file modificato durante la lettura. Riprova Sync.", "Extraction failed or a file changed during reading. Retry Sync."),
+    "ExtractionFailure": ("Acquisizione non riuscita o file modificato durante la lettura. Riprova la sincronizzazione.", "Extraction failed or a file changed during reading. Synchronize again."),
     "FileNotFoundError": ("File non disponibile. Premi Sincronizza per aggiornare l’indice.", "File unavailable. Synchronize to update the index."),
     "OSError": ("Impossibile aprire il file con l’applicazione predefinita.", "Cannot open the file with the default application."),
     "ACCEPTED": ("Annullamento richiesto…", "Cancellation requested…"),
@@ -75,10 +76,29 @@ MESSAGES = {
     "EXTRACTING": ("Acquisizione", "Extracting"),
     "ANALYZING": ("Analisi", "Analyzing"),
     "BUILDING": ("Costruzione indice", "Building index"),
-    "COMMITTING": ("Salvataggio finale", "Committing"),
+    "COMMITTING": ("Salvataggio finale", "Finishing the index"),
     "exclusion": ("Documento escluso", "Document excluded"),
     "error": ("Errore di acquisizione", "Extraction error"),
+    'discover': ('Ritrova ciò che cerchi', 'Find what you are looking for'),
+    'onboardingTitle': ('I tuoi documenti. A portata di ricerca.', 'Your documents. A search away.'),
+    'onboardingBody': ('Scegli una cartella: Luma prepara un indice di TXT, Markdown e PDF testuali, incluse le sottocartelle.', 'Choose a folder: Luma indexes TXT, Markdown and text PDFs, including subfolders.'),
+    'prepare': ('Prepariamo la tua ricerca', 'Getting your search ready'),
+    'acceptChoose': ('Accetta e scegli una cartella', 'Accept and choose a folder'),
+    'resetFilters': ('Ripristina ricerca completa', 'Reset search options'),
+    'searchSettings': ('Preferenze di ricerca', 'Search preferences'),
+    'indexSettings': ('Cartella e indice', 'Folder and index'),
+    'appearance': ('Aspetto e lingua', 'Appearance and language'),
+    'sessionFilters': ('I filtri valgono per questa sessione. Al riavvio o cambio cartella torni a cercare in tutti i documenti.', 'Filters apply to this session. Restarting or changing folders restores search across all documents.'),
+    'local': ('Locale. Privato. Tutto qui.', 'Local. Private. That is all.'),
+    'tipPrefix': ('Usa progett* per trovare parole che iniziano con “progett”.', 'Use project* to find words starting with “project”.'),
+    'tipPhrase': ('Metti una frase tra virgolette per cercare le parole consecutive.', 'Put a phrase in quotes to search for consecutive words.'),
+    'tipFilters': ('Cerchi solo PDF? Seleziona il formato nelle Impostazioni.', 'Looking only for PDFs? Select the format in Settings.'),
+    'tipOpen': ('Un clic sul titolo apre il documento nella tua applicazione predefinita.', 'Click a title to open the document in your default application.'),
+    'searching': ('Ricerca in corso…', 'Searching…'),
+    'home': ('Pagina iniziale', 'Home'),
 }
+
+
 
 
 def translate(key, language):

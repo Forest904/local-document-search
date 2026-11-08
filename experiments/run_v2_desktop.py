@@ -1,4 +1,4 @@
-"""Probe Qt Quick dal sorgente: ricerca/anteprima durante rebuild, non benchmark T08.
+"""Probe Qt Quick dal sorgente: ricerca/apertura durante rebuild, non benchmark T08.
 
 Usare un corpus sintetico esistente; non modifica i documenti sorgente.
 Output, storage isolato e catture restano sotto la directory di risultati indicata.
@@ -39,7 +39,7 @@ def main():
     window = engine.rootObjects()[0]
     report = {"platform": platform.platform(), "python": sys.version,
               "qt": qt_version, "scale": args.scale, "source": str(args.source.resolve()),
-              "query": args.query, "search_preview_cycles_during_rebuild": 0,
+              "query": args.query, "search_open_cycles_during_rebuild": 0,
               "max_event_gap_ms": 0, "max_event_gap_while_rebuild_ms": 0,
               "passed": False}
     stage, last, started = "initialize", time.perf_counter(), time.perf_counter()
@@ -51,7 +51,7 @@ def main():
         nonlocal stage, last, rebuild_seen, capture_at
         now = time.perf_counter()
         report["max_event_gap_ms"] = max(report["max_event_gap_ms"], (now - last) * 1000)
-        if stage in ("rebuild", "load_search", "load_preview"):
+        if stage in ("rebuild", "load_search", "load_open"):
             report["max_event_gap_while_rebuild_ms"] = max(
                 report["max_event_gap_while_rebuild_ms"], (now - last) * 1000)
         last = now
@@ -81,9 +81,9 @@ def main():
                 c.requestClose()
                 return
             report["total_matches"] = c.response.total_matches
-            c.selectResult(0)
-            stage = "first_preview"
-        elif stage == "first_preview" and c.preview_html and v["canManage"]:
+            c.openResult(0)
+            stage = "first_open"
+        elif stage == "first_open" and c.selected and v["canManage"]:
             c.action("rebuild")
             stage = "rebuild"
         elif stage == "rebuild":
@@ -94,23 +94,20 @@ def main():
             elif rebuild_seen and not v["running"] and v["canManage"]:
                 stage = "capture"
         elif stage == "load_search" and not v["reading"] and c.response:
-            c.selectResult(0)
-            stage = "load_preview"
-        elif stage == "load_preview" and not v["reading"]:
-            if c.preview_html and v["running"]:
-                report["search_preview_cycles_during_rebuild"] += 1
+            c.openResult(0)
+            stage = "load_open"
+        elif stage == "load_open" and not v["reading"]:
+            if c.selected and v["running"]:
+                report["search_open_cycles_during_rebuild"] += 1
             stage = "rebuild"
         elif stage == "capture" and v["canManage"] and not v["reading"]:
-            if c.response and c.response.results and not c.preview_html:
-                c.selectResult(0)
-                return
             if screenshots:
                 language, theme = screenshots[0]
                 c.savePreferences(language, theme)
                 capture_at = now + 0.3
                 stage = "capture_wait"
             else:
-                report["passed"] = report["search_preview_cycles_during_rebuild"] > 0
+                report["passed"] = report["search_open_cycles_during_rebuild"] > 0
                 report["elapsed_s"] = now - started
                 c.requestClose()
                 stage = "closing"

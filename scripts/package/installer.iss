@@ -29,6 +29,7 @@ UninstallDisplayIcon={app}\LocalDocumentSearch.exe
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile={#SourcePath}\..\..\frontend\src\local_document_search_desktop\assets\luma.ico
 SetupLogging=yes
 
 [Languages]

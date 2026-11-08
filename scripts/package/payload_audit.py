@@ -24,7 +24,11 @@ def qml_modules(folder):
                 available[line.split()[1]] = qmldir.parent
                 break
     selected = set()
-    pending = deque(QML_IMPORTS)
+    app_qml = folder / "local_document_search_desktop/qml"
+    imports = set(QML_IMPORTS)
+    for source in app_qml.rglob("*.qml"):
+        imports.update(QML_PATTERN.findall(source.read_text(encoding="utf-8")))
+    pending = deque(sorted(imports))
     while pending:
         module = pending.popleft()
         if module in selected:
@@ -71,8 +75,12 @@ def trim_qt(folder, dumpbin):
         elif path.is_dir() and not any(path.iterdir()):
             path.rmdir()
     plugin_root = folder / "PySide6/qt-plugins"
+    required_plugins = {plugin_root / "platforms/qwindows.dll",
+                        plugin_root / "imageformats/qsvg.dll",
+                        plugin_root / "imageformats/qico.dll",
+                        plugin_root / "iconengines/qsvgicon.dll"}
     for path in sorted(plugin_root.rglob("*"), key=lambda item: len(item.parts), reverse=True):
-        if path.is_file() and path != plugin_root / "platforms/qwindows.dll":
+        if path.is_file() and path not in required_plugins:
             path.unlink()
         elif path.is_dir() and not any(path.iterdir()):
             path.rmdir()
@@ -84,7 +92,7 @@ def trim_qt(folder, dumpbin):
     by_name = {path.name.lower(): path for path in binaries if path.parent == folder}
     for path in binaries:
         by_name.setdefault(path.name.lower(), path)
-    seeds = [folder / "LocalDocumentSearch.exe", plugin_root / "platforms/qwindows.dll",
+    seeds = [folder / "LocalDocumentSearch.exe", *required_plugins,
              *(pyside / name for name in sorted(PYSIDE_MODULES)),
              *qml_root.rglob("*.dll")]
     pending = deque(path for path in seeds if path.is_file())

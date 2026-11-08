@@ -79,7 +79,7 @@ di prova esterna al repository. Non alterare le variabili dell'account.
 Usare soltanto corpus sintetici e verificare che lo storage sia quello isolato.
 
 Percorsi da registrare: informativa, selezione, TXT/MD/PDF, ricerca per campo/AND/frasi,
-pagine da 50, anteprima e apertura, add/modify/remove, restart/no-change,
+pagine da 50, estratti e apertura diretta, add/modify/remove, restart/no-change,
 errori con snapshot precedente, doppia istanza, chiusura durante job,
 arresto forzato e recovery, sorgente assente e pulizia dei soli dati app.
 Misurare il processo compilato separatamente dal benchmark backend.
@@ -88,3 +88,11 @@ La prova M9 v1 resta [storica](../../docs/archive/v1/M9_VERIFICATION.md).
 
 La prova su Windows pulito/account standard distinto appartiene a V2-08.
 L'avvio del prototipo sul PC di sviluppo non dimostra portabilità su ambiente pulito.
+
+## Risorse Luma
+
+La build enumera ricorsivamente i componenti QML, copia QML e asset nel payload
+e verifica che ogni risorsa prevista sia presente. Conserva i plugin Windows,
+SVG, ICO e SVG icon engine con le rispettive dipendenze. L'icona Luma è usata
+per finestra, eseguibile e installer. Le nuove prove sono nel
+[rapporto Luma](../../docs/LUMA_DESKTOP.md), separate dal collaudo storico V2-07.

@@ -157,8 +157,14 @@ def test_obsolete_results_and_errors_ignored(controller, change, error):
         future.set_exception(StorageFailure("old error"))
     else:
         future.set_result(SearchResponse("N", (), 5))
-    until(lambda: c.read_future is None)
-    assert c.response is None and not c.message_key
+    if change == "options":
+        until(lambda: len(s.search.calls) == 2)
+        assert c.response is None and not c.message_key
+        s.search.calls[-1][1].set_result(SearchResponse("N", (), 0))
+        until(lambda: c.response is not None)
+    else:
+        until(lambda: c.read_future is None)
+        assert c.response is None and not c.message_key
 
 
 def test_bounded_suggestions_and_latest_query(controller):
@@ -197,17 +203,18 @@ def test_filters_pagination_and_snapshot_restart(controller):
     assert not c.view["canNext"] and not c.view["canPrevious"]
 
 
-def test_preview_is_bound_to_version_and_selection(controller):
+def test_direct_open_without_preview_and_obsolete_result(controller):
     c, s = controller
+    opened = []
+    c.opener = lambda *args: opened.append(args)
     start(c)
     search(c, s, items=(result(),), total=1)
-    c.selectResult(0)
-    until(lambda: bool(s.get_document.calls))
-    assert s.get_document.calls[0][0][1:] == ("N", "alpha", SearchField.BOTH, True)
+    c.openResult(0)
+    assert opened == [("C:/source", RelativePath("alpha.txt"))]
+    assert not s.get_document.calls
     c.editQuery("beta", 4)
-    s.get_document.calls[0][1].set_exception(SnapshotUnavailable("old preview"))
-    until(lambda: c.read_future is None)
-    assert not c.preview_html and not c.message_key
+    c.openResult(0)
+    assert len(opened) == 1
 
 
 def test_unicode_and_literal_markup(qt):
@@ -311,11 +318,12 @@ def test_qml_load_keyboard_search_and_theme(controller, qt):
     try:
         start(c)
         query = window.findChild(QObject, "query")
-        query.setProperty("text", "alpha")
-        query.setProperty("cursorPosition", 5)
         query.forceActiveFocus()
+        for key in (Qt.Key_A, Qt.Key_L, Qt.Key_P, Qt.Key_H, Qt.Key_A):
+            QTest.keyClick(window, key)
+        assert c.query == "alpha"
         QTest.keyClick(window, Qt.Key_Tab)
-        assert window.activeFocusItem().objectName() == "field"
+        assert window.activeFocusItem().objectName() == "searchButton"
         QTest.keyClick(window, Qt.Key.Key_L, Qt.KeyboardModifier.ControlModifier)
         assert window.activeFocusItem().objectName() == "query"
         QTest.keyClick(window, Qt.Key_Return)
@@ -332,7 +340,7 @@ def test_qml_load_keyboard_search_and_theme(controller, qt):
         engine.deleteLater()
 
 
-def test_real_backend_search_preview_restart_clear(qt, tmp_path):
+def test_real_backend_search_open_restart_clear(qt, tmp_path):
     source = tmp_path / "source"
     source.mkdir()
     (source / "alpha.txt").write_text("😀 alpha beta <literal>", encoding="utf-8")
@@ -346,9 +354,8 @@ def test_real_backend_search_preview_restart_clear(qt, tmp_path):
         c.search()
         until(lambda: c.response is not None)
         assert c.response.total_matches == 1
-        c.selectResult(0)
-        until(lambda: bool(c.preview_html))
-        assert "&lt;literal&gt;" in c.preview_html
+        c.openResult(0)
+        assert "&lt;literal&gt;" in c.model.rows[0]["snippetHtml"]
         c.savePreferences("en", "dark")
         until(lambda: c.preferences.language == "en")
     finally:
@@ -395,3 +402,211 @@ def test_frontend_boundaries_and_backend_without_qt_dependency():
             if isinstance(node, ast.ImportFrom) and node.module:
                 assert not node.module.startswith("local_document_search.infrastructure")
                 assert not node.module.startswith("local_document_search.interfaces")
+
+
+def test_navigation_filters_and_directory_reset(controller):
+    c, s = controller
+    assert c.view["screen"] == "onboarding"
+    start(c)
+    assert c.view["screen"] == "home"
+    search(c, s, items=(result(),), total=1)
+    c.navigate("settings")
+    assert c.view["screen"] == "settings"
+    c.setOptions("content", ["pdf"], "work", "path")
+    until(lambda: len(s.search.calls) == 2)
+    s.search.calls[-1][1].set_result(SearchResponse("N", (), 0))
+    until(lambda: c.response is not None)
+    assert c.view["restricted"] and "PDF" in c.view["optionsSummary"]
+    c.navigate("back")
+    assert c.view["screen"] == "results" and c.query == "alpha"
+    s.state = ApplicationState("C:/other", None, False)
+    c.apply_state(s.state)
+    assert c.view["screen"] == "onboarding" and not c.view["restricted"]
+    assert not c.query and c.order.value == "relevance"
+    s.state = ApplicationState("C:/other", "NEW", True)
+    c.apply_state(s.state)
+    assert c.view["screen"] == "home"
+
+
+def test_open_failure_and_stale_snapshot(controller):
+    c, s = controller
+    start(c)
+    search(c, s, items=(result(),), total=1)
+    c.opener = lambda *_: (_ for _ in ()).throw(FileNotFoundError())
+    c.openResult(0)
+    assert c.message_key == "FileNotFoundError"
+    assert not s.get_document.calls
+    c.message_key = ""
+    c.state = replace(c.state, active_snapshot_id="NEW")
+    c.openResult(0)
+    assert c.message_key == ""
+
+
+@pytest.mark.parametrize("outcome", [JobState.FAILED, JobState.CANCELLED])
+def test_failed_initial_index_stays_onboarding(controller, outcome):
+    c, s = controller
+    s.state = ApplicationState("C:/source", None, False)
+    start(c)
+    c.job = JobStatus("job", outcome, JobPhase.EXTRACTING, datetime.now(timezone.utc))
+    assert c.view["screen"] == "onboarding"
+    assert c.view["jobProblem"] and c.view["canManage"]
+    assert not c.view["searchable"]
+
+
+def test_qml_all_pages_and_catalogs(controller, qt):
+    from PySide6.QtCore import qInstallMessageHandler
+    from local_document_search_desktop.i18n import MESSAGES
+    messages = []
+    previous = qInstallMessageHandler(lambda kind, context, text: messages.append(text))
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        window.setWidth(900)
+        window.setHeight(640)
+        QTest.qWait(40)
+        start(c)
+        search(c, s, items=(result(),), total=1)
+        for language, theme in (("it", "light"), ("en", "dark")):
+            c.savePreferences(language, theme)
+            until(lambda: c.preferences.language == language and c.preferences.theme == theme)
+            for page in ("settings", "home", "results"):
+                c.navigate(page)
+                QTest.qWait(50)
+                assert not window.grabWindow().isNull()
+        assert all(len(values) == 2 and all(values) for values in MESSAGES.values())
+        assert not [m for m in messages if any(term in m for term in
+                    ("ReferenceError", "TypeError", "Binding loop", "Unable to assign", "Cannot load", "unavailable"))], "\n".join(messages)
+    finally:
+        window.hide()
+        engine.deleteLater()
+        QTest.qWait(20)
+        qInstallMessageHandler(previous)
+
+
+def test_returning_session_detection_is_v2_only(tmp_path, monkeypatch):
+    from local_document_search_desktop.composition import has_local_session
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    assert not has_local_session()
+    old = tmp_path / "LocalDocumentSearch"
+    old.mkdir()
+    (old / "control.sqlite3").touch()
+    assert not has_local_session()
+    new = tmp_path / "LocalDocumentSearchV2"
+    new.mkdir()
+    (new / "control-v2.sqlite3").touch()
+    assert has_local_session()
+
+
+def test_qml_result_opens_once_by_keyboard_and_click(controller, qt):
+    from PySide6.QtCore import QPoint
+    c, s = controller
+    opened = []
+    c.opener = lambda *args: opened.append(args)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, items=(result(),), total=1)
+        listing = window.findChild(QObject, "results")
+        QTest.qWait(50)
+        listing.setProperty("currentIndex", 0)
+        listing.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Return)
+        assert len(opened) == 1 and not s.get_document.calls
+        item = listing.property("currentItem")
+        point = item.mapToScene(item.boundingRect().center())
+        QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier, QPoint(round(point.x()), round(point.y())))
+        assert len(opened) == 2 and not s.get_document.calls
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_reset_keeps_query_and_rejects_empty_formats(controller):
+    c, s = controller
+    start(c)
+    c.editQuery("alpha", 5)
+    c.setOptions("filename", ["pdf"], "work", "path")
+    c.resetOptions()
+    assert c.query == "alpha" and not c.view["restricted"]
+    assert c.field is SearchField.BOTH and c.order.value == "relevance"
+    c.setOptions("content", [], "", "relevance")
+    assert c.message_key == "InvalidInput" and c.field is SearchField.BOTH
+
+
+def test_theme_text_and_focus_contrast():
+    def luminance(color):
+        channels = [int(color[i:i+2], 16) / 255 for i in (1, 3, 5)]
+        linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in channels]
+        return sum(a*b for a, b in zip(linear, (0.2126, 0.7152, 0.0722)))
+    for foregrounds, backgrounds in (
+        (("#252826", "#606861", "#315D50"), ("#FAF9F6", "#FFFFFF")),
+        (("#EDF1ED", "#B5BFB7", "#ACD5BC"), ("#191D1B", "#242A26")),
+    ):
+        for foreground in foregrounds:
+            for background in backgrounds:
+                a, b = sorted((luminance(foreground), luminance(background)))
+                assert (b + 0.05) / (a + 0.05) >= 4.5
+
+
+def test_actual_entrypoint_starts_and_closes(tmp_path):
+    import os
+    import subprocess
+    import sys
+    script = tmp_path / "entrypoint_smoke.py"
+    script.write_text("""from PySide6.QtCore import QTimer
+from local_document_search_desktop import main as entry
+original = entry.create_engine
+
+def create(controller):
+    engine = original(controller)
+    assert engine.rootObjects()
+    QTimer.singleShot(250, engine.rootObjects()[0].close)
+    return engine
+
+entry.create_engine = create
+raise SystemExit(entry.main())
+""", encoding="utf-8")
+    environment = dict(os.environ, LOCALAPPDATA=str(tmp_path / "profile"), QT_QPA_PLATFORM="offscreen")
+    result = subprocess.run([sys.executable, str(script)], env=environment,
+                            capture_output=True, text=True, timeout=15)
+    assert result.returncode == 0, result.stderr
+    assert not (tmp_path / "profile" / "LocalDocumentSearchV2").exists()
+
+
+def test_settings_keyboard_focus_scrolls_into_view(controller, qt):
+    c, _ = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        window.setWidth(900)
+        window.setHeight(640)
+        start(c)
+        c.navigate("settings")
+        QTest.qWait(40)
+        field = window.findChild(QObject, "field")
+        theme = window.findChild(QObject, "theme")
+        field.forceActiveFocus()
+        visited = set()
+        for _ in range(24):
+            item = window.activeFocusItem()
+            visited.add(item.objectName())
+            if item == theme:
+                break
+            QTest.keyClick(window, Qt.Key_Tab)
+        assert "language" in visited and window.activeFocusItem() == theme
+        location = theme.mapToScene(theme.boundingRect().center())
+        assert 60 < location.y() < window.height() - 24
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_result_snippet_uses_compact_text_without_losing_highlights():
+    from local_document_search.application.contracts import SearchSnippet
+    from local_document_search_desktop.models import result_rows
+    item = replace(result(), snippet=SearchSnippet("alpha\n\n<literal>", 0, False, False, (TextRange(0, 5),)))
+    rows = result_rows(SearchResponse("N", (item,), 1))
+    assert "<br>" not in rows[0]["snippetHtml"]
+    assert "<b>alpha</b>" in rows[0]["snippetHtml"] and "&lt;literal&gt;" in rows[0]["snippetHtml"]

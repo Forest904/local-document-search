@@ -4,6 +4,11 @@ Questa tabella contiene **solo scelte da approvare**. Le decisioni già prese so
 
 Nessuna decisione di questo registro è attualmente aperta.
 
+Redesign Luma approvato l'8 novembre 2026: ingresso guidato, apertura diretta,
+Impostazioni separate, filtri di sessione, home pronta prima della fine del sync,
+IT/EN e chiaro/scuro. Revisione dell'[ADR 0011](adr/0011-v2-desktop.md).
+[Implementazione e verifiche](LUMA_DESKTOP.md).
+
 V2-D07 è risolta nell'[ADR 0013](adr/0013-v2-distribution.md): Inno Setup 6.7.3 e installer EXE 0.2.0 per utente, wizard IT/EN, upgrade completo, reinstallazione consentita, downgrade bloccato e dati v2 conservati per default.
 
 V2-D08 è risolta nell'[ADR 0013](adr/0013-v2-distribution.md) e nei [termini italiani](../scripts/package/TERMS-IT.txt), approvati nella sostanza dal titolare. Il payload collaudato contiene gli stessi testi IT/EN; [verifica](V2_07_INSTALLER.md).

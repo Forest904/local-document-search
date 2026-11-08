@@ -13,7 +13,7 @@ from local_document_search.application.preferences import DesktopPreferences
 from local_document_search.domain.documents import DocumentFormat
 
 from .i18n import catalog, translate
-from .models import ResultsModel, highlighted, python_cursor, result_rows
+from .models import ResultsModel, python_cursor, result_rows
 
 
 class DesktopController(QObject):
@@ -33,8 +33,10 @@ class DesktopController(QObject):
         self.control_future = self.read_future = None
         self.queued_control = None
         self.queued_reads = {}
-        self.generation = self.detail_generation = self.suggest_generation = 0
+        self.generation = self.suggest_generation = 0
         self.query = ""
+        self.screen = "home"
+        self.return_screen = "home"
         self.cursor = 0
         self.field = SearchField.BOTH
         self.formats = None
@@ -42,7 +44,6 @@ class DesktopController(QObject):
         self.order = SearchOrder.RELEVANCE
         self.offset = 0
         self.terms = []
-        self.preview_html = ""
         self.message_key = ""
         self.closing = self.closed = False
         self.last_poll = 0.0
@@ -75,13 +76,21 @@ class DesktopController(QObject):
             "old" if running and state.search_available else
             self.job.state.value if self.job else "ready" if searchable else "building" if state and state.active_directory else "welcome")
         return {"initialized": self.session is not None, "busy": busy,
+                "screen": self.screen if state and state.search_available else "onboarding",
+                "query": self.query, "field": self.field.value,
+                "formats": sorted(f.value for f in self.formats) if self.formats is not None else ["txt", "md", "pdf"],
+                "folder": self.folder or "", "order": self.order.value,
+                "restricted": self.field != SearchField.BOTH or self.folder is not None or
+                    self.formats is not None and self.formats != frozenset(DocumentFormat),
+                "optionsSummary": self.options_summary(),
                 "closing": self.closing, "closed": self.closed, "ready": ready,
                 "canManage": ready and not running, "searchable": searchable,
                 "running": running, "canCancel": ready and running,
+                "jobProblem": bool(self.job and self.job.state in (JobState.FAILED, JobState.CANCELLED)),
                 "directory": state.active_directory if state and state.active_directory else "",
                 "status": self.tr(status), "message": self.tr(self.message_key) if self.message_key else "",
                 "language": self.preferences.language, "theme": self.preferences.theme,
-                "suggestions": self.terms, "preview": self.preview_html,
+                "suggestions": self.terms,
                 "selectedPath": self.selected.relative_path.value if self.selected else "",
                 "total": self.response.total_matches if self.response else 0,
                 "hasResponse": self.response is not None, "offset": self.offset,
@@ -92,6 +101,34 @@ class DesktopController(QObject):
                 "phase": self.tr(self.job.phase.value) if self.job and running else "",
                 "counts": f"{self.job.files_completed} / {self.job.files_total or '—'}" if self.job and running else "",
                 "diagnostics": self.diagnostics()}
+
+    def options_summary(self):
+        parts = []
+        if self.field != SearchField.BOTH:
+            parts.append(self.tr(self.field.value))
+        if self.formats is not None and self.formats != frozenset(DocumentFormat):
+            parts.append(" / ".join(sorted(f.value.upper() for f in self.formats)))
+        if self.folder:
+            parts.append(self.folder)
+        return " · ".join(parts)
+
+    @Slot(str)
+    def navigate(self, screen):
+        if screen == "settings":
+            self.return_screen = self.screen
+        elif screen == "back":
+            screen = self.return_screen
+        if screen in ("home", "results", "settings"):
+            self.screen = screen
+            self.debounce.stop()
+            self.suggest_generation += 1
+            self.queued_reads.pop("suggest", None)
+            self.terms = []
+            self.changed.emit()
+
+    @Slot()
+    def resetOptions(self):
+        self.setOptions("both", ["txt", "md", "pdf"], "", "relevance")
 
     def tr(self, key):
         return translate(key, self.preferences.language)
@@ -155,11 +192,9 @@ class DesktopController(QObject):
 
     def invalidate(self):
         self.generation += 1
-        self.detail_generation += 1
         self.suggest_generation += 1
         self.response = self.selected = None
         self.offset = 0
-        self.preview_html = ""
         self.terms = []
         self.queued_reads.clear()
         self.model.replace([])
@@ -167,6 +202,8 @@ class DesktopController(QObject):
 
     @Slot(str, int)
     def editQuery(self, text, cursor):
+        if text == self.query and python_cursor(text, cursor) == self.cursor:
+            return
         if text != self.query:
             self.query = text
             self.invalidate()
@@ -182,10 +219,16 @@ class DesktopController(QObject):
         try:
             values = (SearchField(field), frozenset(DocumentFormat(value) for value in formats),
                       folder.strip() or None, SearchOrder(order))
+            if not values[1]:
+                raise ValueError("At least one format is required")
+            rerun = self.response is not None or self.screen == "results" or self.return_screen == "results"
             self.field, self.formats, self.folder, self.order = values
             self.invalidate()
+            if rerun and self.query.strip():
+                self.search_page(0)
         except ValueError as exc:
-            self.error(exc)
+            self.message_key = "InvalidInput"
+            self.changed.emit()
 
     def enqueue_read(self, kind, operation, success, token, current):
         if self.closing:
@@ -196,7 +239,7 @@ class DesktopController(QObject):
     def start_read(self):
         if self.read_future or not self.queued_reads or self.closing:
             return
-        kind = next((key for key in ("search", "detail", "suggest") if key in self.queued_reads))
+        kind = next((key for key in ("search", "suggest") if key in self.queued_reads))
         operation, success, token, current = self.queued_reads.pop(kind)
         if token != current():
             return
@@ -205,6 +248,9 @@ class DesktopController(QObject):
 
     @Slot()
     def search(self):
+        if not self.view["searchable"] or not self.query.strip():
+            return
+        self.screen = "results"
         self.search_page(0)
 
     def search_page(self, offset):
@@ -214,9 +260,7 @@ class DesktopController(QObject):
         self.suggest_generation += 1
         self.terms = []
         self.generation += 1
-        self.detail_generation += 1
         self.selected = None
-        self.preview_html = ""
         try:
             request = SearchRequest(self.query, self.field, offset=offset, allow_prefixes=True,
                                     formats=self.formats, folder=self.folder, order=self.order,
@@ -291,25 +335,13 @@ class DesktopController(QObject):
             self.queryReplacement.emit(text, cursor)
 
     @Slot(int)
-    def selectResult(self, index):
-        if not self.response or not 0 <= index < len(self.response.results) or self.closing:
+    def openResult(self, index):
+        if (not self.response or not 0 <= index < len(self.response.results)
+                or not self.view["searchable"]
+                or self.response.snapshot_id != self.state.active_snapshot_id):
             return
-        self.detail_generation += 1
         self.selected = self.response.results[index]
-        self.preview_html = ""
-        item, snapshot, session = self.selected, self.response.snapshot_id, self.session
-        query, field = self.query, self.field
-        token = (self.generation, self.detail_generation)
-
-        def execute():
-            details = session.get_document.execute(item.document_id, snapshot, query, field, True)
-            return highlighted(details.extracted_text, details.content_highlights)
-
-        def complete(value):
-            self.preview_html = value
-
-        self.enqueue_read("detail", execute, complete, token,
-                          lambda: (self.generation, self.detail_generation))
+        self.openSelected()
 
     def apply_state(self, state):
         previous = self.state
@@ -321,6 +353,9 @@ class DesktopController(QObject):
             self.invalidate()
             if changed_directory:
                 self.job = self.last_report = None
+                self.field, self.formats, self.folder, self.order = SearchField.BOTH, None, None, SearchOrder.RELEVANCE
+                self.screen = self.return_screen = "home"
+                self.query = ""
             elif rerun and self.query.strip() and not self.closing:
                 self.search_page(0)
         if state.warning:

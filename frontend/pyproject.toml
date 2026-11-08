@@ -19,7 +19,7 @@ dev = ["pytest==8.3.5"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-local_document_search_desktop = ["qml/*.qml"]
+local_document_search_desktop = ["qml/*.qml", "qml/**/*.qml", "assets/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

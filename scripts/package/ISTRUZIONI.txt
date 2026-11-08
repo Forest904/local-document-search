@@ -1,26 +1,31 @@
-Local Document Search 0.1.0 - Windows 11 x64
+Local Document Search 0.2.0 — Luma — Windows 11 x64
 
-Estrarre l'intera cartella dallo ZIP e aprire LocalDocumentSearch.exe.
-Non spostare il solo eseguibile: DLL e plugin adiacenti sono necessari.
-Non occorre installare Python. Avviare come utente normale.
+Installare con il wizard offline oppure estrarre l'intera cartella dallo ZIP
+ed aprire LocalDocumentSearch.exe. DLL e plugin adiacenti sono necessari.
+Non occorre Python. Avviare come utente normale.
 
-Leggere l'informativa, premere Continua e selezionare una cartella.
-Formati: TXT e Markdown UTF-8, PDF con testo (nessun OCR).
-Inserire termini o frasi tra virgolette, scegliere il campo e premere Invio.
-I termini sono in AND; in Entrambi l'intera query deve corrispondere
-nel nome oppure nel contenuto. La lista usa pagine da 50 risultati.
-Selezionare un risultato per il testo estratto; Apri file usa l'app associata.
-Sync rileva aggiunte, modifiche e rimozioni. Nessun controllo continuo.
-Modifiche che conservano dimensione e data del file possono non essere rilevate.
+Al primo avvio leggere l'informativa e scegliere Accetta e scegli una cartella.
+Luma mostra avanzamento e consigli fino a quando la ricerca è disponibile.
+Formati: TXT e Markdown UTF-8, PDF testuali; nessun OCR.
+Le aperture successive recuperano l'indice e sincronizzano in background.
 
-Database e testo estratto restano in %LOCALAPPDATA%/LocalDocumentSearch,
-anche se lo ZIP viene spostato o eliminato. Pulisci dati locali li rimuove
-a lavoro fermo senza modificare gli originali. Nessuna cifratura aggiuntiva.
-Una sola istanza puo accedere allo storage. Chiudere l'altra prima di riaprire.
-La chiusura attende i lavori in corso. Un errore di lettura conserva lo snapshot
-precedente: correggere il file indicato e ripetere Sync.
+Inserire termini o frasi tra virgolette e premere Invio o Cerca.
+Usare termine* per un prefisso esplicito. I suggerimenti non eseguono ricerche.
+I termini sono in AND; in Nome e contenuto tutta la query deve corrispondere
+nel nome oppure nel contenuto. Pagine da 50 risultati con estratti evidenziati.
+Clic sul titolo o Invio sul risultato apre il file nell'app Windows associata.
 
-Uso personale; nessuna licenza del codice del progetto e stata scelta.
-Avvisi dei componenti: THIRD_PARTY_NOTICES.txt e cartella licenses.
-Versioni e provenienza build: BUILD-MANIFEST.json.
-Verifica locale M9: non equivale a certificazione su un Windows pulito.
+Impostazioni contiene campo, formati, cartella relativa, ordine, gestione indice,
+lingua IT/EN e tema chiaro/scuro. Filtri solo di sessione, azzerati al cambio
+cartella/riavvio; lingua e tema persistono. Ctrl+L ricerca, Ctrl+O cartella, F5 sync.
+Sync rileva aggiunte/modifiche/rimozioni; nessun controllo continuo.
+Modifiche con dimensione e timestamp invariati possono non essere rilevate.
+
+Dati v2: %LOCALAPPDATA%/LocalDocumentSearchV2, separati dai dati v1.
+Elimina dati locali richiede conferma e non modifica documenti originali o v1.
+Nessuna cifratura aggiuntiva. Una sola istanza accede allo storage.
+Errore o annullamento prima del commit conserva lo snapshot precedente.
+
+Termini: TERMS-IT.txt e TERMS-EN.txt. Avvisi: THIRD_PARTY_NOTICES.txt e licenses.
+Provenienza della build: BUILD-MANIFEST.json. Il collaudo locale non sostituisce
+l'accettazione V2-08 su Windows pulito.

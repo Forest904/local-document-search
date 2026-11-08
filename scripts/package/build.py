@@ -51,6 +51,10 @@ def validate_payload(folder):
                 "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
                 "TERMS-IT.txt", "TERMS-EN.txt"]
+    resources = ROOT / "frontend/src/local_document_search_desktop"
+    required.extend("local_document_search_desktop/" + path.relative_to(resources).as_posix()
+                    for subdirectory in ("qml", "assets")
+                    for path in (resources / subdirectory).rglob("*") if path.is_file())
     missing = [name for name in required if not (folder / name).is_file()]
     if missing:
         raise RuntimeError(f"Pacchetto incompleto: {missing}")
@@ -244,8 +248,13 @@ def build():
     shutil.copy2(HERE / "launcher.py", workspace)
     shutil.copytree(ROOT / "frontend/src/local_document_search_desktop/qml",
                     workspace / "local_document_search_desktop/qml")
+    shutil.copytree(ROOT / "frontend/src/local_document_search_desktop/assets",
+                    workspace / "local_document_search_desktop/assets")
     config = configparser.ConfigParser()
     config.read(HERE / "pysidedeploy.spec", encoding="utf-8")
+    config["qt"]["qml_files"] = ",".join(
+        path.relative_to(workspace).as_posix()
+        for path in sorted((workspace / "local_document_search_desktop/qml").rglob("*.qml")))
     config["app"]["project_dir"] = str(workspace)
     config["app"]["exec_directory"] = str(workspace / "output")
     with (workspace / "pysidedeploy.spec").open("w", encoding="utf-8") as output:
@@ -260,6 +269,9 @@ def build():
     if len(candidates) != 1:
         raise RuntimeError(f"Output standalone inatteso: {candidates}; consultare deploy.log")
     folder = candidates[0]
+    for resource in ("qml", "assets"):
+        shutil.copytree(workspace / "local_document_search_desktop" / resource,
+                        folder / "local_document_search_desktop" / resource, dirs_exist_ok=True)
     remove_unused_qt_modules(folder)
     dumpbin = next(Path(compiler["x64_compilers"][0]["path"]).parent.glob("dumpbin.exe"))
     qt_audit = trim_qt(folder, dumpbin)

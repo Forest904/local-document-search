@@ -14,29 +14,26 @@ local-document-search-desktop
 ```
 
 Il task VS Code **Local Document Search: avvia / riavvia** usa l'ambiente
-`backend/.venv` e lo stesso comando. Al primo avvio leggere l'informativa,
-premere **Continua**, scegliere una cartella e attendere la prima indicizzazione.
-Le aperture successive recuperano lo snapshot e avviano il sync automatico.
-La ricerca resta disponibile sullo snapshot precedente della stessa cartella
-durante il sync o se la sorgente è temporaneamente assente.
+`backend/.venv` e lo stesso comando. Al primo avvio leggere l'informativa e scegliere **Accetta e scegli una cartella**.
+La stessa pagina mostra progresso reale e consigli. La home **Luma** si apre
+quando l'indice è disponibile. Le aperture successive recuperano automaticamente
+il catalogo v2 e sincronizzano in background mantenendo la ricerca disponibile.
 
-Premere **Invio** per cercare. Scrivere `termine*` per un prefisso esplicito;
-i suggerimenti durante digitazione non avviano la ricerca. La sidebar offre
-campo, formati TXT/MD/PDF, cartella relativa ricorsiva e ordine. La rilevanza
-è predefinita; il percorso è l'alternativa. Selezionare un risultato per
-l'anteprima del testo acquisito, poi **Apri file** per l'applicazione Windows
-predefinita. L'anteprima non riproduce il layout PDF.
+Premere **Invio** o **Cerca**. `termine*` cerca prefissi espliciti; i suggerimenti
+non avviano ricerche. I risultati mostrano percorso, formato ed estratto: clic
+sul titolo o Invio apre direttamente il file nell'app Windows associata.
 
-**Scorciatoie:** `Ctrl+L` mette a fuoco la ricerca, `Ctrl+O` apre la selezione
-cartella, `F5` avvia il sync, `Invio` esegue la ricerca o seleziona un risultato
-attivo, `Tab` attraversa i controlli. La finestra ha dimensione minima
-900×640 pixel logici e sidebar scorrevole.
+**Impostazioni** contiene filtri, ordinamento, cartella, sync, rebuild, recupero,
+diagnostiche, pulizia, lingua e tema. I filtri valgono solo nella sessione e
+si azzerano al cambio cartella; un riepilogo segnala le restrizioni attive.
+Italiano/inglese e tema chiaro/scuro persistono. La pulizia richiede conferma
+e non tocca sorgenti o dati v1.
 
-Italiano e tema chiaro sono iniziali. Lingua e tema si salvano nello storage
-v2 separatamente dagli snapshot. **Elimina dati locali** richiede conferma
-e azzera anche queste preferenze; non modifica sorgenti o dati v1.
-Il job può essere annullato prima del commit. Rebuild e recupero della versione
-precedente sono operazioni esplicite.
+**Scorciatoie:** Ctrl+L ricerca, Ctrl+O selezione cartella, F5 sync, Tab controlli,
+Invio ricerca/apertura risultato. Finestra minima 900×640 pixel logici.
+
+Componenti QML separati in `qml/`, asset originali in `assets/`, rigenerazione
+con `python scripts/dev/generate_luma_assets.py` dalla root.
 
 ## Verifiche
 
@@ -52,3 +49,5 @@ temporaneo e report/catture fuori Git. Le prove del prototipo standalone sono
 distinte dal futuro installer V2-07 e dall'accettazione V2-08.
 
 [Rapporto V2-06](../docs/V2_06_DESKTOP.md) · [UX](../docs/UX_WINDOWS.md)
+
+[Redesign Luma e verifiche](../docs/LUMA_DESKTOP.md)

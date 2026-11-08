@@ -2,6 +2,13 @@
 
 **Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07 è chiusa con audit e collaudo locale dell'installer approvati dal titolare; V2-08 resta progettata. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate).
 
+## Redesign Luma prima di V2-08
+
+Intervento approvato l'8 novembre 2026: rinnovare V2-06 con ingresso guidato,
+home minimale, risultati ad apertura diretta, Impostazioni separate e asset
+Luma. Ripetere le verifiche della UI e del nuovo payload; il collaudo storico
+V2-07 non certifica questi cambiamenti. [Rapporto](LUMA_DESKTOP.md).
+
 ## Come usare questa roadmap
 
 1. Aprire la milestone successiva e verificare nel codice l'**ingresso** indicato; un ADR approvato non prova che una funzione esista.
@@ -187,7 +194,7 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 1. Fissare revisione, toolchain e artefatto; verificare manifest, hash, licenze e CI della stessa revisione. Non usare un ZIP costruito da working tree modificato come prova della release.
 2. Installare e usare offline su Windows 11 x64 pulito, senza Python/tool di sviluppo e con account standard distinto. Ripetere installazione, upgrade, avvio, disinstallazione e conservazione/cancellazione opzionale dei dati.
 3. Sul pacchetto finale provare TXT/MD/PDF (anche protetto, senza testo e misto), TXT/MD vuoti, cambio directory/rebuild, pulizia rifiutata durante job, errori con snapshot precedente, doppia istanza e recovery.
-4. Verificare ricerca, suggerimenti, filtri, ranking, snippet e anteprima durante carico; misurare rispetto ai budget V2-02 sul metodo approvato. Ripetere accessibilità, lingua, tema e regressioni CLI Homework.
+4. Verificare ricerca, suggerimenti, filtri, ranking, snippet e apertura diretta durante carico; misurare rispetto ai budget V2-02 sul metodo approvato. Ripetere accessibilità, lingua, tema e regressioni CLI Homework.
 5. Registrare esiti, ambiente, limiti, scostamenti e correzioni con collegamento alla revisione e all'installer effettivamente distribuito. Non segnare PASS per prove saltate o corpus reale incompleto.
 
 **Verifica e uscita:** T01–T21 applicabili con evidenze, comprese M9-G01…G07; nessun candidato parziale; documenti personali e dati v1 intatti nelle prove sul pacchetto. La release è pronta solo quando i criteri pubblici e legali sono soddisfatti; nessuna data o soglia inventata.

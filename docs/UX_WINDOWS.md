@@ -1,19 +1,58 @@
-# Esperienza desktop v2 — Windows 11
+# Esperienza desktop Luma — Windows 11
 
-**Direzione approvata, implementata dal sorgente in V2-06.** La v2 usa PySide6/Qt Quick e QML; [UX v1](archive/v1/UX_WINDOWS.md) resta storica. L'app desktop ChatGPT è riferimento di chiarezza, spaziatura e qualità visiva. La funzione centrale rimane la ricerca documentale. Prove e limiti sono nel [rapporto V2-06](V2_06_DESKTOP.md).
+Direzione approvata l'8 novembre 2026: **Local Document Search** conserva il nome
+applicazione; **Luma** identifica il motore. Qt Quick/QML e backend Python
+in-process restano invariati. Sostituisce sidebar e anteprima dell'ADR 0011,
+senza cambiare ricerca backend o CLI Homework.
 
-## Flussi
+## Percorsi
 
-1. **Installazione e primo avvio.** Wizard offline per utente, informativa sui dati locali, scelta cartella e indicizzazione. Mostrare fase, conteggi e progresso senza presentare i byte come ETA.
-2. **Apertura successiva.** Recuperare lo snapshot v2, cercare mentre il sync automatico verifica la cartella; indicare quando i risultati possono essere obsoleti. Sorgente assente: preservare ricerca sullo snapshot compatibile e spiegare il limite.
-3. **Ricerca.** Campo centrale con ricerca su Invio; suggerimenti durante digitazione distinti dai risultati. Campo nome/contenuto/entrambi, filtri formato/cartella e ordinamento per rilevanza predefinito, con alternativa per percorso.
-4. **Risultati e lettura.** Sidebar essenziale per cartella, stato, filtri e impostazioni; lista con snippet/evidenziazione; pannello di anteprima del testo persistito e comando Apri file. Se il file non esiste, proporre Sync. Nessun rendering PDF promesso.
-5. **Sync e recupero.** Stato del job, diagnostiche sicure, annullamento fino al commit, retry dopo errore. Un job annullato lascia il precedente snapshot. Pulizia confermata e indisponibile durante job incompatibile.
+1. **Primo avvio:** informativa locale e «Accetta e scegli una cartella».
+   Il backend si inizializza dopo l'accettazione; il selettore nativo si apre
+   appena pronto. Annullarlo lascia disponibile la scelta cartella.
+2. **Preparazione:** la stessa pagina mostra cartella, fase, conteggi e barra
+   reale. Fasi senza percentuale indeterminate, nessuna ETA inventata.
+   Consigli IT/EN ogni otto secondi spiegano prefissi, frasi, filtri e apertura;
+   non prendono focus e non sono annunciati continuamente da Narrator.
+3. **Completamento:** la home appare soltanto quando lo snapshot è ricercabile.
+   Fallimento e cancel senza snapshot lasciano retry, scelta cartella,
+   ricostruzione e recupero. Errori e diagnostiche restano consultabili.
+4. **Riapertura:** un catalogo v2 presente identifica una precedente
+   inizializzazione; avviare automaticamente il recupero, poi aprire la home
+   e sincronizzare in background. Sorgente assente: cercare sullo snapshot
+   disponibile e spiegare che l'indice può essere obsoleto.
+5. **Home:** marchio Luma, «Ritrova ciò che cerchi», barra, Cerca e Impostazioni.
+   Invio esegue; digitare produce soltanto suggerimenti sullo snapshot corrente.
+6. **Risultati:** barra in alto, conteggio, lista e pagine da 50. Percorso,
+   formato, titolo ed estratto evidenziato provengono dallo snapshot. Clic o
+   Invio sul risultato apre il file nell'app Windows associata. Nessuna anteprima
+   interna né richiesta del testo completo per selezionare/aprire un risultato.
+7. **Impostazioni:** Ricerca, Cartella e indice, Aspetto e lingua. Campo, formati,
+   sottocartella e ordine sono qui; sync, rebuild, recupero, diagnostiche e
+   pulizia mantengono i vincoli di lifecycle. Pulizia con conferma esplicita.
 
-Le risposte superate da nuova query, campo, filtro, ordinamento, selezione o directory sono ignorate. Se una pagina proviene da nuovo snapshot, tornare alla prima con il contesto corrente. La UI non esegue letture o query pesanti nel thread grafico. Chiusura e cancel seguono il [lifecycle](SNAPSHOTS_AND_SYNC.md).
+Filtri limitati alla sessione, azzerati al cambio directory/riavvio: entrambi i
+campi, TXT/MD/PDF, nessuna sottocartella, rilevanza. Almeno un formato selezionato.
+Home e risultati mostrano il riepilogo delle restrizioni e il reset. Cambiare
+opzioni aggiorna una ricerca già eseguita dalla prima pagina. Nessuna sintassi
+nuova come `type:pdf`. Il marchio torna alla home; Indietro dalle Impostazioni
+recupera schermata e query. `Ctrl+L` focalizza la ricerca, `Ctrl+O` sceglie una
+cartella, `F5` sincronizza. I comandi incompatibili con job/chiusura sono bloccati.
+Risposte obsolete ignorate; operazioni pesanti nei worker.
 
 ## Sistema visivo e accessibilità
 
-Due temi, chiaro e scuro, con tipografia leggibile, spaziatura coerente, stati vuoti ed errori visibili. Italiano e inglese sono completi nei flussi e nelle diagnostiche; lingua e tema persistono nello storage v2. La somiglianza visiva non comporta chat, AI o account.
+Segoe UI, spazio libero, componenti riusabili, bordi sottili e angoli morbidi.
+Chiaro predefinito: avorio `#FAF9F6`, bianco, grafite `#252826`, verde
+`#315D50`, salvia `#DFEAE2`, lavanda `#E9E5F3`. Scuro: fondo `#191D1B`,
+superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle
+superfici e corrispondenze in grassetto, senza marcatori gialli pesanti.
 
-Tutti i comandi principali devono essere raggiungibili da tastiera, con ordine di tabulazione prevedibile, focus visibile, etichette accessibili e scorciatoie documentate. Verificare contrasto, zoom/DPI e dimensioni finestra supportate; provare con Narrator selezione cartella, ricerca, risultati, anteprima, job, errore e impostazioni. Gli esiti effettivi appartengono ai report V2-06/V2-08, non a questa specifica.
+IT/EN e tema persistono nel catalogo v2; la pulizia li azzera. Asset originali
+SVG/PNG e ICO locali, rigenerabili con `scripts/dev/generate_luma_assets.py`.
+Il naming non implica una verifica della disponibilità commerciale del marchio.
+
+Tastiera, etichette accessibili, focus visibile e finestra minima 900×640 pixel
+logici sono obbligatori. Verificare contrasto, DPI, scorrimento e Narrator.
+I test automatici non sostituiscono Narrator o il collaudo su Windows pulito.
+[Verifiche Luma](LUMA_DESKTOP.md).
