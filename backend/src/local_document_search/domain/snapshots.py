@@ -98,18 +98,28 @@ class IndexSnapshot:
         ):
             if index.vocabulary != tuple(sorted(index.terms)):
                 raise ValueError("Vocabolario non coerente con i posting")
-            seen: dict[DocumentId, set[int]] = {key: set() for key in documents}
+            seen: dict[DocumentId, bytearray] = {
+                key: bytearray((getattr(doc, count_attribute) + 7) // 8)
+                for key, doc in documents.items()
+            }
+            observed: dict[DocumentId, int] = dict.fromkeys(documents, 0)
             for postings in index.terms.values():
                 for document_id, posting in postings.items():
                     if document_id not in documents:
                         raise ValueError("Posting riferita a ID sconosciuto")
                     count = getattr(documents[document_id], count_attribute)
+                    bitset = seen[document_id]
                     for position in posting.positions:
-                        if position >= count or position in seen[document_id]:
+                        if position >= count:
                             raise ValueError("Posizione fuori range o assegnata due volte")
-                        seen[document_id].add(position)
-            for document_id, positions in seen.items():
-                if len(positions) != getattr(documents[document_id], count_attribute):
+                        byte = position >> 3
+                        mask = 1 << (position & 7)
+                        if bitset[byte] & mask:
+                            raise ValueError("Posizione fuori range o assegnata due volte")
+                        bitset[byte] |= mask
+                    observed[document_id] += len(posting.positions)
+            for document_id, count in observed.items():
+                if count != getattr(documents[document_id], count_attribute):
                     raise ValueError("Posting incomplete rispetto al conteggio token")
 
 

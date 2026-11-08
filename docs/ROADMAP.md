@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato al 7 novembre 2026:** V2-01, V2-02 e V2-03 sono completate e verificate localmente; V2-04…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato all'8 novembre 2026:** V2-01, V2-02, V2-03 e V2-04 sono completate e verificate localmente; V2-05…V2-08 sono progettate. Il backend, la CLI e il desktop Qt Widgets v1 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
 
 ## Come usare questa roadmap
 
@@ -103,6 +103,8 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 **Riferimenti:** [analisi](INDEXING_AND_ANALYSIS.md), [dominio](DOMAIN_MODEL.md), [ADR 0010](adr/0010-v2-retrieval.md), [contratti](INTERFACE_CONTRACTS.md).
 
 ## V2-04 — Storage e lifecycle
+
+**Chiusura locale all'8 novembre 2026, revisione di partenza `7047752ee70e90dbbe4af3db82b180f5209e9e70` (working tree modificato):** storage SQLite v2 separato, versioni immutabili per documento, posting compressi e riuso degli invariati; cancel cooperativo, controllo metadati durante ingestione, rebuild e recovery espliciti. Backend: 370 passed, 6 skipped; corpus reale opt-in: 6 passed; Homework PASS. Small, adverse e target hanno tre cicli `PASS`. Sul target 10.000 file/299.948.099 byte, i massimi sono: build **143,8 s**, avvio fino alla ricerca **8,24 s**, sync incrementale **9,37 s**, no-change **0,472 s**, query p95 **22,6 ms**, RAM campionata sull'albero dei processi **1353 MiB**: tutti entro i budget V2-D01. [Metodo, prove e limiti](V2_04_STORAGE.md). **V2-04 e V2-D04 chiuse localmente**; la revisione finale va registrata dopo il commit. I test frontend non sono stati raccolti in questo ambiente privo di PySide6; il collaudo del pacchetto resta V2-08.
 
 **Ingresso:** V2-02 e interfaccia dello snapshot/vocabolario V2-03; v1 possiede persistenza SQLite, sync, lock e job concorrenti. M9 segnala costi di riapertura/sync e prove sul pacchetto ancora mancanti.
 

@@ -7,13 +7,16 @@ from uuid import uuid4
 
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from .sqlite_snapshot_storage import SqliteSnapshotRepository, storage_directory
+from .v2_snapshot_storage import V2SqliteSnapshotRepository
 from .id_allocator import SqliteDocumentIdAllocator
 
 
 class PersistentSnapshotRepository:
-    def __init__(self, settings):
+    def __init__(self, settings, *, v2=False):
         self.settings = settings
         self.directory = settings.directory
+        self.v2 = v2
+        self._repo_type = V2SqliteSnapshotRepository if v2 else SqliteSnapshotRepository
         self._condition = Condition()
         self._readers = 0
         self._blocked = False
@@ -34,7 +37,7 @@ class PersistentSnapshotRepository:
                 raise StorageFailure("Database selezionato assente")
             settings.db.execute("INSERT OR IGNORE INTO owned VALUES (?)", (name,))
             try:
-                self._repo = SqliteSnapshotRepository(self.directory, database_name=name)
+                self._repo = self._repo_type(self.directory, database_name=name)
             except SnapshotUnavailable:
                 self.incompatible = True
         self._cleanup()
@@ -69,6 +72,16 @@ class PersistentSnapshotRepository:
     def load_active(self):
         with self._condition:
             return self._repo.load_active() if self._repo else None
+
+    @property
+    def recovery_needed(self):
+        return self.incompatible or bool(self._repo and getattr(self._repo, "recovery_needed", False))
+
+    def recover_previous(self, expected_root):
+        with self._condition:
+            if self._repo is None or not hasattr(self._repo, "recover_previous"):
+                raise SnapshotUnavailable("Precedente non disponibile")
+            return self._repo.recover_previous(expected_root)
 
     def reserve_document_ids(self, count):
         return self.allocator.reserve_document_ids(count)
@@ -114,8 +127,11 @@ class PersistentSnapshotRepository:
         with self._condition, self.settings.lock:
             self.settings.db.execute("INSERT INTO owned VALUES (?)", (name,))
             self._candidate_name = name
-        self._candidate = SqliteSnapshotRepository(self.directory, source_directory=snapshot.root_directory,
-                                                   database_name=name)
+        if self.v2:
+            self._candidate = self._repo_type(self.directory, database_name=name)
+        else:
+            self._candidate = self._repo_type(self.directory, source_directory=snapshot.root_directory,
+                                              database_name=name)
         self._candidate.save_candidate(snapshot)
 
     def validate_candidate(self, key):

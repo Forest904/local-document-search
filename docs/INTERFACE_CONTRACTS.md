@@ -28,6 +28,8 @@ Una pagina successiva deve appartenere a una sola versione. Se lo snapshot è ca
 
 `InvalidInput` copre query e opzioni non valide; `SnapshotUnavailable` versioni non disponibili; `SourceUnavailable` sorgenti mancanti; `ExtractionFailure`, `StorageFailure` e `ResourceFailure` mantengono i significati v1. CANCELLED non è un errore di lettura o storage. Il punto oltre il quale cancel è rifiutato è lo stato di commit non interrompibile, osservabile nel job.
 
+**Backend V2-04 implementato:** `CancelSynchronization.execute(job_id)` restituisce `ACCEPTED`, `COMMIT_STARTED` o `FINISHED`; un ID sconosciuto dà `InvalidInput`. Il job annullato termina in `CANCELLED`, l'attesa bloccante restituisce `CancelledResult(job_id)` e l'ultimo controllo registra `cancelled`. `RebuildIndex.execute()` avvia un job esplicito; `RecoverPreviousSnapshot.execute()` riattiva il precedente valido solo quando non c'è un job. La composizione v2 usa `compose_v2_application`; il percorso v1 rimane disponibile per regressione.
+
 ## Preferenze e distribuzione
 
 Lingua e tema sono preferenze persistenti nello storage v2, separate dagli snapshot. Cambiarle non genera un indice nuovo. La prima installazione v2 non importa preferenze o indici v1. Installer/upgrade/disinstallazione operano su file applicativi v2; conservano i dati v2 salvo scelta esplicita di eliminarli, senza toccare v1 o sorgenti. Nessun endpoint di rete fa parte del contratto.

@@ -4,7 +4,6 @@ Questa tabella contiene **solo scelte da approvare**. Le decisioni già prese so
 
 | ID | Decisione da prendere | Gate | Criterio per chiuderla |
 |---|---|---|---|
-| V2-D04 | Strategia fisica di storage e compatibilità fra versioni v2 | V2-04, prima delle modifiche persistenti | Recovery, attivazione, retention, memoria e tempi dimostrati sul target; v1 intatta |
 | V2-D05 | Formula di rilevanza e spareggi; comportamento con BOTH e filtri | V2-05, prima del ranking | Casi ordinati attesi, determinismo e assenza di nuovi match documentati |
 | V2-D06 | Lunghezza, selezione e limiti degli snippet; mappe di evidenziazione fra testo e token | V2-05, prima dell'API definitiva | Esempi su frasi, Unicode, PDF e testi lunghi; coerenza con snapshot verificabile |
 | V2-D07 | Strumento e formato dell'installer offline; rilevamento upgrade e opzioni wizard | V2-07, prima della build finale | Prototipo Qt Quick distribuibile, installazione/update/uninstall per utente e inventario payload verificati |
@@ -12,6 +11,8 @@ Questa tabella contiene **solo scelte da approvare**. Le decisioni già prese so
 | V2-D09 | Moduli Qt effettivi e adempimenti LGPL del payload compilato | V2-07, prima della pubblicazione | Inventario, avvisi/testi, sostituibilità delle librerie e procedura verificati sul pacchetto |
 
 V2-D01 è risolta nell'[ADR 0014](adr/0014-v2-performance-budgets.md): metodo e budget approvati dopo tre cicli `PASS` sul target. Il backend v1 misurato non soddisfa ancora tutti i budget. [Misure e limiti](V2_02_BENCHMARK.md).
+
+V2-D04 è risolta nell'[ADR 0012](adr/0012-v2-lifecycle-storage.md): storage SQLite v2 separato e compatto, versioni immutabili per documento, retention e recovery esplicito. Tre cicli target `PASS` e budget V2-D01 rispettati localmente. [Misure e limiti](V2_04_STORAGE.md).
 
 V2-D02 e V2-D03 sono risolte nell'[ADR 0010](adr/0010-v2-retrieval.md): confronto delle strutture sul vocabolario V2-02, tupla ordinata ricostruita alla riapertura, grammatica `termine*` opzionale e suggerimenti distinti. [Misure V2-03](V2_03_RETRIEVAL.md).
 

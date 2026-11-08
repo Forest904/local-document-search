@@ -72,3 +72,7 @@ ma il backend v1 misurato ne supera diversi.
 ## Aggiornamento V2-03
 
 Il backend include vocabolari ordinati per campo ricostruiti con gli snapshot, ricerca con prefissi espliciti e suggerimenti separati per versione. Il formato SQLite e la CLI Homework non sono cambiati. Le misure e lo stato del gate prestazionale sono nella [relazione V2-03](V2_03_RETRIEVAL.md); storage fisico e lifecycle restano V2-04. La tabella iniziale documenta la baseline v1 da cui parte la roadmap.
+
+## Avanzamento V2-04
+
+La composizione backend `compose_v2_application` usa uno storage SQLite separato, con versioni immutabili di documento e posting compressi. Sono implementati cancel cooperativo, verifica dei metadati in ingestione e recovery/rebuild espliciti. La composizione v1 e la CLI restano disponibili per regressione. Le [misure V2-04](V2_04_STORAGE.md) chiudono localmente il gate prestazionale target; la tabella iniziale resta la fotografia storica v1.

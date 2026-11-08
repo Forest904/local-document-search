@@ -22,6 +22,19 @@ def prepare_filename(filename: str) -> str:
 
 
 def _tokens(text: str) -> tuple[Token, ...]:
+    if text.isascii():
+        folded = text.casefold()
+        tokens = []
+        current = []
+        for char in folded:
+            if "a" <= char <= "z" or "0" <= char <= "9":
+                current.append(char)
+            elif current:
+                tokens.append(Token("".join(current), len(tokens)))
+                current.clear()
+        if current:
+            tokens.append(Token("".join(current), len(tokens)))
+        return tuple(tokens)
     text = unicodedata.normalize("NFC", unicodedata.normalize("NFC", text).casefold())
     terms = []
     current = []

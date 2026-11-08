@@ -1,11 +1,11 @@
 """Lifecycle persistente: ammissione serializzata, lavoro fuori dal chiamante."""
 from datetime import datetime, timezone
-from .contracts import ApplicationState, InvalidInput
+from .contracts import ApplicationState, InvalidInput, JobState
 from .errors import SnapshotUnavailable
 from .ports import (Settings, LastCheck, SyncOutcome, SettingsRepositoryPort,
                     LifecycleSnapshotRepositoryPort, DirectoryResolverPort)
 from .synchronization import IndexSynchronizer
-from .jobs import IndexingJobManager
+from .jobs import IndexingJobManager, JobCancelled
 
 
 class ApplicationLifecycle:
@@ -53,15 +53,19 @@ class ApplicationLifecycle:
         job = self.request(trigger)
         return self.jobs.wait(job.job_id)
 
-    def _synchronize(self, settings, progress):
+    def _synchronize(self, settings, progress, *, force=False):
         with self.jobs.lock:
             self.warning = None
         try:
-            result = self.synchronizer.execute(settings.active_directory, progress)
+            result = self.synchronizer.execute(settings.active_directory, progress, force=force)
             outcome = SyncOutcome.UPDATED if result.changed else SyncOutcome.NO_CHANGES
             self.settings.save(Settings(settings.active_directory,
                                LastCheck(datetime.now(timezone.utc), outcome)))
             return result
+        except JobCancelled:
+            self.settings.save(Settings(settings.active_directory,
+                               LastCheck(datetime.now(timezone.utc), SyncOutcome.CANCELLED)))
+            raise
         except Exception as exc:
             with self.jobs.lock:
                 self.warning = type(exc).__name__
@@ -86,7 +90,9 @@ class ApplicationLifecycle:
                 self.snapshots.select_directory(settings.active_directory)
             if settings.active_directory is None and self.snapshots.incompatible:
                 raise SnapshotUnavailable("Storage incompatibile senza directory salvata: selezionare la sorgente")
-            if settings.active_directory and not getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
+            if (settings.active_directory and not (getattr(self.snapshots, "v2", False)
+                    and self.snapshots.recovery_needed)
+                    and not getattr(getattr(self.snapshots, "allocator", None), "legacy", False)):
                 self.request("startup")
             elif getattr(getattr(self.snapshots, "allocator", None), "legacy", False):
                 self.warning = "Dati precedenti: eseguire Elimina dati locali prima della sincronizzazione"
@@ -112,6 +118,24 @@ class ApplicationLifecycle:
             self.warning = None
             self.jobs.forget_current()
             return self.status()
+
+    def rebuild(self):
+        with self.jobs.lock:
+            self._idle()
+            settings = self.settings.load()
+            if settings.active_directory is None:
+                raise InvalidInput("Nessuna directory selezionata")
+            return self.jobs.request(lambda progress: self._synchronize(settings, progress, force=True))
+
+    def recover_previous(self):
+        with self.jobs.lock:
+            self._idle()
+            root = self.settings.load().active_directory
+            if root is None:
+                raise InvalidInput("Nessuna directory selezionata")
+            key = self.snapshots.recover_previous(root)
+            self.warning = None
+            return key
 
 
 class InitializeApplication:
@@ -152,3 +176,19 @@ class ClearLocalData:
 
     def execute(self):
         return self.lifecycle.clear()
+
+
+class RebuildIndex:
+    def __init__(self, lifecycle):
+        self.lifecycle = lifecycle
+
+    def execute(self):
+        return self.lifecycle.rebuild()
+
+
+class RecoverPreviousSnapshot:
+    def __init__(self, lifecycle):
+        self.lifecycle = lifecycle
+
+    def execute(self):
+        return self.lifecycle.recover_previous()

@@ -155,6 +155,18 @@ class JobState(str, Enum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class CancelOutcome(str, Enum):
+    ACCEPTED = "ACCEPTED"
+    COMMIT_STARTED = "COMMIT_STARTED"
+    FINISHED = "FINISHED"
+
+
+@dataclass(frozen=True)
+class CancelledResult:
+    job_id: str
 
 
 class JobPhase(str, Enum):

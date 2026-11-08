@@ -56,4 +56,6 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 
 ## Gate finale
 
+Le regressioni backend V2-04 in `backend/tests/integration/test_v2_lifecycle.py` coprono riapertura, versioni, isolamento v1, cancel, metadati e recovery esplicito. Il runner V2-02 usa la composizione v2 per le misure di storage. T08 è verificata localmente su tre cicli target `PASS` entro i budget approvati; le prove sul sorgente non chiudono il collaudo del pacchetto V2-08.
+
 Le [lacune M9-G01…G07](BASELINE.md) richiedono prove sul pacchetto v2 finale. Test del sorgente, mock e collaudo dello ZIP v1 non sostituiscono questa prova. V2-08 è chiusa solo se tutti i requisiti applicabili hanno esiti registrati; un limite accettato rimane documentato. Durante la sola riscrittura documentale non si rieseguono suite o benchmark applicativi.

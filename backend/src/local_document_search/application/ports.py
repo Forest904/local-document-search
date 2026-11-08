@@ -82,6 +82,7 @@ class SyncOutcome(StrEnum):
     UPDATED = "updated"
     NO_CHANGES = "no_changes"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 @dataclass(frozen=True)

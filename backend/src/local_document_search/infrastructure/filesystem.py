@@ -37,6 +37,26 @@ def resolve_directory(directory: str) -> str:
 class DocumentFileDiscovery:
     formats = {f".{format.value}": format for format in DocumentFormat}
 
+    def verify(self, candidate: FileCandidate) -> None:
+        """Confronta i metadati acquisiti senza seguire link o reparse point."""
+        root = Path(candidate.root_directory)
+        path = root / candidate.metadata.relative_path.value
+        try:
+            if _is_link(root.stat(follow_symlinks=False)):
+                raise SourceUnavailable("Directory diventata un link durante ingestione")
+            current = root
+            for part in Path(candidate.metadata.relative_path.value).parts[:-1]:
+                current = current / part
+                if _is_link(current.stat(follow_symlinks=False)):
+                    raise SourceUnavailable("Percorso diventato un link durante ingestione")
+            info = path.stat(follow_symlinks=False)
+            if (_is_link(info) or not stat.S_ISREG(info.st_mode)
+                    or info.st_size != candidate.metadata.fingerprint.size_bytes
+                    or info.st_mtime_ns != candidate.metadata.fingerprint.mtime_ns):
+                raise SourceUnavailable("Sorgente modificata durante ingestione")
+        except OSError as exc:
+            raise SourceUnavailable("Sorgente non disponibile durante ingestione") from exc
+
     def discover(self, root_directory: str) -> tuple[FileCandidate, ...]:
         root = Path(resolve_directory(root_directory))
         candidates = []

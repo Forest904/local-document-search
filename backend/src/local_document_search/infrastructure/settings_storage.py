@@ -9,13 +9,13 @@ from .sqlite_snapshot_storage import storage_directory, _failure
 
 
 class SqliteSettingsRepository:
-    def __init__(self, directory):
+    def __init__(self, directory, *, database_name="control.sqlite3", legacy_detection=True):
         self.directory = storage_directory(directory)
         self.lock = RLock()
         self.db = None
         try:
             self.directory.mkdir(parents=True, exist_ok=True)
-            self.db = sqlite3.connect(self.directory / "control.sqlite3", isolation_level=None,
+            self.db = sqlite3.connect(self.directory / database_name, isolation_level=None,
                                       check_same_thread=False)
             self.db.execute("PRAGMA synchronous=FULL")
             version = self.db.execute("PRAGMA user_version").fetchone()[0]
@@ -29,7 +29,7 @@ class SqliteSettingsRepository:
                 CREATE TABLE IF NOT EXISTS owned(name TEXT PRIMARY KEY);
                 PRAGMA user_version=1;
                 COMMIT;""")
-            if (self.selected() is None and (self.directory / "snapshots.sqlite3").exists()
+            if (legacy_detection and self.selected() is None and (self.directory / "snapshots.sqlite3").exists()
                     and not self.db.execute("SELECT 1 FROM settings").fetchone()
                     and not self.db.execute("SELECT 1 FROM owned WHERE name='snapshots.sqlite3'").fetchone()):
                 with self.db:

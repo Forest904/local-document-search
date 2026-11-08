@@ -110,14 +110,14 @@ def check_queries(app, manifest):
 
 def phase(args):
     from local_document_search.application.contracts import SearchField, SearchRequest, SuggestRequest
-    from local_document_search.interfaces.composition import compose_persistent_application
+    from local_document_search.interfaces.composition import compose_v2_application
     # The controller verifies every source byte before copying the cycle.
     manifest = json.loads((args.corpus / "manifest.json").read_text(encoding="utf-8"))
     storage = args.storage
     if args.phase == "build" and storage.exists():
         raise ValueError("Storage già esistente")
     started = time.perf_counter()
-    with compose_persistent_application(storage) as app:
+    with compose_v2_application(storage) as app:
         composed = time.perf_counter()
         result = {"phase": args.phase, "compose_seconds": composed - started}
         diagnostics = {}
@@ -126,12 +126,15 @@ def phase(args):
             from local_document_search.infrastructure.readers.registry import DocumentReader
             from local_document_search.domain.snapshots import IndexBuilder
             from local_document_search.infrastructure.sqlite_snapshot_storage import SqliteSnapshotRepository
+            from local_document_search.infrastructure.v2_snapshot_storage import V2SqliteSnapshotRepository
             from local_document_search.domain.queries import QueryEvaluator
             for cls, names, label in (
                 (DocumentReader, ("read",), "extraction"),
                 (IndexBuilder, ("add",), "index_add"),
                 (SqliteSnapshotRepository, ("save_candidate", "validate_candidate", "activate"), "persistence"),
                 (SqliteSnapshotRepository, ("load_active",), "load"),
+                (V2SqliteSnapshotRepository, ("save_candidate", "validate_candidate", "activate"), "v2_persistence"),
+                (V2SqliteSnapshotRepository, ("load_active",), "v2_load"),
                 (QueryEvaluator, ("evaluate",), "query_evaluation"),
             ):
                 for name in names:

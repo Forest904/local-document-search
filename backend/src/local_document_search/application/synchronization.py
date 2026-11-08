@@ -1,10 +1,13 @@
 """Build completo M3 e sincronizzazione incrementale bloccante M6."""
+from collections import deque
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
 
 from .contracts import BuildResult, SyncResult, JobPhase, JobReport, JobDiagnostic
 from .errors import ExtractionFailure, ResourceFailure, StorageFailure
+from .jobs import JobCancelled
 from .ports import DocumentReaderPort, Extracted, Excluded, FileDiscoveryPort, SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
 from local_document_search.domain.snapshots import IndexBuilder, SnapshotDraft
@@ -14,13 +17,75 @@ def _safe_exclusion(reason):
     return "PDF senza testo estraibile" if reason.startswith("PDF senza testo") else "Esclusione intenzionale"
 
 
+_worker_reader = None
+
+
+def _initialize_worker(factory):
+    global _worker_reader
+    _worker_reader = factory()
+
+
+def _read_in_worker(candidate):
+    return _worker_reader.read(candidate)
+
+
 class IndexSynchronizer:
     """Diff bloccante: gli invariati non attraversano reader o analyzer."""
 
-    def __init__(self, discovery, reader, snapshots):
+    def __init__(self, discovery, reader, snapshots, *, schema_version="1", read_workers=1,
+                 worker_reader_factory=None):
         self.discovery, self.reader, self.snapshots = discovery, reader, snapshots
+        self.schema_version = schema_version
+        self.read_workers = read_workers
+        self.worker_reader_factory = worker_reader_factory
 
-    def execute(self, root_directory: str, progress=None) -> SyncResult:
+    def _read_results(self, candidates, notify):
+        if self.read_workers == 1:
+            for candidate in candidates:
+                notify(phase=JobPhase.EXTRACTING,
+                       current_file=candidate.metadata.relative_path.value)
+                if hasattr(self.discovery, "verify"):
+                    self.discovery.verify(candidate)
+                try:
+                    yield candidate, self.reader.read(candidate)
+                except MemoryError:
+                    raise
+                except Exception as exc:
+                    raise ExtractionFailure(
+                        f"{candidate.metadata.relative_path.value}: estrazione fallita") from exc
+            return
+        with ProcessPoolExecutor(max_workers=self.read_workers,
+                                 initializer=_initialize_worker,
+                                 initargs=(self.worker_reader_factory,)) as pool:
+            pending = deque()
+            source = iter(candidates)
+
+            def submit_one():
+                candidate = next(source, None)
+                if candidate is None:
+                    return False
+                if hasattr(self.discovery, "verify"):
+                    self.discovery.verify(candidate)
+                pending.append((candidate, pool.submit(_read_in_worker, candidate)))
+                return True
+
+            for _ in range(self.read_workers * 2):
+                if not submit_one():
+                    break
+            while pending:
+                candidate, future = pending.popleft()
+                notify(phase=JobPhase.EXTRACTING,
+                       current_file=candidate.metadata.relative_path.value)
+                try:
+                    yield candidate, future.result()
+                except MemoryError:
+                    raise
+                except Exception as exc:
+                    raise ExtractionFailure(
+                        f"{candidate.metadata.relative_path.value}: estrazione fallita") from exc
+                submit_one()
+
+    def execute(self, root_directory: str, progress=None, *, force=False) -> SyncResult:
         notify = progress if progress is not None else lambda **changes: None
         started = perf_counter()
         key = uuid4().hex
@@ -37,10 +102,13 @@ class IndexSynchronizer:
             modified = {p for p in after.keys() & before.keys()
                         if after[p].metadata.fingerprint != before[p].metadata.fingerprint}
             unchanged = (after.keys() & before.keys()) - modified
-            work = added | modified
+            work = added | modified | (set(unchanged) if force else set())
+            if force:
+                modified |= unchanged
+                unchanged = set()
             notify(phase=JobPhase.BUILDING, files_total=len(work),
                    bytes_total=sum(after[p].metadata.fingerprint.size_bytes for p in work))
-            if old is not None and not (added or removed or modified):
+            if old is not None and not (added or removed or modified) and not force:
                 report = JobReport(tuple(JobDiagnostic("excluded", JobPhase.BUILDING,
                                    p.value, _safe_exclusion(e.reason or ""))
                                    for p, e in before.items() if e.document_id is None),
@@ -64,19 +132,9 @@ class IndexSynchronizer:
             for path in removed:
                 builder.remove(path)
             processed = 0
-            for completed, path in enumerate(sorted(work, key=lambda p: p.value), start=1):
-                candidate = after[path]
-                notify(phase=JobPhase.EXTRACTING, current_file=path.value)
-                try:
-                    result = self.reader.read(candidate)
-                except MemoryError:
-                    raise
-                except Exception as exc:
-                    notify(report=JobReport(tuple(observed_exclusions) + (
-                           JobDiagnostic("reader", JobPhase.EXTRACTING,
-                           path.value, "Lettura o estrazione fallita"),), complete=False,
-                           excluded=len(observed_exclusions)))
-                    raise ExtractionFailure(f"{path.value}: estrazione fallita") from exc
+            ordered_work = [after[path] for path in sorted(work, key=lambda p: p.value)]
+            for completed, (candidate, result) in enumerate(self._read_results(ordered_work, notify), start=1):
+                path = candidate.metadata.relative_path
                 notify(phase=JobPhase.ANALYZING)
                 if isinstance(result, Extracted):
                     identity = before[path].document_id if path in before else None
@@ -97,24 +155,28 @@ class IndexSynchronizer:
                            path.value, reason),), complete=False,
                            excluded=len(observed_exclusions)))
                     raise ExtractionFailure(f"{path.value}: {reason}")
+                if hasattr(self.discovery, "verify"):
+                    self.discovery.verify(candidate)
                 processed += candidate.metadata.fingerprint.size_bytes
                 notify(files_completed=completed, bytes_completed=processed)
             notify(phase=JobPhase.BUILDING, current_file=None)
             snapshot = draft.freeze(snapshot_id=key, root_directory=root_directory,
                                     created_at=datetime.now(timezone.utc),
-                                    schema_version="1", processing_version="1")
+                                    schema_version=self.schema_version, processing_version="1")
             try:
-                notify(phase=JobPhase.COMMITTING)
                 report = JobReport(tuple(JobDiagnostic("excluded", JobPhase.BUILDING,
                                    p.value, _safe_exclusion(e.reason or ""))
                                    for p, e in draft.entries.items() if e.document_id is None),
                                    published_snapshot_id=key, added=len(added), modified=len(modified),
                                    removed=len(removed), unchanged=len(unchanged),
                                    excluded=sum(e.document_id is None for e in draft.entries.values()))
+                excluded_count = report.excluded
+                del builder, draft
                 self.snapshots.save_candidate(snapshot)
                 self.snapshots.validate_candidate(key)
+                notify(phase=JobPhase.COMMITTING)
                 self.snapshots.activate(key)
-            except (MemoryError, ResourceFailure):
+            except (MemoryError, ResourceFailure, JobCancelled):
                 raise
             except Exception as exc:
                 notify(report=JobReport(tuple(observed_exclusions) + (
@@ -124,7 +186,7 @@ class IndexSynchronizer:
                 raise StorageFailure("Pubblicazione dello snapshot fallita") from exc
             notify(report=report)
             return SyncResult(key, True, len(added), len(modified), len(removed), len(unchanged),
-                              sum(e.document_id is None for e in draft.entries.values()),
+                              excluded_count,
                               0, perf_counter() - started, processed, report)
         except BaseException as exc:
             try:
@@ -156,6 +218,8 @@ class BuildIndex:
             exclusions = []
             next_id = self.snapshots.reserve_document_ids(len(candidates))
             for candidate in candidates:
+                if hasattr(self.discovery, "verify"):
+                    self.discovery.verify(candidate)
                 try:
                     result = self.reader.read(candidate)
                 except MemoryError:
@@ -177,11 +241,14 @@ class BuildIndex:
                 else:
                     raise ExtractionFailure(
                         f"{candidate.metadata.relative_path.value}: lettura o estrazione fallita")
+                if hasattr(self.discovery, "verify"):
+                    self.discovery.verify(candidate)
                 processed_bytes += candidate.metadata.fingerprint.size_bytes
             snapshot = draft.freeze(
                 snapshot_id=snapshot_id, root_directory=root_directory,
                 created_at=datetime.now(timezone.utc), schema_version="1", processing_version="1",
             )
+            del builder, draft
             try:
                 self.snapshots.save_candidate(snapshot)
                 self.snapshots.validate_candidate(snapshot_id)

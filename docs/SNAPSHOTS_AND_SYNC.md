@@ -1,12 +1,12 @@
 # Snapshot, sincronizzazione e lifecycle
 
-[Contratto v1 e dettagli SQLite](archive/v1/SNAPSHOTS_AND_SYNC.md). La v2 mantiene snapshot immutabili, single-writer e attivazione atomica. Il vecchio snapshot della stessa directory rimane disponibile durante il sync; un errore non pubblica risultati parziali. Il layout fisico v2 è [V2-D04](OPEN_DECISIONS.md), da approvare con misure prima di implementarlo.
+[Contratto v1 e dettagli SQLite](archive/v1/SNAPSHOTS_AND_SYNC.md). La v2 mantiene snapshot immutabili, single-writer e attivazione atomica. Il vecchio snapshot della stessa directory rimane disponibile durante il sync; un errore non pubblica risultati parziali. Layout e gate prestazionale V2-D04 sono chiusi localmente nell'[ADR 0012](adr/0012-v2-lifecycle-storage.md).
 
 ## Versioni e persistenza
 
 Lo snapshot logico comprende manifest, catalogo, testo estratto, indici posizionali e vocabolario ordinato per campo. `schema_version` e `processing_version` identificano compatibilità; il vocabolario secondario deve riferirsi alla stessa versione degli indici primari. Candidato e riferimento attivo diventano visibili insieme dopo validazione e commit. Durante retention, letture acquisite mantengono la loro versione fino al rilascio.
 
-Lo storage v2 per utente è distinto da v1. Il primo avvio v2 richiede selezione della cartella; nessuna migrazione automatica, nessuna lettura o pulizia dei dati v1. Un upgrade v2 deve trattare versioni incompatibili con rebuild/recovery espliciti e preservare l'ultimo valido finché possibile; la strategia esatta è V2-D04.
+Lo storage v2 per utente è distinto da v1: `%LOCALAPPDATA%/LocalDocumentSearchV2`. Il primo avvio v2 richiede selezione della cartella; nessuna migrazione automatica, nessuna lettura o pulizia dei dati v1. SQLite conserva manifest per snapshot e versioni immutabili di testo e posting per documento; i posting sono blocchi compressi e validati. Le versioni invariate sono riusate. Lo snapshot attivo è caricato all'avvio, il precedente su richiesta. Un upgrade v2 incompatibile o uno snapshot corrotto richiede rebuild/recovery espliciti; i dati precedenti restano fino alla nuova pubblicazione valida.
 
 ## Diff, sorgenti variabili e cancel
 

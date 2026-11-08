@@ -5,7 +5,12 @@ from datetime import datetime, timezone
 from threading import RLock
 from uuid import uuid4
 
-from .contracts import InvalidInput, JobPhase, JobRef, JobState, JobStatus, JobReport, JobDiagnostic
+from .contracts import (CancelOutcome, CancelledResult, InvalidInput, JobPhase, JobRef, JobState,
+                        JobStatus, JobReport, JobDiagnostic)
+
+
+class JobCancelled(Exception):
+    """Annullamento cooperativo, distinto dai fallimenti del job."""
 
 
 class IndexingJobManager:
@@ -16,6 +21,7 @@ class IndexingJobManager:
         self._futures = {}
         self._current = None
         self._closed = False
+        self._cancel_requested = set()
 
     @property
     def active(self):
@@ -54,7 +60,14 @@ class IndexingJobManager:
     def _run(self, key, operation):
         self._update(key, state=JobState.RUNNING)
         try:
-            result = operation(lambda **changes: self._update(key, **changes))
+            result = operation(lambda **changes: self._checkpoint(key, **changes))
+        except JobCancelled:
+            prior = self.status(key)
+            self._update(key, state=JobState.CANCELLED, current_file=None,
+                         report=JobReport(prior.report.diagnostics if prior.report else (),
+                                          complete=False),
+                         finished_at=datetime.now(timezone.utc))
+            return CancelledResult(key)
         except BaseException as exc:
             prior = self.status(key)
             report = prior.report or JobReport((JobDiagnostic(type(exc).__name__, prior.phase,
@@ -73,6 +86,24 @@ class IndexingJobManager:
     def _update(self, key, **changes):
         with self.lock:
             self._statuses[key] = replace(self._statuses[key], **changes)
+            if self._statuses[key].state in (JobState.COMPLETED, JobState.FAILED, JobState.CANCELLED):
+                self._cancel_requested.discard(key)
+
+    def _checkpoint(self, key, **changes):
+        with self.lock:
+            if key in self._cancel_requested:
+                raise JobCancelled()
+            self._update(key, **changes)
+
+    def cancel(self, key):
+        with self.lock:
+            status = self.status(key)
+            if status.state not in (JobState.PENDING, JobState.RUNNING):
+                return CancelOutcome.FINISHED
+            if status.phase is JobPhase.COMMITTING:
+                return CancelOutcome.COMMIT_STARTED
+            self._cancel_requested.add(key)
+            return CancelOutcome.ACCEPTED
 
     def status(self, key):
         with self.lock:
@@ -116,3 +147,11 @@ class GetJobStatus:
 
     def execute(self, job_id):
         return self.manager.status(job_id)
+
+
+class CancelSynchronization:
+    def __init__(self, manager):
+        self.manager = manager
+
+    def execute(self, job_id):
+        return self.manager.cancel(job_id)
