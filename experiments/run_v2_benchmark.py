@@ -271,7 +271,10 @@ def run(args):
               "platform": platform.platform(), "python": sys.version,
               "hardware": hardware(), "execution": "packaged" if packaged else "source",
               "payload_manifest_sha256": hashlib.sha256(args.payload_manifest.read_bytes()).hexdigest() if packaged else None,
-              "dependencies": {name: importlib.metadata.version(name) for name in ("pypdf", "markdown-it-py")},
+              "dependencies": {name: next((version for package, version in payload["packages"].items()
+                                           if package.lower() == name.lower()), None)
+                               if packaged else importlib.metadata.version(name)
+                               for name in ("pypdf", "markdown-it-py")},
               "corpus_id": hashlib.sha256((args.corpus / "manifest.json").read_bytes()).hexdigest(),
               "experiment_sha256": {name: hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest()
                                     for name in ("v2_benchmark.py", "run_v2_benchmark.py", "m9_corpus.py")},
