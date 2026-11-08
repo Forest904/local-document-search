@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata con prove dal sorgente e flussi sul prototipo standalone, ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07…V2-08 restano progettate. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate). Questa roadmap parte dal codice e dalle evidenze attuali, non richiede di ricominciare da zero né considera chiusa M9.
+**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07 ha un installer implementato con gate di prova e diritti ancora aperti; V2-08 resta progettata. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate).
 
 ## Come usare questa roadmap
 
@@ -160,6 +160,8 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 **Riferimenti:** [UX](UX_WINDOWS.md), [contratti](INTERFACE_CONTRACTS.md), [ADR 0011](adr/0011-v2-desktop.md), [frontend attuale](../frontend/README.md).
 
 ## V2-07 — Installer offline e distribuzione
+
+**Avanzamento all'8 novembre 2026:** scelta Inno Setup 6.7.3 nell'[ADR 0013](adr/0013-v2-distribution.md). Implementati script installer 0.2.0, build con hash del compilatore, manifest dell'artefatto, inventario payload, gestione upgrade/downgrade e disinstallazione con conservazione predefinita dei dati. [Rapporto e limiti](V2_07_INSTALLER.md). V2-D08 e V2-D09 restano aperte; V2-07 non è ancora chiusa. Windows pulito/account standard distinto restano V2-08.
 
 **Ingresso:** desktop V2-06 e prova preliminare del packaging QML; ZIP v1 disponibile solo come riferimento storico. La release pubblica richiede termini e diritti verificati.
 

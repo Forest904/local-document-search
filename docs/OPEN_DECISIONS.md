@@ -4,9 +4,10 @@ Questa tabella contiene **solo scelte da approvare**. Le decisioni già prese so
 
 | ID | Decisione da prendere | Gate | Criterio per chiuderla |
 |---|---|---|---|
-| V2-D07 | Strumento e formato dell'installer offline; rilevamento upgrade e opzioni wizard | V2-07, prima della build finale | Prototipo Qt Quick distribuibile, installazione/update/uninstall per utente e inventario payload verificati |
 | V2-D08 | Termini completi di uso gratuito personale/studio, autorizzazione professionale e diritti sul codice | V2-07, prima della pubblicazione | Testo definitivo approvato dal titolare, coerente con i diritti delle dipendenze |
 | V2-D09 | Moduli Qt effettivi e adempimenti LGPL del payload compilato | V2-07, prima della pubblicazione | Inventario, avvisi/testi, sostituibilità delle librerie e procedura verificati sul pacchetto |
+
+V2-D07 è risolta nell'[ADR 0013](adr/0013-v2-distribution.md): Inno Setup 6.7.3 e installer EXE 0.2.0 per utente, wizard IT/EN, upgrade completo, reinstallazione consentita, downgrade bloccato e dati v2 conservati per default.
 
 V2-D05 e V2-D06 sono risolte nell'[ADR 0010](adr/0010-v2-retrieval.md): priorità al nome e frequenza delle posizioni distinte nei campi completi; una finestra di 240 caratteri e intervalli Unicode sul testo acquisito.
 

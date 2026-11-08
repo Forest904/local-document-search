@@ -1,6 +1,6 @@
 # Privacy, dati e distribuzione v2
 
-**Politica approvata, implementazione futura.** [Comportamento v1](archive/v1/SECURITY_AND_PRIVACY.md), [baseline attuale](BASELINE.md).
+**Politica approvata; installer V2-07 in verifica.** [Comportamento v1](archive/v1/SECURITY_AND_PRIVACY.md), [baseline attuale](BASELINE.md).
 
 ## Dati locali
 
@@ -13,6 +13,8 @@ Pulizia esplicita: rimuove dati applicativi v2 secondo lo stato del job e proteg
 ## Distribuzione e diritti
 
 Installer Windows 11 x64 offline, per utente e senza elevazione; include Python, Qt, plugin e ogni dipendenza runtime necessaria. Aggiornamento tramite nuovo installer completo, nessun updater che chiama un servizio. Collaudo su account standard e sistema pulito, senza Python o tool di sviluppo. La prima release pubblica può essere non firmata; registrare gli avvisi realmente osservati e non presentarla come firmata.
+
+L'implementazione V2-07 usa Inno Setup 6.7.3. La disinstallazione conserva i dati v2 per default anche in modalità silenziosa. La cancellazione esplicita controlla il lock e rifiuta reparse point; il fallimento lascia un errore riprovabile. [Evidenze e limiti](V2_07_INSTALLER.md).
 
 **Intenzione del titolare:** diritti riservati sul codice del progetto; uso gratuito personale e di studio; uso professionale soggetto ad autorizzazione. Prima della pubblicazione approvare termini completi in [V2-D08](OPEN_DECISIONS.md); questa frase non è una licenza d'uso completa. Il repository GitHub pubblico consente visualizzazione e fork nei limiti delle condizioni della piattaforma; non concede automaticamente una licenza open source di riuso del codice. [Spiegazione GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
 

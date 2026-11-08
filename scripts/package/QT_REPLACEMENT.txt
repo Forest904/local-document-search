@@ -1,0 +1,18 @@
+Sostituzione delle librerie Qt nel pacchetto Windows
+
+L'applicazione usa DLL Qt e plugin QML separati. Per provare una variante
+compatibile, chiudere Local Document Search, copiare la directory installata
+in un percorso di prova, sostituire nella copia la DLL o il plugin con una
+build compatibile Qt 6.12.0 per Windows x64, conservando nome e ABI, e avviare
+la copia. Non modificare l'installazione originale durante la prova. Per
+ripristinare, ricopiare i file originali dal medesimo installer completo.
+
+Sorgenti e SHA-256 delle versioni upstream di QtBase, QtDeclarative e
+QtShaderTools sono in licenses/upstream/SOURCES.json; i sorgenti PySide6 sono
+identificati negli avvisi THIRD_PARTY_NOTICES.txt. I componenti Qt distribuiti
+sono elencati in BUILD-MANIFEST.json, payload_components.qt.files. Conservare
+avvisi e licenze dei componenti quando si distribuiscono build sostitutive.
+
+La prova locale V2-07 ha sostituito qt6core.dll con una copia verificata
+della DLL della stessa build e riavviato l'applicazione. Non prova ancora la
+compatibilità di una build Qt modificata; quel gate resta V2-D09.

@@ -1,6 +1,21 @@
-# Prototipo standalone Qt Quick V2-06 — ZIP Windows x64
+# Packaging Qt Quick V2-07 — ZIP di prova e installer Windows x64
 
-Questa procedura genera un prototipo Qt Quick per verificare runtime, moduli e risorse QML. L'[installer offline v2](../../docs/ROADMAP.md) e il collaudo pubblico restano V2-07/V2-08. M9 resta [parzialmente accettata](../../docs/BASELINE.md).
+`build.ps1` produce anche `dist/LocalDocumentSearch-0.2.0-windows-x64-setup.exe`
+e i relativi `.sha256` e `.manifest.json`. Richiede Inno Setup 6.7.3: il
+compilatore `ISCC.exe` è cercato nell'installazione per utente o in Program
+Files (x86); `LDS_ISCC` può specificare un percorso diverso. L'hash del
+compilatore è bloccato in `build.py`.
+
+L'EXE installa per utente, senza elevazione o download. Wizard IT/EN, menu
+Start e desktop opzionale; upgrade completo nella stessa installazione,
+reinstallazione ammessa e downgrade rifiutato. Chiudere l'applicazione prima
+di installare o disinstallare. I dati v2 restano nel profilo, salvo scelta
+esplicita nel wizard di disinstallazione; la modalità silenziosa li conserva.
+`TERMS-DRAFT.txt` è una bozza e non autorizza ancora la pubblicazione.
+`QT_REPLACEMENT.txt` descrive la prova di sostituzione delle DLL Qt e i suoi
+limiti; `licenses/upstream/SOURCES.json` identifica le fonti upstream con hash.
+
+La procedura genera anche uno ZIP di prova del payload Qt Quick. Il collaudo pubblico resta V2-08. M9 resta [parzialmente accettata](../../docs/BASELINE.md).
 
 Da PowerShell, nella radice del repository:
 
@@ -11,7 +26,7 @@ Da PowerShell, nella radice del repository:
 ```
 
 Prerequisiti di build: Windows 11 x64, CPython 3.12.2 x64, Visual Studio 2022
-Build Tools con C++ x64 e Windows SDK, Git e accesso ai download delle dipendenze.
+Build Tools con C++ x64 e Windows SDK, Inno Setup 6.7.3, Git e accesso ai download delle dipendenze.
 La toolchain verificata è registrata nel report M9 e nel manifest dell'artefatto.
 Il comando non usa il Python generico del PATH e non installa strumenti di sistema.
 
@@ -19,9 +34,9 @@ Il comando non usa il Python generico del PATH e non installa strumenti di siste
 Python e tutte le dipendenze; backend e frontend vengono installati senza editable.
 `pyside6-deploy --no-install` usa la configurazione versionata in modalità standalone.
 Nuitka può scaricare il proprio strumento di analisi DLL nella cache utente.
-Il pacchetto include i runtime Microsoft necessari; nessun installer o updater.
+Il pacchetto include i runtime Microsoft necessari; non ha updater online.
 
-Output: `dist/LocalDocumentSearch-v2-06-prototype-windows-x64.zip` e relativo `.sha256`.
+Output di prova: `dist/LocalDocumentSearch-v2-06-prototype-windows-x64.zip` e relativo `.sha256`; l'installer EXE è descritto sopra.
 Log, configurazione risolta e report Nuitka restano in `build/package/`.
 Lo ZIP include istruzioni, licenze, report compilatore e `BUILD-MANIFEST.json`:
 revisione, stato dirty, hash dei sorgenti, versioni, toolchain, comando e hash dei file.

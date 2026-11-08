@@ -46,8 +46,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T12 | UI usabile durante build, ricerca e anteprima; query/filtri/directory obsolete non sovrascrivono stato corrente | V2-06, V2-08 |
 | T13 | Italiano/inglese, temi persistenti, tastiera, focus, contrasto, DPI e Narrator su flussi principali | V2-06, V2-08 |
 | T14 | Prima selezione v2 e upgrade v2 senza leggere, alterare o cancellare dati v1 | V2-04, V2-07 |
-| T15 | Wizard install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi e avvio riuscito | V2-07, V2-08 |
-| T16 | Disinstallazione conserva dati per default; cancellazione solo esplicita, rifiuto durante job, sorgenti/v1 intatti | V2-07, V2-08 |
+| T15 | Wizard IT/EN install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi, reinstallazione consentita, downgrade bloccato e avvio riuscito | V2-07, V2-08 |
+| T16 | Disinstallazione conserva dati per default anche in modalità silenziosa; cancellazione solo esplicita con lock, rifiuto durante job, sorgenti/v1 intatti | V2-07, V2-08 |
 | T17 | Nessuna connessione richiesta, inventario dipendenze e obblighi Qt verificati; termini approvati; avvisi release non firmata registrati | V2-07, V2-08 |
 | T18 | Runner Homework e CLI: sintassi, ordine, codici e installazione backend senza Qt invariati | V2-03, V2-05, V2-08 |
 | T19 | CI della revisione finale, manifest/hash del pacchetto e risultati legati alla stessa revisione pulita | V2-08 |

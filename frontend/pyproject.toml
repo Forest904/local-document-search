@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "local-document-search-desktop"
-version = "0.1.0"
+version = "0.2.0"
 description = "Desktop Qt Quick per Local Document Search"
 requires-python = ">=3.12"
-dependencies = ["local-document-search==0.1.0", "PySide6>=6.8,<7"]
+dependencies = ["local-document-search==0.2.0", "PySide6>=6.8,<7"]
 
 [project.gui-scripts]
 local-document-search-desktop = "local_document_search_desktop.main:main"

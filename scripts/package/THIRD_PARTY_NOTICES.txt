@@ -1,8 +1,7 @@
 Local Document Search - avvisi dei componenti di terze parti
 
-Questo archivio e destinato all'uso personale. Nessuna licenza del codice
-del progetto e stata scelta; le licenze seguenti riguardano i componenti
-indicati, non attribuiscono una licenza al progetto.
+I termini del progetto sono in TERMS-DRAFT.txt, ancora da approvare.
+Le licenze seguenti riguardano i componenti indicati e restano autonome.
 
 Python 3.12.2 e librerie incorporate: vedere licenses/Python.txt (PSF e avvisi
 dei componenti). SQLite e incluso dal runtime Python.
@@ -11,9 +10,10 @@ markdown-it-py 4.2.0, mdurl 0.1.2: MIT; pypdf 7.0.0: BSD-3-Clause.
 Testi e copyright originali nelle rispettive cartelle sotto licenses/.
 
 PySide6, Shiboken6 e Qt 6.12.0: componenti open source, LGPLv3 e alternative
-indicate nei METADATA originali. Qt Core, Gui e Widgets sono caricati come DLL
+indicate nei METADATA originali. Qt Core, Gui e Quick sono caricati come DLL
 separate. Il testo LGPLv3 e GPLv3 e incluso in licenses/upstream/.
-Le DLL compatibili possono essere sostituite mantenendo nomi e struttura.
+Le DLL compatibili possono essere sostituite mantenendo nomi e struttura;
+vedere QT_REPLACEMENT.txt per la procedura e i limiti della prova locale.
 Non viene imposta alcuna restrizione aggiuntiva al reverse engineering
 necessario al debug di modifiche dei componenti LGPL.
 I METADATA delle wheel possono includere anche un avviso commerciale:
@@ -30,7 +30,7 @@ Le versioni degli strumenti di build non implicano che tutti i relativi
 pacchetti siano distribuiti: BUILD-MANIFEST.json elenca i file effettivi.
 Runtime Microsoft Visual C++: eventuali DLL sono componenti Microsoft,
 redistribuiti insieme al runtime Python/Qt. Copyright Microsoft Corporation.
-Il programma richiede Windows 11 x64 e non include un installer di sistema.
+Il programma richiede Windows 11 x64.
 
 Non sono state modificate le librerie Qt. Nessuna pubblicazione esterna e
 stata effettuata; questo archivio non e una dichiarazione di conformita

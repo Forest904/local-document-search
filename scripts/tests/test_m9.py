@@ -84,6 +84,28 @@ def test_incomplete_or_private_payload_is_rejected(tmp_path):
     assert not (tmp_path / "bad.zip").exists()
 
 
+def test_payload_inventory_describes_files_not_build_tools(tmp_path):
+    folder = payload(tmp_path)
+    (folder / "PySide6/Qt6Core.dll").write_bytes(b"synthetic")
+    components = packaging.payload_components(folder)
+    assert "PySide6/Qt6Core.dll" in components["qt"]["files"]
+    assert "Nuitka" not in components["python_packages"]
+    assert "python312.dll" in components["python"]["files"]
+
+
+def test_unused_qt_addons_removed_from_staging_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(packaging, "ROOT", tmp_path)
+    folder = tmp_path / "build/package/payload"
+    (folder / "PySide6/qml/QtWebEngine").mkdir(parents=True)
+    (folder / "PySide6/qml/QtWebEngine/plugin.dll").write_bytes(b"unused")
+    (folder / "qt6pdf.dll").write_bytes(b"unused")
+    (folder / "qt6quick.dll").write_bytes(b"needed")
+    packaging.remove_unused_qt_modules(folder)
+    assert not (folder / "PySide6/qml/QtWebEngine").exists()
+    assert not (folder / "qt6pdf.dll").exists()
+    assert (folder / "qt6quick.dll").read_bytes() == b"needed"
+
+
 def test_clean_refuses_outside_build(tmp_path):
     protected = tmp_path / "keep.txt"
     protected.write_text("keep")

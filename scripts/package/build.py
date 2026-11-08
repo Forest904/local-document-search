@@ -16,6 +16,9 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 NAME = "LocalDocumentSearch-v2-06-prototype-windows-x64"
+INSTALLER_VERSION = "0.2.0"
+INNO_VERSION = "6.7.3"
+INNO_SHA256 = "0a8757031b33777e4c9cbffee40f11a5062b36d25cbe144c1db73b6102b80ad7"
 
 
 def sha256(path):
@@ -52,6 +55,28 @@ def validate_payload(folder):
         raise RuntimeError(f"Dati non distribuibili: {forbidden}")
 
 
+def remove_unused_qt_modules(folder):
+    """Rimuove addon non importati dalla UI; opera solo nello staging di build."""
+    banned = ("qt6webengine", "qt6multimedia", "qt6pdf", "qtwebengine", "qtmultimedia", "qtpdf")
+    explicit = [folder / "PySide6/qml/QtQuick/Pdf", folder / "PySide6/qt-plugins/imageformats/qpdf.dll"]
+    for path in explicit:
+        if path.is_dir():
+            safe_clean(path)
+        elif path.is_file():
+            path.unlink()
+    for path in sorted(folder.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+        if not path.exists() or path.is_symlink():
+            continue
+        if not path.name.lower().startswith(banned):
+            continue
+        if not path.resolve().is_relative_to((ROOT / "build/package").resolve()):
+            raise RuntimeError(f"Qt fuori dallo staging: {path}")
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.is_file():
+            path.unlink()
+
+
 def archive(folder, target):
     validate_payload(folder)
     temporary = target.with_suffix(".zip.tmp")
@@ -86,6 +111,21 @@ def collect_licenses(folder):
     shutil.copy2(HERE / "THIRD_PARTY_NOTICES.txt", folder)
 
 
+def payload_components(folder):
+    names = [p.relative_to(folder).as_posix() for p in folder.rglob("*") if p.is_file()]
+    qt = sorted(name for name in names if name.lower().endswith((".dll", ".pyd"))
+                and (name.startswith("PySide6/") or "qt" in name.lower()))
+    microsoft = sorted(name for name in names if name.lower().startswith(("vcruntime", "msvcp", "concrt"))
+                       and name.lower().endswith(".dll"))
+    return {"python": {"version": "3.12.2", "license": "licenses/Python.txt",
+                       "files": sorted(name for name in names if name.lower().startswith("python") and name.lower().endswith(".dll"))},
+            "qt": {"version": metadata.version("PySide6"), "license": "licenses/upstream/LGPL-3.0.txt",
+                   "files": qt},
+            "microsoft_runtime": {"files": microsoft},
+            "python_packages": {name: metadata.version(name) for name in
+                ("markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "shiboken6")}}
+
+
 def toolchain():
     locator = Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")) / "Microsoft Visual Studio/Installer/vswhere.exe"
     result = run([locator, "-latest", "-products", "*", "-requires",
@@ -99,6 +139,44 @@ def toolchain():
     return {"visual_studio": instance["installationVersion"],
             "msvc_installed": sorted(p.name for p in vc.iterdir() if p.is_dir()),
             "x64_compilers": [{"path": str(p), "sha256": sha256(p)} for p in compilers]}
+
+
+def installer_compiler():
+    candidates = [Path(os.environ["LDS_ISCC"])] if os.environ.get("LDS_ISCC") else [
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Programs/Inno Setup 6/ISCC.exe",
+        Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")) / "Inno Setup 6/ISCC.exe",
+    ]
+    found = [path for path in candidates if path.is_file()]
+    if len(found) != 1:
+        raise RuntimeError("Compilatore Inno Setup 6.7.3 non trovato; impostare LDS_ISCC")
+    compiler = found[0]
+    digest = sha256(compiler)
+    if digest != INNO_SHA256:
+        raise RuntimeError(f"ISCC.exe non corrisponde al lock: {digest}")
+    return compiler
+
+
+def build_installer(folder, manifest):
+    compiler = installer_compiler()
+    target_dir = ROOT / "dist"
+    args = [compiler, f"/DPayloadDir={folder}", f"/DOutputDir={target_dir}",
+            HERE / "installer.iss"]
+    run(args)
+    target = target_dir / f"LocalDocumentSearch-{INSTALLER_VERSION}-windows-x64-setup.exe"
+    if not target.is_file():
+        raise RuntimeError("Installer non prodotto")
+    record = {"installer_sha256": sha256(target), "installer_version": INSTALLER_VERSION,
+              "iscc_version": INNO_VERSION, "iscc_sha256": sha256(compiler),
+              "iscc_path": str(compiler), "command": [str(arg) for arg in args],
+              "payload_manifest_sha256": sha256(folder / "BUILD-MANIFEST.json"),
+              "revision": manifest["revision"], "dirty_worktree": manifest["dirty_worktree"],
+              "installer_source_sha256": {name: sha256(HERE / name) for name in
+                  ("installer.iss", "uninstall-data.ps1", "prune-upgrade.ps1", "build.py")}}
+    (target_dir / f"{target.name}.manifest.json").write_text(
+        json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    (target_dir / f"{target.name}.sha256").write_text(
+        f"{record['installer_sha256']}  {target.name}\n", encoding="ascii")
+    print(f"Installer: {target}\nSHA256: {record['installer_sha256']}", flush=True)
 
 
 def build():
@@ -132,7 +210,10 @@ def build():
     if len(candidates) != 1:
         raise RuntimeError(f"Output standalone inatteso: {candidates}; consultare deploy.log")
     folder = candidates[0]
+    remove_unused_qt_modules(folder)
     shutil.copy2(HERE / "ISTRUZIONI.txt", folder)
+    shutil.copy2(HERE / "TERMS-DRAFT.txt", folder)
+    shutil.copy2(HERE / "QT_REPLACEMENT.txt", folder)
     collect_licenses(folder)
     packages = {d.metadata["Name"]: d.version for d in metadata.distributions()}
     revision = run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
@@ -153,6 +234,7 @@ def build():
                 "packages": packages, "command": [str(a) for a in command],
                 "resolved_spec": (workspace / "pysidedeploy.spec").read_text(encoding="utf-8"),
                 "sources_sha256": sources, "lock_sha256": sha256(HERE / "requirements.lock.txt"),
+                "payload_components": payload_components(folder),
                 "files_sha256": {p.relative_to(folder).as_posix(): sha256(p)
                                  for p in sorted(folder.rglob("*")) if p.is_file()}}
     (folder / "BUILD-MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -160,6 +242,7 @@ def build():
     target.parent.mkdir(exist_ok=True)
     archive(folder, target)
     print(f"ZIP: {target}\nSHA256: {sha256(target)}", flush=True)
+    build_installer(folder, manifest)
 
 
 def main():
