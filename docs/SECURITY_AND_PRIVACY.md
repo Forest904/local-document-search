@@ -1,6 +1,6 @@
 # Privacy, dati e distribuzione v2
 
-**Politica approvata; installer V2-07 in verifica.** [Comportamento v1](archive/v1/SECURITY_AND_PRIVACY.md), [baseline attuale](BASELINE.md).
+**Politica approvata; installer V2-07 verificato localmente.** [Comportamento v1](archive/v1/SECURITY_AND_PRIVACY.md), [baseline attuale](BASELINE.md).
 
 ## Dati locali
 
@@ -16,6 +16,6 @@ Installer Windows 11 x64 offline, per utente e senza elevazione; include Python,
 
 L'implementazione V2-07 usa Inno Setup 6.7.3. La disinstallazione conserva i dati v2 per default anche in modalità silenziosa. La cancellazione esplicita controlla il lock e rifiuta reparse point; il fallimento lascia un errore riprovabile. [Evidenze e limiti](V2_07_INSTALLER.md).
 
-**Intenzione del titolare:** diritti riservati sul codice del progetto; uso gratuito personale e di studio; uso professionale soggetto ad autorizzazione. Prima della pubblicazione approvare termini completi in [V2-D08](OPEN_DECISIONS.md); questa frase non è una licenza d'uso completa. Il repository GitHub pubblico consente visualizzazione e fork nei limiti delle condizioni della piattaforma; non concede automaticamente una licenza open source di riuso del codice. [Spiegazione GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
+**Termini del titolare:** Luca Foresti, Roma, Italia, lucapalocco@gmail.com. L'uso personale, di studio e interno è gratuito anche per imprese e professionisti; la vendita, l'integrazione in prodotti distribuiti e l'offerta delle funzioni come servizio a terzi richiedono autorizzazione scritta. La condivisione gratuita del pacchetto originale integro è consentita. Il testo italiano in `scripts/package/TERMS-IT.txt` è quello di riferimento; quello inglese è informativo. Il repository GitHub pubblico consente visualizzazione e fork nei limiti delle condizioni della piattaforma; non concede automaticamente una licenza open source di riuso del codice. [Spiegazione GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
 
-Il percorso scelto per Qt è usare componenti compatibili con LGPL. Prima del rilascio, verificare il payload effettivo, licenze per modulo, avvisi/testi e possibilità di sostituire le librerie secondo gli obblighi applicabili; includere solo avvisi non basta. [Obblighi Qt](https://www.qt.io/development/open-source-lgpl-obligations), [gate V2-D09](OPEN_DECISIONS.md). Ogni altra dipendenza redistribuita entra nell'inventario. I termini del progetto non limitano i diritti concessi dalle licenze delle dipendenze.
+Il percorso Qt usa componenti compatibili con LGPL. La build verifica ogni file del payload, include gli archivi sorgente Qt e blocca moduli solo GPL o attribuzioni mancanti. Una DLL QtCore ricostruita da QtBase 6.12.0 ha funzionato in una copia dell'installazione per una ricerca sintetica. [Evidenze](V2_07_INSTALLER.md), [obblighi Qt](https://www.qt.io/development/open-source-lgpl-obligations), [approvazione V2-D09](OPEN_DECISIONS.md). I termini del progetto non limitano i diritti concessi dalle licenze delle dipendenze.

@@ -1,11 +1,16 @@
 Local Document Search - avvisi dei componenti di terze parti
 
-I termini del progetto sono in TERMS-DRAFT.txt, ancora da approvare.
+I termini approvati del progetto sono in TERMS-IT.txt e TERMS-EN.txt.
 Le licenze seguenti riguardano i componenti indicati e restano autonome.
 
 Python 3.12.2 e librerie incorporate: vedere licenses/Python.txt (PSF e avvisi
 dei componenti). SQLite e incluso dal runtime Python.
 OpenSSL 3.0.13: Apache-2.0, testo originale in licenses/upstream/OpenSSL-3.0.13.txt.
+libffi 3.4.4: avviso e licenza inclusi in licenses/Python.txt.
+SQLite 3.43.1: pubblico dominio.
+Mesa llvmpipe 11.2.2 (opengl32sw.dll): MIT e Boost Software License 1.0;
+avviso e testi in licenses/upstream/Mesa-llvmpipe-NOTICE.txt,
+licenses/upstream/MIT.txt e licenses/upstream/BSL-1.0.txt.
 markdown-it-py 4.2.0, mdurl 0.1.2: MIT; pypdf 7.0.0: BSD-3-Clause.
 Testi e copyright originali nelle rispettive cartelle sotto licenses/.
 
@@ -18,18 +23,21 @@ Non viene imposta alcuna restrizione aggiuntiva al reverse engineering
 necessario al debug di modifiche dei componenti LGPL.
 I METADATA delle wheel possono includere anche un avviso commerciale:
 questo pacchetto non dichiara ne concede una licenza commerciale Qt.
-Sorgenti delle versioni originali:
-https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/
-https://code.qt.io/cgit/pyside/pyside-setup.git/?h=v6.12.0
+Gli archivi sorgente corrispondenti, scaricati dai server ufficiali Qt e
+verificati tramite SHA-256, si trovano nella cartella sources/ installata.
+Provenienza e hash di ciascun archivio sono in licenses/upstream/SOURCES.json
+e BUILD-MANIFEST.json. La licenza del codice sorgente di ciascun componente
+e i relativi avvisi vanno letti anche all'interno dell'archivio.
 Avvisi QtBase e relativi componenti terzi sono inclusi integralmente da
 LICENSES e src/3rdparty dell'archivio QtBase, con provenienza in SOURCES.json.
-L'inventario contiene anche componenti non usati da questa applicazione.
+Gli archivi upstream possono contenere componenti non distribuiti dall'app.
 
 Nuitka 4.1.1 compila l'applicazione; avvisi originali in licenses/Nuitka.
 Le versioni degli strumenti di build non implicano che tutti i relativi
 pacchetti siano distribuiti: BUILD-MANIFEST.json elenca i file effettivi.
-Runtime Microsoft Visual C++: eventuali DLL sono componenti Microsoft,
-redistribuiti insieme al runtime Python/Qt. Copyright Microsoft Corporation.
+Runtime Microsoft Visual C++ 14.44.35211.0: DLL redistribuite con Python/Qt.
+Copyright Microsoft Corporation. Elenco redistribuibili fornito dai Build
+Tools in licenses/Microsoft-Visual-Studio-2022-Redist.txt.
 Il programma richiede Windows 11 x64.
 
 Non sono state modificate le librerie Qt. Nessuna pubblicazione esterna e

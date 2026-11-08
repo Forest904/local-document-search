@@ -12,6 +12,7 @@ AppId={#AppId}
 AppName=Local Document Search v2
 AppVersion={#AppVersion}
 AppPublisher=Local Document Search
+InfoBeforeFile={#SourcePath}\TERMS-IT.txt
 DefaultDirName={localappdata}\Programs\LocalDocumentSearchV2
 DefaultGroupName=Local Document Search v2
 OutputDir={#OutputDir}
@@ -32,7 +33,7 @@ SetupLogging=yes
 
 [Languages]
 Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"
-Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "en"; MessagesFile: "compiler:Default.isl"; InfoBeforeFile: "{#SourcePath}\TERMS-EN.txt"
 
 [CustomMessages]
 it.CloseForInstall=Chiudere Local Document Search prima di installare o aggiornare.

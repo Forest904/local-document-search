@@ -54,7 +54,8 @@ def payload(tmp_path):
                  "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
                  "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                  "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
-                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt"]:
+                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
+                 "TERMS-IT.txt", "TERMS-EN.txt"]:
         path = folder / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"synthetic")

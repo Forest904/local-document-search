@@ -42,4 +42,4 @@ La [consegna Homework 3](docs/homework-3/README.md) rimane una baseline di regre
 
 ## Distribuzione e diritti
 
-La distribuzione pubblica v2 non è ancora disponibile. La politica approvata prevede diritti riservati sul codice del progetto e uso gratuito personale e di studio; l'uso professionale richiede autorizzazione. I termini completi e gli obblighi delle dipendenze devono essere verificati prima del rilascio: questa descrizione non è un contratto di licenza completo. [Politica e gate di rilascio](docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
+La distribuzione pubblica v2 non è ancora disponibile. I [termini italiani](scripts/package/TERMS-IT.txt) consentono l'uso personale, di studio e interno gratuito, anche per imprese e professionisti. Vendita, integrazione in prodotti distribuiti e offerta delle funzioni come servizio a terzi richiedono autorizzazione scritta. La verifica degli obblighi delle dipendenze sul payload finale resta un gate di rilascio. [Politica e gate](docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).

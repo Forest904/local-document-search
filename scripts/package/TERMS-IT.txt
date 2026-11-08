@@ -1,0 +1,16 @@
+Condizioni d'uso di Local Document Search 0.2.0
+Titolare: Luca Foresti, Roma, Italia — lucapalocco@gmail.com
+
+1. Il titolare concede gratuitamente una licenza non esclusiva, mondiale e a tempo indeterminato per installare e usare il programma a fini personali, di studio o come strumento interno. L'uso interno è consentito anche a imprese e professionisti e può contribuire a lavori retribuiti.
+
+2. Occorre autorizzazione scritta del titolare per vendere o concedere in licenza il programma, integrarlo in un prodotto distribuito a terzi, oppure offrire a terzi il programma o l'accesso alle sue funzioni come servizio.
+
+3. È consentito condividere gratuitamente il pacchetto originale e non modificato, mantenendo insieme installer, sorgenti delle dipendenze inclusi nel pacchetto, licenze e avvisi. Chi lo riceve ottiene direttamente dal titolare i diritti d'uso descritti qui.
+
+4. Il codice originale del progetto resta a diritti riservati. Queste condizioni non concedono il diritto di modificarlo o ridistribuirne versioni modificate, salvi i diritti inderogabili e le condizioni della piattaforma che ospita il repository pubblico.
+
+5. Python, Qt e gli altri componenti di terze parti conservano le rispettive licenze. Nessuna clausola limita i diritti concessi dalle loro licenze, inclusi la sostituzione delle librerie LGPL, le modifiche consentite e le verifiche necessarie a eseguirle.
+
+6. I documenti selezionati sono elaborati localmente. Gli indici e il testo estratto restano nel profilo Windows finché non sono cancellati esplicitamente. Il programma è fornito "così com'è", senza promessa di assistenza o garanzia ulteriore rispetto ai diritti inderogabili. Eventuali limitazioni di responsabilità valgono solo nei limiti consentiti dalla legge.
+
+7. Si applica la legge italiana, fatti salvi i diritti inderogabili dell'utente nel suo paese. In caso di divergenza con la traduzione inglese prevale questo testo italiano. Le condizioni applicabili a una versione già distribuita non cambiano retroattivamente.

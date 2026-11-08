@@ -11,9 +11,17 @@ Start e desktop opzionale; upgrade completo nella stessa installazione,
 reinstallazione ammessa e downgrade rifiutato. Chiudere l'applicazione prima
 di installare o disinstallare. I dati v2 restano nel profilo, salvo scelta
 esplicita nel wizard di disinstallazione; la modalità silenziosa li conserva.
-`TERMS-DRAFT.txt` è una bozza e non autorizza ancora la pubblicazione.
+`TERMS-IT.txt` contiene i termini italiani approvati nella sostanza dal titolare;
+`TERMS-EN.txt` è una traduzione informativa. Il wizard li mostra prima
+dell'installazione senza casella di accettazione.
 `QT_REPLACEMENT.txt` descrive la prova di sostituzione delle DLL Qt e i suoi
 limiti; `licenses/upstream/SOURCES.json` identifica le fonti upstream con hash.
+La build incorpora gli archivi sorgente QtBase, QtDeclarative, QtShaderTools,
+QtSvg, QtSCXML, PySide6 e Mesa; li verifica con SHA-256 prima della compilazione
+dell'installer. `BUILD-MANIFEST.json` associa ogni file del payload a componente,
+versione, provenienza, licenza, avviso e sorgente quando disponibile. Un file
+senza attribuzione o avviso interrompe la build. Mesa llvmpipe e il runtime
+Microsoft restano distinti dai moduli Qt e dagli strumenti usati solo in build.
 
 La procedura genera anche uno ZIP di prova del payload Qt Quick. Il collaudo pubblico resta V2-08. M9 resta [parzialmente accettata](../../docs/BASELINE.md).
 
@@ -41,7 +49,8 @@ Log, configurazione risolta e report Nuitka restano in `build/package/`.
 Lo ZIP include istruzioni, licenze, report compilatore e `BUILD-MANIFEST.json`:
 revisione, stato dirty, hash dei sorgenti, versioni, toolchain, comando e hash dei file.
 Lo SHA256 esterno identifica lo ZIP, evitando un riferimento circolare nel manifest.
-Il controllo finale rifiuta dipendenze essenziali mancanti e database nello staging.
+Il controllo finale rifiuta dipendenze essenziali mancanti, database nello
+staging, moduli Qt solo GPL, sorgenti Qt assenti e file non attribuiti.
 
 La build pulisce soltanto `build/package`; non tocca corpus, dati app o ambiente di sviluppo.
 Riproducibilità indica input/versioni e procedura tracciati, non ZIP identici byte per byte.
@@ -49,12 +58,13 @@ Per una build da zero eliminare manualmente l'ambiente dedicato e rieseguire il 
 
 ## Licenze e ambito
 
-La distribuzione v1 era personale e non includeva una licenza del progetto. La politica pubblica v2 è [progettata separatamente](../../docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
+La distribuzione v1 era personale e non includeva una licenza del progetto. La politica pubblica v2 è [documentata separatamente](../../docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
 `licenses/` contiene testi originali LGPL/GPL e avvisi QtBase 6.12.0 con provenienza
 in `SOURCES.json`; durante la build si aggiungono le licenze delle distribuzioni installate
 e Python. L'inventario QtBase include anche componenti non usati dal programma.
 I pacchetti Qt Addons/Pdf/WebEngine appartengono al lock di build di PySide6;
-non vengono inclusi automaticamente tutti nel prodotto.
+la build conserva solo gli import QML e la chiusura delle dipendenze binarie
+effettive. I file del designer QML e i metadati `.qmltypes` non sono runtime.
 
 Fonti: [pyside6-deploy](https://doc.qt.io/qtforpython-6/deployment/deployment-pyside6-deploy.html),
 [Nuitka](https://nuitka.net/user-documentation/user-manual.html),

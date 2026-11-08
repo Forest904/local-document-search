@@ -1,0 +1,12 @@
+Mesa llvmpipe software renderer (opengl32sw.dll)
+
+The Qt for Windows 6.12 packages distribute Mesa llvmpipe as opengl32sw.dll.
+The bundled DLL identifies itself as Mesa 11.2.2. Qt attributes this component
+to Brian Paul and others and identifies MIT and Boost Software License 1.0.
+The corresponding license texts are MIT.txt and BSL-1.0.txt in this folder.
+Attribution: https://doc.qt.io/qt-6/qt-attribution-llvmpipe.html
+Binary provenance: PySide6_Essentials 6.12.0 wheel.
+
+The exact upstream commit and any Qt-specific patches used to produce this
+binary have not been established. The component has permissive licenses;
+no corresponding-source requirement is asserted for this DLL.

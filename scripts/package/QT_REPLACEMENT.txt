@@ -7,12 +7,17 @@ build compatibile Qt 6.12.0 per Windows x64, conservando nome e ABI, e avviare
 la copia. Non modificare l'installazione originale durante la prova. Per
 ripristinare, ricopiare i file originali dal medesimo installer completo.
 
-Sorgenti e SHA-256 delle versioni upstream di QtBase, QtDeclarative e
-QtShaderTools sono in licenses/upstream/SOURCES.json; i sorgenti PySide6 sono
-identificati negli avvisi THIRD_PARTY_NOTICES.txt. I componenti Qt distribuiti
+Gli archivi sorgente upstream Qt e PySide6 si trovano in sources/; provenienza
+e SHA-256 sono in licenses/upstream/SOURCES.json. I componenti Qt distribuiti
 sono elencati in BUILD-MANIFEST.json, payload_components.qt.files. Conservare
 avvisi e licenze dei componenti quando si distribuiscono build sostitutive.
 
-La prova locale V2-07 ha sostituito qt6core.dll con una copia verificata
-della DLL della stessa build e riavviato l'applicazione. Non prova ancora la
-compatibilità di una build Qt modificata; quel gate resta V2-D09.
+Prova V2-07 con una DLL realmente ricostruita: verificare l'hash dell'archivio
+qtbase-everywhere-src-6.12.0.tar.xz in BUILD-MANIFEST.json; estrarlo in un
+percorso breve senza spazi. In un prompt MSVC 2022 x64 configurare QtBase
+con CMake e Ninja in Release, build condivisa, test ed esempi disattivati;
+compilare il target Qt6Core.dll. Copiare l'installazione in una nuova
+directory di prova, sostituire solo qt6core.dll nella copia e avviare l'EXE.
+La DLL ricostruita deve avere hash diverso dall'originale. Il rapporto
+docs/V2_07_INSTALLER.md nel repository registra comandi, hash e ricerca
+sintetica TXT/MD/PDF eseguita con questa procedura.

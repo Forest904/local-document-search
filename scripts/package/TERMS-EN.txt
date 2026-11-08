@@ -1,0 +1,16 @@
+Local Document Search 0.2.0 Terms of Use
+Rights holder: Luca Foresti, Rome, Italy — lucapalocco@gmail.com
+
+1. The rights holder grants a free, non-exclusive, worldwide, indefinite license to install and use the program for personal purposes, study, or as an internal tool. Internal use is permitted for businesses and professionals, including work that contributes to paid assignments.
+
+2. Written authorization from the rights holder is required to sell or license the program, incorporate it into a product distributed to third parties, or offer the program or access to its functions as a service to third parties.
+
+3. The original, unmodified package may be shared without charge, keeping the installer, included dependency sources, licenses, and notices together. Recipients receive the rights described here directly from the rights holder.
+
+4. Rights to the project's original code are reserved. These terms do not grant permission to modify it or redistribute modified versions, except for mandatory rights and the terms of the platform hosting the public repository.
+
+5. Python, Qt, and other third-party components remain under their own licenses. Nothing here restricts rights granted by those licenses, including replacing LGPL libraries, making permitted modifications, and performing the checks needed to use them.
+
+6. Selected documents are processed locally. Indexes and extracted text remain in the Windows profile until explicitly deleted. The program is provided "as is", with no promise of support or warranty beyond mandatory legal rights. Any limitation of liability applies only to the extent permitted by law.
+
+7. Italian law applies, subject to users' mandatory rights in their own country. If this translation differs from the Italian text, the Italian text prevails. Terms applicable to an already distributed version do not change retroactively.

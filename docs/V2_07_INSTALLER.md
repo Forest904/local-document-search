@@ -1,84 +1,96 @@
-# V2-07 — Installer offline: evidenze e limiti
+# V2-07 — Installer offline: audit e collaudo locale
 
-Data: 8 novembre 2026. Versione applicativa e installer: 0.2.0.
-
-La build riusa il payload standalone Qt Quick. Inno Setup 6.7.3 è bloccato
-tramite SHA-256 di `ISCC.exe` nel codice di build. Il pacchetto EXE installa
-per utente sotto `%LOCALAPPDATA%\Programs\LocalDocumentSearchV2`; dati e
-preferenze restano in `%LOCALAPPDATA%\LocalDocumentSearchV2`.
-
-L'installer ha wizard italiano/inglese, menu Start e desktop opzionale. La
-stessa identità permette upgrade e reinstallazione; il downgrade è rifiutato.
-Il programma aperto blocca installazione e disinstallazione. Quest'ultima
-conserva i dati salvo scelta esplicita, non attiva in modalità silenziosa.
-La pulizia rifiuta reparse point e controlla il lock di sessione. Lo script
-di upgrade elimina solo file presenti nel vecchio manifest, assenti nel nuovo
-e ancora identici al vecchio hash.
-
-`BUILD-MANIFEST.json` registra revisione, stato dirty, sorgenti, toolchain,
-file e gruppi di componenti effettivi. Accanto all'EXE si producono SHA-256
-e manifest dell'installer, che lega compilatore, sorgenti e payload.
-
-La bozza `TERMS-DRAFT.txt` non è approvata. V2-D08 richiede identità e
-recapito del titolare, testo finale e approvazione. V2-D09 richiede la prova
-sul payload finale della sostituibilità delle librerie Qt e dell'insieme degli
-avvisi e sorgenti corrispondenti. Il compilatore Inno indica uso non
-commerciale; un futuro uso commerciale della toolchain va verificato con la
-[politica del produttore](https://jrsoftware.org/isorder.php).
-
-## Prove locali
-
-Revisione di partenza `1cdeaa1fbf65a8e7c90c3a912008022e9e29dc8b`,
-working tree modificato; Windows 11 build 26200, Python 3.12.2, Inno Setup
-6.7.3, compilatore SHA-256
+Data: 8 novembre 2026. Versione 0.2.0; revisione
+`8780a1012ef226af294e813d77993ae49cc0c4c6` con working tree modificato.
+Ambiente: Windows 11 build 26200 x64, CPython 3.12.2, MSVC 2022
+19.44.35228.0, CMake 4.3.3, Ninja 1.13.2, Inno Setup 6.7.3.
+SHA-256 di `ISCC.exe`:
 `0a8757031b33777e4c9cbffee40f11a5062b36d25cbe144c1db73b6102b80ad7`.
-`./scripts/package/build.ps1` e la ricompilazione finale dell'installer hanno
-prodotto l'EXE da 50.176.343 byte, SHA-256
-`80791de040996dc2bcb9cfcb5f479f7f73d12356b4bb7064ce3ecadd56158990`.
-L'ultima build ha emesso `Successful compile` e scritto i manifest; il wrapper
-PowerShell di `Start-Process -Wait` è rimasto in attesa dopo la conclusione di
-Python ed è stato interrotto. Integrità e installazione dell'EXE sono state
-verificate separatamente; l'exit code del wrapper non è conteggiato come PASS.
-Tutti i 2.792 file del manifest sono stati ricontrollati con SHA-256; l'hash
-dell'EXE corrisponde al manifest separato. La build ha escluso addon Qt
-WebEngine, Multimedia e PDF non importati dalla UI; restano 221 librerie Qt
-nel payload da valutare in V2-D09.
+EXE finale `dist/LocalDocumentSearch-0.2.0-windows-x64-setup.exe`:
+156.112.098 byte, SHA-256
+`71EC6896F8521B331570C268FC102E177CB3B989F9E7A8F5F6EF3E9A629674C8`.
 
-Installazione silenziosa senza elevazione: `exit 0`; avvio dell'EXE installato
-con `LOCALAPPDATA` isolato: processo attivo e mutex rilevato. Reinstallazione
-e upgrade da installer di prova 0.1.9: `exit 0`. Downgrade 0.2.0 → 0.1.9:
-`exit 1`, versione installata 0.2.0 conservata. Con app aperta, installazione
-respinta (`exit 1`) e processo lasciato in esecuzione. L'upgrade ha eliminato
-un file sintetico obsoleto elencato nel vecchio manifest e ha conservato un
-file sintetico estraneo. Disinstallazione silenziosa: `exit 0`, dati sintetici
-conservati; pulizia esplicita successiva: `exit 0`. Con lock occupato, pulizia
-respinta (`exit 1`) e dati conservati; retry riuscito.
-Con l'EXE identificato dall'hash sopra, installazione e disinstallazione
-silenziose hanno dato `exit 0`; con l'app aperta, disinstallazione respinta
-(`exit 1`) lasciando il processo attivo. I dati sintetici sono stati
-conservati e poi cancellati esplicitamente; l'installazione di prova è stata
-rimossa dall'account di sviluppo.
-Una copia dell'EXE avviata da `%TEMP%/lds v2 prova città/Installazione città.exe`
-ha installato e disinstallato correttamente (`exit 0` per entrambe le operazioni).
-La DLL `qt6core.dll` installata è stata sostituita da una copia con hash
-verificato della medesima build: l'applicazione si è avviata, poi la DLL
-originale è stata ripristinata. Questo prova la sostituibilità fisica della
-DLL nello staging, non la compatibilità di una build Qt modificata. La
-procedura e i sorgenti upstream identificati sono nel payload.
+L'installer è per utente, senza elevazione o download, in
+`%LOCALAPPDATA%\Programs\LocalDocumentSearchV2`. Lo storage v2 è separato in
+`%LOCALAPPDATA%\LocalDocumentSearchV2`. I contratti di ricerca e la CLI
+Homework non sono cambiati.
 
-Suite: `backend/.venv/Scripts/python.exe -m pytest backend/tests -q`:
-384 passed/6 skipped; `-m pytest frontend/tests -q`: 27 passed;
-`-m pytest scripts/tests -q`: 19 passed;
-`backend/.venv/Scripts/python.exe experiments/run_homework3.py`: PASS;
-`backend/.venv/Scripts/python.exe -m pip check`: PASS. L'installer è stato
-provato con `Start-Process -Wait` e opzioni Inno `/VERYSILENT
-/SUPPRESSMSGBOXES /NORESTART`; log locali in `%TEMP%/lds-v2-07-*.log`.
-L'installer è stato provato in modalità
-silenziosa sul PC di sviluppo: il wizard interattivo, la scelta di cancellazione
-nel disinstallatore, gli avvisi SmartScreen e i flussi completi di ricerca sul
-programma installato non sono ancora stati verificati. Nella verifica UI si
-sono raggiunte informativa e selezione cartella, ma l'automazione del dialogo
-nativo non ha completato la selezione; nessun PASS è attribuito alla ricerca.
-Il PC di sviluppo non
-vale come Windows pulito né account standard distinto; anche queste prove e
-il pacchetto da revisione pulita restano V2-08.
+## Payload e diritti
+
+La build conserva gli import QML richiesti e la chiusura delle dipendenze PE.
+Esclude moduli solo GPL, stili opzionali, file del designer e `.qmltypes`.
+`BUILD-MANIFEST.json` elenca 242 file, ciascuno con componente, versione,
+provenienza, licenza, avviso e fonte o sorgente applicabile. I 242 hash, le
+sette sorgenti e l'hash dell'EXE sono stati ricalcolati senza differenze;
+inventario e manifest contano gli stessi file. Sono presenti 47 binari Qt e
+nessun modulo Qt solo GPL. La build fallisce per file non attribuiti, avvisi
+o archivi sorgente mancanti, hash sorgenti errati e dipendenze PE Qt assenti.
+
+Gli archivi QtBase, QtDeclarative, QtShaderTools, QtSvg, QtSCXML, PySide6 e
+Mesa sono incorporati in `sources/` e verificati con gli SHA-256 fissati in
+`scripts/package/licenses/SOURCES.json`. Licenze e avvisi installati coprono
+anche CPython, OpenSSL, libffi, SQLite, Mesa llvmpipe, runtime Visual C++ e
+pacchetti Python. L'inventario distingue gli strumenti di build dal payload
+e registra per il runtime Microsoft la provenienza binaria, senza dichiarare
+disponibili i sorgenti proprietari. I termini IT/EN coincidono byte per byte
+con i testi del payload. Il wizard li mostra senza casella di accettazione.
+
+## Prova di sostituzione LGPL
+
+L'archivio QtBase 6.12.0 è stato estratto sotto `%TEMP%/lds-qt612-rebuild`.
+Dopo `vcvars64.bat` in ambiente MSVC x64:
+
+```text
+cmake -G Ninja -S <qtbase-src> -B <build> -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=<install> -DQT_BUILD_EXAMPLES=OFF -DQT_BUILD_TESTS=OFF
+cmake --build <build> --target Qt6Core.dll --parallel 4
+```
+
+Configurazione e collegamento sono riusciti; log in
+`%TEMP%/lds-qt612-rebuild/configure.log` e `build-core.log`. SHA-256 DLL
+originale `F57ED38AFD95D0306CCA9D88D997F639F70C7628A4F1F064EAE291D579487121`,
+DLL ricostruita `AFC3090B7A8F5228710D72715E8CA05B34B16CB455C712C1094829CE8A243074`.
+La seconda è stata sostituita solo in una copia dell'installazione. L'app
+copiata è rimasta responsiva e la query `meteorite azzurro` ha restituito
+`alfa.txt`, `beta.md` e `gamma.pdf` sintetici. La prova dimostra la
+sostituibilità con quella build compatibile, non con qualsiasi modifica Qt.
+
+## Collaudo locale
+
+Sul candidato 0.2.0: reinstallazione `exit 0`; installer e disinstallatore
+con app aperta `exit 1` lasciandola viva; upgrade da 0.1.9 di prova `exit 0`
+con rimozione del file obsoleto presente nel vecchio manifest; downgrade a
+0.1.9 rifiutato `exit 1`, versione 0.2.0 conservata; file estraneo conservato.
+La disinstallazione silenziosa `exit 0` ha conservato i dati v2. Con lock
+occupato, la pulizia `exit 1` ha conservato il marker; retry `exit 0`.
+La scelta di cancellazione nella disinstallazione interattiva ha rimosso
+applicazione e dati v2. Hash dello storage v1 e dei documenti sintetici
+invariati. Il wizard IT/EN ha mostrato i rispettivi termini; quello italiano
+ha completato la reinstallazione. L'icona desktop era facoltativa e
+inizialmente deselezionata; selezionandola sono stati creati i collegamenti
+Desktop e Start. Schermate locali in `build/v2-07-evidence/`, ignorate da Git.
+Nessuna elevazione, richiesta di rete o avviso SmartScreen è stato osservato
+su questo PC; altri sistemi possono avere avvisi diversi.
+
+Suite: `backend/.venv/Scripts/python.exe -m pytest backend/tests frontend/tests scripts/tests -q`:
+435 passati, 6 saltati; `scripts/tests`: 24 passati nella prova mirata.
+`experiments/run_homework3.py` e `pip check` negli ambienti
+sviluppo e packaging: PASS. L'EXE finale identificato sopra si è installato
+silenziosamente con `exit 0`; sull'installazione risultante i 242 file del
+manifest hanno SHA-256 corretti, con 242 attribuzioni, 47 binari Qt e sette
+archivi sorgente. L'app installata ha indicizzato il corpus sintetico e la
+query `meteorite azzurro` ha restituito `alfa.txt`, `beta.md`, `gamma.pdf`.
+Le prove di reinstallazione, upgrade e disinstallazione sopra documentate
+sono state eseguite sul candidato immediatamente precedente; l'ultima build
+ha corretto soltanto l'attribuzione sorgente di `qwindows.dll` nel manifest.
+
+## Gate
+
+V2-D08: termini italiani approvati nella sostanza dal titolare Luca Foresti;
+traduzione inglese informativa, testi distribuiti corrispondenti. V2-D09:
+il titolare ha approvato esplicitamente l'8 novembre 2026 l'audit documentato
+del payload 0.2.0, dopo la presentazione di inventario e prove. La verifica
+documentata non è un parere legale indipendente. V2-07 è chiusa per il
+collaudo locale sull'account corrente. Windows pulito,
+account standard distinto, revisione pulita e accettazione pubblica restano
+V2-08. L'uso attuale di Inno Setup è dichiarato non commerciale dal titolare;
+la valutazione va rifatta se cambia il contesto.

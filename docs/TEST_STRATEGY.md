@@ -32,7 +32,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 
 | ID | Scenario e risultato atteso | Milestone |
 |---|---|---|
-| T01 | Installer e flussi completi offline su Windows 11 x64 pulito, account standard, senza Python/tool di sviluppo | V2-07, V2-08 |
+| T01 | Installer e flussi completi offline su Windows 11 x64 pulito, account standard distinto, senza Python/tool di sviluppo | V2-08 |
 | T02 | TXT/MD/PDF testuali, PDF protetto/vuoto/misto e TXT/MD vuoti; symlink/junction esclusi; errori distinti dalle esclusioni | V2-04, V2-08 |
 | T03 | AND, frasi, termini ripetuti e BOTH nello stesso campo; match identici a v1 per query esatte | V2-03 |
 | T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
@@ -48,7 +48,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T14 | Prima selezione v2 e upgrade v2 senza leggere, alterare o cancellare dati v1 | V2-04, V2-07 |
 | T15 | Wizard IT/EN install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi, reinstallazione consentita, downgrade bloccato e avvio riuscito | V2-07, V2-08 |
 | T16 | Disinstallazione conserva dati per default anche in modalità silenziosa; cancellazione solo esplicita con lock, rifiuto durante job, sorgenti/v1 intatti | V2-07, V2-08 |
-| T17 | Nessuna connessione richiesta, inventario dipendenze e obblighi Qt verificati; termini approvati; avvisi release non firmata registrati | V2-07, V2-08 |
+| T17 | Nessuna connessione richiesta; termini IT/EN mostrati nel wizard senza casella; inventario dei file runtime con fonte, licenza, avviso e sorgenti Qt verificati; DLL Qt ricostruita e sostituita in una copia dell'installazione; avvisi release non firmata registrati | V2-07, V2-08 |
 | T18 | Runner Homework e CLI: sintassi, ordine, codici e installazione backend senza Qt invariati | V2-03, V2-05, V2-08 |
 | T19 | CI della revisione finale, manifest/hash del pacchetto e risultati legati alla stessa revisione pulita | V2-08 |
 | T20 | Sintetici TXT/MD/PDF riproducibili: analyzer, campi, AND, frasi, Unicode e edge case confrontati con ground truth indipendente dal motore | V2-01 |

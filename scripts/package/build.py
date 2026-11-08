@@ -11,10 +11,15 @@ import shutil
 import subprocess
 import sys
 import zipfile
+import urllib.request
+
 
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+from payload_audit import full_file_inventory, qt_file_inventory, trim_qt
 NAME = "LocalDocumentSearch-v2-06-prototype-windows-x64"
 INSTALLER_VERSION = "0.2.0"
 INNO_VERSION = "6.7.3"
@@ -44,7 +49,8 @@ def validate_payload(folder):
                 "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
                 "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                 "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
-                "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt"]
+                "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
+                "TERMS-IT.txt", "TERMS-EN.txt"]
     missing = [name for name in required if not (folder / name).is_file()]
     if missing:
         raise RuntimeError(f"Pacchetto incompleto: {missing}")
@@ -107,8 +113,52 @@ def collect_licenses(folder):
             if source.is_file():
                 shutil.copy2(source, output / f"{number:03d}-{source.name}")
     shutil.copy2(Path(sys.base_prefix) / "LICENSE.txt", destination / "Python.txt")
+    redist = Path("C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/Licenses/1033/Redist.txt")
+    if not redist.is_file():
+        raise RuntimeError("Elenco redistribuibili Microsoft mancante")
+    shutil.copy2(redist, destination / "Microsoft-Visual-Studio-2022-Redist.txt")
     shutil.copytree(HERE / "licenses", destination / "upstream", dirs_exist_ok=True)
     shutil.copy2(HERE / "THIRD_PARTY_NOTICES.txt", folder)
+
+
+def collect_qt_sources(folder):
+    """Scarica gli archivi upstream bloccati e li incorpora nel payload."""
+    entries = json.loads((HERE / "licenses/SOURCES.json").read_text(encoding="utf-8"))
+    cache = ROOT / "build/qt-sources"
+    cache.mkdir(parents=True, exist_ok=True)
+    output = folder / "sources"
+    output.mkdir(exist_ok=True)
+    recorded = {}
+    for component, entry in entries.items():
+        if not isinstance(entry, dict):
+            continue
+        name = entry["url"].rsplit("/", 1)[-1]
+        cached = cache / name
+        if not cached.is_file() or sha256(cached) != entry["sha256"]:
+            temporary = cached.with_suffix(cached.suffix + ".tmp")
+            print(f"Scarico sorgenti {component}: {entry['url']}", flush=True)
+            for attempt in range(8):
+                offset = temporary.stat().st_size if temporary.exists() else 0
+                request = urllib.request.Request(entry["url"], headers={"Range": f"bytes={offset}-"} if offset else {})
+                try:
+                    with urllib.request.urlopen(request, timeout=180) as source:
+                        if offset and source.status != 206:
+                            temporary.unlink()
+                            continue
+                        with temporary.open("ab" if offset else "wb") as target:
+                            shutil.copyfileobj(source, target, length=1024 * 1024)
+                    break
+                except (TimeoutError, OSError) as error:
+                    if attempt == 7:
+                        raise RuntimeError(f"Download sorgenti fallito: {component}") from error
+            if sha256(temporary) != entry["sha256"]:
+                temporary.unlink()
+                raise RuntimeError(f"Hash sorgenti non valido: {component}")
+            temporary.replace(cached)
+        shutil.copy2(cached, output / name)
+        recorded[component] = {"file": f"sources/{name}", "sha256": entry["sha256"],
+                               "url": entry["url"]}
+    return recorded
 
 
 def payload_components(folder):
@@ -211,10 +261,22 @@ def build():
         raise RuntimeError(f"Output standalone inatteso: {candidates}; consultare deploy.log")
     folder = candidates[0]
     remove_unused_qt_modules(folder)
+    dumpbin = next(Path(compiler["x64_compilers"][0]["path"]).parent.glob("dumpbin.exe"))
+    qt_audit = trim_qt(folder, dumpbin)
     shutil.copy2(HERE / "ISTRUZIONI.txt", folder)
-    shutil.copy2(HERE / "TERMS-DRAFT.txt", folder)
+    shutil.copy2(HERE / "TERMS-IT.txt", folder)
+    shutil.copy2(HERE / "TERMS-EN.txt", folder)
     shutil.copy2(HERE / "QT_REPLACEMENT.txt", folder)
     collect_licenses(folder)
+    qt_sources = collect_qt_sources(folder)
+    report = workspace / "compilation-report.xml"
+    if not report.is_file():
+        raise RuntimeError("Report compilatore assente")
+    shutil.copy2(report, folder)
+    qt_files = qt_file_inventory(folder, qt_sources)
+    file_inventory = full_file_inventory(folder, qt_sources)
+    if len(file_inventory) != sum(path.is_file() for path in folder.rglob("*")):
+        raise RuntimeError("Inventario file incompleto")
     packages = {d.metadata["Name"]: d.version for d in metadata.distributions()}
     revision = run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     dirty = run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True).stdout
@@ -225,16 +287,14 @@ def build():
                 sources[path.relative_to(ROOT).as_posix()] = sha256(path)
     for project in ("backend", "frontend"):
         sources[f"{project}/pyproject.toml"] = sha256(ROOT / project / "pyproject.toml")
-    report = workspace / "compilation-report.xml"
-    if not report.is_file():
-        raise RuntimeError("Report compilatore assente")
-    shutil.copy2(report, folder)
     manifest = {"application": NAME, "revision": revision, "dirty_worktree": bool(dirty),
                 "python": sys.version, "platform": platform.platform(), "toolchain": compiler,
                 "packages": packages, "command": [str(a) for a in command],
                 "resolved_spec": (workspace / "pysidedeploy.spec").read_text(encoding="utf-8"),
                 "sources_sha256": sources, "lock_sha256": sha256(HERE / "requirements.lock.txt"),
-                "payload_components": payload_components(folder),
+                "payload_components": payload_components(folder), "qt_audit": qt_audit,
+                "qt_sources": qt_sources, "qt_file_inventory": qt_files,
+                "file_inventory": file_inventory,
                 "files_sha256": {p.relative_to(folder).as_posix(): sha256(p)
                                  for p in sorted(folder.rglob("*")) if p.is_file()}}
     (folder / "BUILD-MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

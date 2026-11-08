@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07 ha un installer implementato con gate di prova e diritti ancora aperti; V2-08 resta progettata. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate).
+**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07 è chiusa con audit e collaudo locale dell'installer approvati dal titolare; V2-08 resta progettata. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate).
 
 ## Come usare questa roadmap
 
@@ -161,7 +161,7 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 ## V2-07 — Installer offline e distribuzione
 
-**Avanzamento all'8 novembre 2026:** scelta Inno Setup 6.7.3 nell'[ADR 0013](adr/0013-v2-distribution.md). Implementati script installer 0.2.0, build con hash del compilatore, manifest dell'artefatto, inventario payload, gestione upgrade/downgrade e disinstallazione con conservazione predefinita dei dati. [Rapporto e limiti](V2_07_INSTALLER.md). V2-D08 e V2-D09 restano aperte; V2-07 non è ancora chiusa. Windows pulito/account standard distinto restano V2-08.
+**Chiusura locale all'8 novembre 2026:** installer Inno Setup 0.2.0 per utente, con wizard IT/EN, termini V2-D08 approvati nella sostanza, inventario completo del payload e sorgenti Qt incorporati. Sul PC corrente sono riusciti reinstallazione, upgrade, rifiuto del downgrade, protezione con app aperta, conservazione e cancellazione esplicita dei dati; una DLL QtCore ricostruita ha consentito una ricerca sintetica TXT/MD/PDF. L'EXE finale è stato installato, verificato con 242 hash e usato per una ricerca TXT/MD/PDF; V2-D09 è stata approvata dal titolare. [Rapporto e limiti](V2_07_INSTALLER.md). **V2-07 chiusa sul perimetro locale.** Windows pulito e account standard distinto restano V2-08.
 
 **Ingresso:** desktop V2-06 e prova preliminare del packaging QML; ZIP v1 disponibile solo come riferimento storico. La release pubblica richiede termini e diritti verificati.
 
@@ -171,8 +171,8 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 1. Preparare installer Windows 11 x64 per utente senza elevazione, con wizard e tutte le dipendenze software necessarie incluse: Python, Qt, plugin QML e runtime. Nessun servizio di download all'installazione o updater online.
 2. Definire aggiornamento tramite installer completo e disinstallazione: preservare dati v2 per default, cancellarli solo su scelta esplicita; non toccare sorgenti o storage v1.
-3. Inventariare i componenti effettivamente distribuiti e verificarne licenze, avvisi e sostituibilità delle librerie Qt secondo il percorso LGPL. Approvare i termini del progetto: diritti riservati, uso personale/studio gratuito, uso professionale soggetto ad autorizzazione.
-4. Bloccare input e procedura di build, produrre manifest/hash e verificare installazione, update, uninstall e avvio offline su account standard di prova. Una prima release non firmata è ammessa; registrare gli avvisi Windows realmente osservati.
+3. Inventariare i componenti effettivamente distribuiti e verificarne licenze, avvisi e sostituibilità delle librerie Qt secondo il percorso LGPL. I termini del progetto consentono gratuitamente l'uso personale, di studio e interno anche professionale; vendita, integrazione in prodotti distribuiti e offerta come servizio a terzi richiedono autorizzazione scritta.
+4. Bloccare input e procedura di build, produrre manifest/hash e verificare installazione, update, uninstall e avvio offline sull'account corrente. La prova su account standard distinto è V2-08. Una prima release non firmata è ammessa; registrare gli avvisi Windows realmente osservati.
 
 **Verifica e uscita:** T01, T14–T17; payload completo e tracciabile, nessuna elevazione/rete o Python preinstallato richiesti. Le prove su Windows pulito e il pacchetto finale identificato restano il gate V2-08.
 
