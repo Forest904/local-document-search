@@ -20,6 +20,15 @@ def test_release_requires_clean_revision(monkeypatch):
         build.clean_revision()
 
 
+def test_microsoft_redist_notice_uses_selected_visual_studio(tmp_path):
+    notice = tmp_path / "Enterprise/Licenses/1033/Redist.txt"
+    notice.parent.mkdir(parents=True)
+    notice.write_text("synthetic redistributable list", encoding="utf-8")
+    assert build.redist_notice(tmp_path / "Enterprise") == notice
+    with pytest.raises(RuntimeError, match="Elenco redistribuibili Microsoft mancante"):
+        build.redist_notice(tmp_path / "BuildTools")
+
+
 def test_packaged_diagnostic_rejects_modified_payload_before_output(tmp_path, monkeypatch):
     corpus = tmp_path / "corpus"
     corpus.mkdir()

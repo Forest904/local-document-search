@@ -102,7 +102,15 @@ def archive(folder, target):
     target.with_suffix(".zip.sha256").write_text(f"{sha256(target)}  {target.name}\n", encoding="ascii")
 
 
-def collect_licenses(folder):
+def redist_notice(visual_studio):
+    root = Path(visual_studio)
+    redist = root / "Licenses/1033/Redist.txt"
+    if not redist.is_file():
+        raise RuntimeError(f"Elenco redistribuibili Microsoft mancante: {redist}")
+    return redist
+
+
+def collect_licenses(folder, visual_studio):
     destination = folder / "licenses"
     destination.mkdir(exist_ok=True)
     packages = ["markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "shiboken6", "Nuitka"]
@@ -118,10 +126,7 @@ def collect_licenses(folder):
             if source.is_file():
                 shutil.copy2(source, output / f"{number:03d}-{source.name}")
     shutil.copy2(Path(sys.base_prefix) / "LICENSE.txt", destination / "Python.txt")
-    redist = Path("C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/Licenses/1033/Redist.txt")
-    if not redist.is_file():
-        raise RuntimeError("Elenco redistribuibili Microsoft mancante")
-    shutil.copy2(redist, destination / "Microsoft-Visual-Studio-2022-Redist.txt")
+    shutil.copy2(redist_notice(visual_studio), destination / "Microsoft-Visual-Studio-2022-Redist.txt")
     shutil.copytree(HERE / "licenses", destination / "upstream", dirs_exist_ok=True)
     shutil.copy2(HERE / "THIRD_PARTY_NOTICES.txt", folder)
 
@@ -192,6 +197,7 @@ def toolchain():
     vc = Path(instance["installationPath"]) / "VC/Tools/MSVC"
     compilers = sorted(vc.glob("*/bin/Hostx64/x64/cl.exe"))
     return {"visual_studio": instance["installationVersion"],
+            "installation_path": instance["installationPath"],
             "msvc_installed": sorted(p.name for p in vc.iterdir() if p.is_dir()),
             "x64_compilers": [{"path": str(p), "sha256": sha256(p)} for p in compilers]}
 
@@ -293,7 +299,7 @@ def build(*, release=False):
     shutil.copy2(HERE / "TERMS-IT.txt", folder)
     shutil.copy2(HERE / "TERMS-EN.txt", folder)
     shutil.copy2(HERE / "QT_REPLACEMENT.txt", folder)
-    collect_licenses(folder)
+    collect_licenses(folder, compiler["installation_path"])
     qt_sources = collect_qt_sources(folder)
     report = workspace / "compilation-report.xml"
     if not report.is_file():
