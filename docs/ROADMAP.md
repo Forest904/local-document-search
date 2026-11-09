@@ -192,6 +192,9 @@ La diagnostica del pacchetto e il gate della build pulita sono implementati;
 il candidato `3b78203` ha CI verde, installer verificato e benchmark compilato
 target a tre cicli entro i budget, con uno scostamento precedente registrato.
 Il kit di collaudo è stato copiato sulla chiavetta con 30 hash verificati.
+Sul laptop l'EXE installato ha completato onboarding, indice sintetico,
+ricerca e apertura diretta di un TXT in Blocco note; il resto del collaudo
+interattivo resta aperto.
 Esiti e limiti sono in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
 La milestone resta aperta per il collaudo sul PC Windows pulito e l'eventuale
 chiusura dei gate manuali V2-06.

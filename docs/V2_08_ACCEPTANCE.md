@@ -26,6 +26,12 @@ esterno corrisponde all'hash dell'installer. La reinstallazione silenziosa sul
 laptop ha restituito exit 0, senza riavvio. Diagnostica smoke dall'EXE installato:
 `PASS`, un ciclo, due campioni; avvio UI con `LOCALAPPDATA` isolato rimasto
 attivo per cinque secondi senza creare storage prima dell'informativa.
+Il 9 novembre, in una prova interattiva dello stesso EXE installato su un altro
+`LOCALAPPDATA` temporaneo, l'informativa è stata accettata, il corpus sintetico
+M9 da 12 TXT/MD/PDF è stato indicizzato, `corpus comune` ha restituito **12
+risultati** con estratti e il clic sul primo TXT ha aperto
+`NomeSolo00000.txt` in Blocco note con il testo previsto. Questa prova non
+copre apertura MD/PDF, carico o accessibilità con Narrator.
 
 T08 dal pacchetto compilato sul laptop Windows 11 build 26200, Ryzen AI 7 350,
 32 GB RAM, SSD WD SN5000S, Balanced e batteria in carica: corpus target
@@ -43,7 +49,7 @@ Un ulteriore run da due cicli è `PASS` e `budget_status=PASS` (massimo p95
 92,47 ms). I risultati indicano variabilità vicino al limite: il run finale
 completo soddisfa T08, ma lo scostamento osservato rimane registrato.
 
-La prova locale non include ancora wizard interattivo, apertura reale dei file,
+La prova locale non include ancora wizard interattivo, apertura reale MD/PDF,
 matrice reader/lifecycle sul programma installato, Narrator o PC pulito.
 I report temporanei e i log di installazione restano fuori Git.
 
@@ -88,12 +94,12 @@ sorgente o su payload precedenti restano riferimenti, non PASS del candidato.
 | T04 | DA ESEGUIRE | Vocabolari dopo build/update/restart/recovery |
 | T05 | DA ESEGUIRE | Prefissi e suggerimenti per snapshot e UI |
 | T06 | DA ESEGUIRE | Filtri, ranking, totali e pagine |
-| T07 | DA ESEGUIRE | Snippet, Unicode e apertura diretta |
+| T07 | PARZIALE locale | Estratti e apertura TXT reale; Unicode e MD/PDF sul pacchetto da provare |
 | T08 | PASS locale con scostamento registrato | Run finale a tre cicli; p95 103,48 ms nel ciclo di un run interrotto |
 | T09 | DA ESEGUIRE | Diff, A→B→A, rebuild, fault e recovery |
 | T10 | DA ESEGUIRE | Cancel e pulizia rifiutata durante job |
 | T11 | DA ESEGUIRE | Variazioni metadati durante ingestione |
-| T12 | DA ESEGUIRE | UI Luma responsiva sotto carico e risposte obsolete |
+| T12 | PARZIALE locale | Onboarding, indice e ricerca 12 risultati; carico e risposte obsolete da provare |
 | T13 | DA ESEGUIRE | IT/EN, temi, DPI, tastiera, focus e Narrator |
 | T14 | DA ESEGUIRE | Isolamento dati v1 e upgrade v2 |
 | T15 | PARZIALE locale | Reinstallazione silenziosa exit 0; wizard/upgrade/downgrade e PC pulito da provare |
