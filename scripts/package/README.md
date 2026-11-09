@@ -42,7 +42,37 @@ versione, provenienza, licenza, avviso e sorgente quando disponibile. Un file
 senza attribuzione o avviso interrompe la build. Mesa llvmpipe e il runtime
 Microsoft restano distinti dai moduli Qt e dagli strumenti usati solo in build.
 
-La procedura genera anche uno ZIP di prova del payload Qt Quick. Il collaudo pubblico resta V2-08. M9 resta [parzialmente accettata](../../docs/BASELINE.md).
+La procedura genera anche uno ZIP di prova del payload Qt Quick. Il collaudo
+del candidato 0.2.0 è registrato in [V2-08](../../docs/V2_08_ACCEPTANCE.md).
+M9 v1 resta storicamente [parzialmente accettata](../../docs/BASELINE.md).
+
+## Pubblicazione su GitHub
+
+La [release v0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0)
+contiene l'installer già collaudato dal commit `3b78203`, il file `.sha256` e
+un manifest pubblico senza i percorsi assoluti della macchina di build.
+Il tag è sul commit che ha prodotto il binario, non sul commit documentale o
+di merge successivo. L'installer e i dati di prova non vengono aggiunti a Git.
+
+Per le prossime versioni, il push su `main` esegue la suite su Windows e Ubuntu.
+Solo dopo i test verdi, se il tag `v<versione>` non esiste, il job `release`
+costruisce su `windows-2022` da checkout pulito, verifica SHA-256 e manifest,
+carica gli asset in una draft Release e la pubblica. Errori precedenti alla
+pubblicazione impediscono la Release; un errore di upload provoca la pulizia
+del draft e del tag creati dal job. Una versione già pubblicata non genera
+una nuova build automatica. `workflow_dispatch` permette una build di verifica
+con la stessa toolchain senza pubblicazione.
+
+Prima di pubblicare una nuova versione, aggiornare in modo coerente backend,
+frontend e dipendenza backend, `INSTALLER_VERSION` in `build.py`, `AppVersion`
+e `OutputBaseFilename` in `installer.iss`, le versioni in `payload_audit.py`,
+`ISTRUZIONI.txt` e i titoli dei termini IT/EN. Il comando
+`python scripts/package/release_metadata.py version` rifiuta discrepanze.
+`python scripts/package/release_metadata.py verify --revision <commit-SHA>`
+verifica l'installer e genera in `dist/public/` il manifest condivisibile.
+La build richiede CPython 3.12.2 e Inno Setup 6.7.3 con l'hash bloccato; se
+la toolchain del runner non soddisfa questi vincoli, il job fallisce senza
+pubblicare una versione.
 
 Da PowerShell, nella radice del repository:
 

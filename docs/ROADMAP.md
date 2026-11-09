@@ -203,6 +203,12 @@ M9-G01…G07, ambiente e limiti sono in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
 **V2-08 completata sul candidato identificato**; nessun merge o pubblicazione
 della release è compreso in questa chiusura.
 
+**Distribuzione successiva:** il candidato collaudato è pubblicato come
+[Release GitHub v0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0),
+con tag sul commit di build `3b78203`. L'hash dell'asset scaricato coincide con
+quello del collaudo. Il flusso per le versioni successive è descritto nel
+[README packaging](../scripts/package/README.md#pubblicazione-su-github).
+
 **Ingresso:** V2-01…V2-07 chiuse; installer finale da una revisione pulita, termini approvati e inventario dipendenze verificato. M9 v1 rimane storicamente parziale: questa milestone chiude sul prodotto v2 le [lacune trasferite](BASELINE.md#lacune-da-trasferire-non-prove-superate), non riscrive gli esiti v1.
 
 **Attività ordinate**

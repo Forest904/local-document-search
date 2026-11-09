@@ -89,6 +89,15 @@ downgrade, termini IT/EN e sostituzione con DLL Qt ricostruita sul candidato.
 Le conferme sono resoconti manuali dell'utente; la scheda raggruppa i casi
 anziché registrarli uno per riga. Non sono stati segnalati fallimenti.
 
+## Pubblicazione successiva
+
+Il tag Git `v0.2.0` punta al commit candidato `3b78203`, non al successivo
+commit di merge. La [Release GitHub v0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0)
+distribuisce l'installer collaudato, il checksum e un manifest pubblico senza
+percorsi assoluti del laptop. L'EXE è stato scaricato dalla Release: 158.370.246
+byte e SHA-256 `a13f53a76e6ef8a09f8efb023c6b32c4702f1b74ae699198b220e7e34dd883b3`,
+uguale all'originale sulla chiavetta. `/releases/latest` indirizza a `v0.2.0`.
+
 ## Procedura del candidato
 
 1. Da branch dedicato e revisione pulita eseguire suite backend, frontend,
