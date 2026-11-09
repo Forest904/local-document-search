@@ -119,3 +119,14 @@ Non sono state modificate installazione o directory personali dell'utente.
 Catture e report locali in `experiments/results/` e `build/`, fuori Git.
 Queste verifiche non chiudono V2-08 e non trasferiscono al nuovo installer
 l'approvazione del payload storico V2-07.
+
+## Verifica successiva del candidato pulito
+
+Il collaudo del candidato `3b78203` sul PC Windows pulito, restituito il
+9 novembre 2026, ha verificato la UI Luma nei flussi principali con tastiera
+e Narrator, nelle due lingue e nei temi, con DPI diversi e ricerca/apertura
+sotto carico. L'utente non ha segnalato anomalie. Questa prova riguarda
+l'installer identificato nel [registro V2-08](V2_08_ACCEPTANCE.md), non il
+payload con working tree modificato descritto sopra. V2-06 e V2-08 sono
+chiuse sul candidato verificato; le osservazioni storiche sul prototipo
+restano valide per quel solo artefatto.

@@ -1,6 +1,6 @@
 # Roadmap v2 — Dallo stato attuale al prodotto Windows
 
-**Stato all'8 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è implementata ma resta aperta per verifica manuale completa con Narrator e tastiera; V2-07 è chiusa con audit e collaudo locale dell'installer approvati dal titolare; V2-08 resta progettata. Il backend, la CLI e il desktop Qt Quick v2 esistono; lo ZIP M9 è stato costruito e collaudato localmente, ma M9 è [parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate).
+**Stato al 9 novembre 2026:** V2-01…V2-05 sono completate e verificate localmente; V2-06 è chiusa dopo la verifica manuale con tastiera e Narrator sul candidato Luma; V2-07 è chiusa con audit e collaudo locale dell'installer approvati dal titolare; V2-08 è chiusa dopo il collaudo del candidato su Windows pulito. Il backend, la CLI e il desktop Qt Quick v2 esistono. M9 v1 resta [storicamente parzialmente accettata](BASELINE.md#lacune-da-trasferire-non-prove-superate); le lacune trasferite sono state verificate sul pacchetto v2 finale.
 
 ## Redesign Luma prima di V2-08
 
@@ -150,7 +150,7 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 ## V2-06 — Desktop Qt Quick
 
-**Avanzamento locale all'8 novembre 2026, revisione di partenza `2ad36c1aeff3ecd0cc5c478ccd401e20861d9dd0` (working tree modificato):** desktop Qt Quick/QML, controller asincrono, ricerca e anteprima per snapshot, preferenze IT/EN e chiaro/scuro nello storage v2 implementati. Backend 384 passed/6 skipped, frontend 27 passed, script 17 passed, Homework PASS e `pip check` PASS. Il probe sorgente sul corpus sintetico target 10.000 file ha completato ricerca/anteprima durante rebuild; massimo intervallo osservato nel loop UI 635 ms, comprese le catture. Il prototipo ZIP standalone è costruito, verificato tramite 2.829 hash e provato fuori dal repository con storage isolato: indicizzazione, ricerca e anteprima sul corpus small. DPI 100/150/200% e contrasto dei colori principali verificati; esiti e limiti nel [rapporto](V2_06_DESKTOP.md). **V2-06 resta aperta**: mancano prove manuali complete con Narrator e tabulazione; il pacchetto finale resta V2-08.
+**Avanzamento locale all'8 novembre 2026, revisione di partenza `2ad36c1aeff3ecd0cc5c478ccd401e20861d9dd0` (working tree modificato):** desktop Qt Quick/QML, controller asincrono, ricerca e anteprima per snapshot, preferenze IT/EN e chiaro/scuro nello storage v2 implementati. Backend 384 passed/6 skipped, frontend 27 passed, script 17 passed, Homework PASS e `pip check` PASS. Il probe sorgente sul corpus sintetico target 10.000 file ha completato ricerca/anteprima durante rebuild; massimo intervallo osservato nel loop UI 635 ms, comprese le catture. Il prototipo ZIP standalone è costruito, verificato tramite 2.829 hash e provato fuori dal repository con storage isolato: indicizzazione, ricerca e anteprima sul corpus small. DPI 100/150/200% e contrasto dei colori principali verificati; esiti e limiti nel [rapporto](V2_06_DESKTOP.md). **V2-06 chiusa il 9 novembre 2026** dopo la verifica manuale del candidato Luma `3b78203`: tastiera e Narrator su selezione cartella, ricerca, risultati, apertura, Impostazioni, focus e dialoghi nelle due lingue e nei temi; DPI e ricerca/apertura sotto carico PASS. La conferma è dell'utente; la scheda del [collaudo V2-08](V2_08_ACCEPTANCE.md#collaudo-sul-pc-pulito) raggruppa i casi. I limiti del prototipo restano nel rapporto V2-06.
 
 **Ingresso:** contratti backend V2-05; desktop v1 Qt Widgets esistente. Il design può essere esplorato dopo V2-02, ma non si dichiara integrato prima dei contratti.
 
@@ -187,17 +187,21 @@ va registrata dopo il commit; nessuna prova sul pacchetto è attribuita a V2-02.
 
 ## V2-08 — Accettazione della release pubblica
 
-**Preparazione in corso (8 novembre 2026):** branch `v2-08-release-acceptance`.
-La diagnostica del pacchetto e il gate della build pulita sono implementati;
-il candidato `3b78203` ha CI verde, installer verificato e benchmark compilato
-target a tre cicli entro i budget, con uno scostamento precedente registrato.
-Il kit di collaudo è stato copiato sulla chiavetta con 30 hash verificati.
-Sul laptop l'EXE installato ha completato onboarding, indice sintetico,
-ricerca e apertura diretta di un TXT in Blocco note; il resto del collaudo
-interattivo resta aperto.
-Esiti e limiti sono in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
-La milestone resta aperta per il collaudo sul PC Windows pulito e l'eventuale
-chiusura dei gate manuali V2-06.
+**Chiusura al 9 novembre 2026:** branch `v2-08-release-acceptance`, candidato
+pulito `3b78203e6cfbb3be1b01d8bed82728c45b56ab00`, installer 0.2.0
+SHA-256 `a13f53a76e6ef8a09f8efb023c6b32c4702f1b74ae699198b220e7e34dd883b3`.
+CI Windows/Ubuntu verde, manifest e hash del payload verificati, suite
+backend/frontend/script 461 passed e 6 skipped, corpus reale opt-in 6 passed,
+Homework PASS. Il benchmark compilato target a tre cicli è entro tutti i
+budget; resta registrato un p95 sopra soglia in un ciclo di un run interrotto.
+Sul PC Windows pulito, offline, con account standard distinto e senza tool di
+sviluppo, la scheda restituita e le conferme puntuali dell'utente riportano
+PASS per installazione, upgrade, reader, ricerca, lifecycle, accessibilità e
+disinstallazione, senza errori o avvisi. I tempi del PC fisso non sono stati
+misurati e restano distinti dal benchmark del laptop. Matrice T01–T21 e
+M9-G01…G07, ambiente e limiti sono in [V2_08_ACCEPTANCE](V2_08_ACCEPTANCE.md).
+**V2-08 completata sul candidato identificato**; nessun merge o pubblicazione
+della release è compreso in questa chiusura.
 
 **Ingresso:** V2-01…V2-07 chiuse; installer finale da una revisione pulita, termini approvati e inventario dipendenze verificato. M9 v1 rimane storicamente parziale: questa milestone chiude sul prodotto v2 le [lacune trasferite](BASELINE.md#lacune-da-trasferire-non-prove-superate), non riscrive gli esiti v1.
 

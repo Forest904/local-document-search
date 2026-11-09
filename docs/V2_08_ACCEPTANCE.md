@@ -1,8 +1,8 @@
 # V2-08 — Registro di accettazione della release 0.2.0
 
-Stato: **aperto**. Il candidato deve essere identificato da commit pulito,
-SHA-256 dell'installer e manifest dello stesso payload. Le prove storiche V2-07
-e del redesign Luma non sono trasferite automaticamente.
+Stato: **completato il 9 novembre 2026** sul candidato identificato da commit
+pulito, SHA-256 dell'installer e manifest dello stesso payload. Le prove
+storiche V2-07 e del redesign Luma non sono state trasferite automaticamente.
 
 Verifiche sul sorgente prima del commit candidato (Windows 11 build 26200,
 CPython 3.12.2): suite congiunta backend/frontend/script **461 passed,
@@ -49,9 +49,10 @@ Un ulteriore run da due cicli è `PASS` e `budget_status=PASS` (massimo p95
 92,47 ms). I risultati indicano variabilità vicino al limite: il run finale
 completo soddisfa T08, ma lo scostamento osservato rimane registrato.
 
-La prova locale non include ancora wizard interattivo, apertura reale MD/PDF,
-matrice reader/lifecycle sul programma installato, Narrator o PC pulito.
-I report temporanei e i log di installazione restano fuori Git.
+La prova interattiva locale descritta sopra non includeva wizard, apertura
+MD/PDF, matrice reader/lifecycle o Narrator; questi casi sono stati verificati
+separatamente sul PC pulito, come registrato sotto. I report temporanei e i
+log di installazione restano fuori Git.
 
 Kit copiato su chiavetta rimovibile `SANDISK`, percorso
 `D:/LDS-V2-08-3b78203`: installer finale, `.sha256`, manifest, installer
@@ -59,8 +60,34 @@ Kit copiato su chiavetta rimovibile `SANDISK`, percorso
 corpus e fixture sintetiche, scheda per il PC pulito e report benchmark.
 `KIT-SHA256.txt` elenca 30 file: confronto SHA-256 con gli originali dopo la
 copia, **0 differenze**. La lettera `D:` vale solo per il laptop di preparazione.
-L'installazione e gli esiti sul PC pulito devono ancora essere restituiti
-dall'utente prima di chiudere V2-08.
+La scheda `RISULTATI.txt` compilata è stata restituita sulla stessa chiavetta.
+La sua modifica rispetto a `KIT-SHA256.txt` è attesa: il kit fu inventariato
+prima del collaudo. L'hash dell'installer è stato ricontrollato dopo il ritorno
+e corrisponde al valore sopra; la scheda riporta inoltre la verifica sul PC
+pulito come `si`, senza trascrivere il digest numerico.
+
+## Collaudo sul PC pulito
+
+Scheda restituita il 9 novembre 2026 per il candidato `3b78203`: Windows 11
+build `26200.9445`, AMD Ryzen 5 2600X 3,60 GHz, 32 GB RAM, disco con 137 GB
+usati su 466 GB. Account standard di test distinto e vergine, rete disconnessa,
+Python e tool di sviluppo assenti. Nessun avviso Windows o errore segnalato.
+I tempi di questo PC non sono stati misurati e non sono confrontati con il
+benchmark del laptop di riferimento.
+
+La scheda registra `PASS` per installazione, upgrade dall'installer 0.1.9 di
+prova, reinstallazione 0.2.0, avvio e prima indicizzazione, TXT/MD/PDF e reader
+problematici, ricerca/suggerimenti/filtri/pagine/apertura, cambio cartella,
+rebuild, cancel, lock e recovery, IT/EN, temi, DPI, tastiera e Narrator,
+disinstallazione con dati conservati e poi cancellati, sorgenti e dati v1
+intatti. L'utente ha confermato in seguito i casi puntuali: TXT/MD vuoti,
+PDF protetto/senza testo/misto, symlink/junction esclusi, pulizia rifiutata
+durante job, snapshot precedente dopo errore e doppia istanza; flussi completi
+con tastiera e Narrator per selezione cartella, ricerca, risultati, apertura,
+Impostazioni, focus e dialoghi nelle due lingue e nei temi; blocco del
+downgrade, termini IT/EN e sostituzione con DLL Qt ricostruita sul candidato.
+Le conferme sono resoconti manuali dell'utente; la scheda raggruppa i casi
+anziché registrarli uno per riga. Non sono stati segnalati fallimenti.
 
 ## Procedura del candidato
 
@@ -83,39 +110,40 @@ dall'utente prima di chiudere V2-08.
 
 ## Matrice dei gate
 
-`DA ESEGUIRE` indica assenza di evidenza sul candidato finale; le prove sul
-sorgente o su payload precedenti restano riferimenti, non PASS del candidato.
+`PASS sorgente` indica la suite della revisione candidata; `PASS PC pulito`
+indica la scheda restituita e, per i dettagli non trascritti, la conferma
+successiva dell'utente. Il benchmark compilato è distinto dalla UI manuale.
 
-| Scenario | Stato candidato | Evidenza richiesta |
+| Scenario | Stato | Evidenza |
 |---|---|---|
-| T01 | DA ESEGUIRE | Installazione e uso offline su PC pulito/account distinto |
-| T02 | DA ESEGUIRE | Matrice TXT/MD/PDF, file vuoti, protetti, misti, esclusioni/errori |
-| T03 | DA ESEGUIRE | AND, frasi, BOTH e regressioni esatte |
-| T04 | DA ESEGUIRE | Vocabolari dopo build/update/restart/recovery |
-| T05 | DA ESEGUIRE | Prefissi e suggerimenti per snapshot e UI |
-| T06 | DA ESEGUIRE | Filtri, ranking, totali e pagine |
-| T07 | PARZIALE locale | Estratti e apertura TXT reale; Unicode e MD/PDF sul pacchetto da provare |
-| T08 | PASS locale con scostamento registrato | Run finale a tre cicli; p95 103,48 ms nel ciclo di un run interrotto |
-| T09 | DA ESEGUIRE | Diff, A→B→A, rebuild, fault e recovery |
-| T10 | DA ESEGUIRE | Cancel e pulizia rifiutata durante job |
-| T11 | DA ESEGUIRE | Variazioni metadati durante ingestione |
-| T12 | PARZIALE locale | Onboarding, indice e ricerca 12 risultati; carico e risposte obsolete da provare |
-| T13 | DA ESEGUIRE | IT/EN, temi, DPI, tastiera, focus e Narrator |
-| T14 | DA ESEGUIRE | Isolamento dati v1 e upgrade v2 |
-| T15 | PARZIALE locale | Reinstallazione silenziosa exit 0; wizard/upgrade/downgrade e PC pulito da provare |
-| T16 | DA ESEGUIRE | Disinstallazione con dati conservati/cancellati e lock |
-| T17 | PARZIALE locale | Inventario e hash verificati; wizard, avvisi e offline su PC pulito da provare |
-| T18 | PASS sorgente | CLI Homework senza Qt |
-| T19 | PASS candidato locale | CI, commit pulito, manifest e hash dello stesso artefatto |
+| T01 | PASS PC pulito | Installazione e uso offline con account standard distinto, senza tool di sviluppo |
+| T02 | PASS sorgente + PC pulito | Reader TXT/MD/PDF, vuoti e problematici; esclusione symlink/junction confermata |
+| T03 | PASS sorgente | Suite backend: AND, frasi, BOTH e regressioni query esatte |
+| T04 | PASS sorgente | Suite backend: vocabolari dopo build, update, restart e recovery |
+| T05 | PASS sorgente + PC pulito | Prefissi per campo/snapshot nella suite; suggerimenti UI nel collaudo |
+| T06 | PASS sorgente + PC pulito | Filtri/ranking/totali/pagine nella suite; filtri e pagine sul pacchetto |
+| T07 | PASS sorgente + PC pulito | Snippet/highlight Unicode nella suite; estratti e apertura file sul pacchetto |
+| T08 | PASS pacchetto, scostamento registrato | Tre cicli target entro budget; p95 103,48 ms in un ciclo del run interrotto, che resta INCOMPLETE |
+| T09 | PASS sorgente + PC pulito | Diff, A→B→A e fault nella suite; cambio cartella, rebuild, snapshot precedente e recovery sul pacchetto |
+| T10 | PASS sorgente + PC pulito | Cancel e commit nella suite; cancel e pulizia rifiutata durante job sul pacchetto |
+| T11 | PASS sorgente | Variazione dei metadati durante ingestione; limite size+mtime identici documentato |
+| T12 | PASS sorgente + PC pulito | Controller/QML e prova locale; ricerca e apertura sotto carico sul pacchetto, risposte obsolete nella suite |
+| T13 | PASS PC pulito | IT/EN, temi, DPI, tastiera, focus, dialoghi e Narrator sui flussi principali |
+| T14 | PASS sorgente + PC pulito | Isolamento v1 nella suite; upgrade e sorgenti/dati v1 intatti sul PC pulito |
+| T15 | PASS PC pulito | Wizard, upgrade 0.1.9 di prova, reinstallazione, downgrade bloccato, avvio offline |
+| T16 | PASS PC pulito | Disinstallazione con conservazione e cancellazione esplicita; lock e pulizia durante job |
+| T17 | PASS candidato + PC pulito | Inventario/licenze/manifest, termini IT/EN, DLL Qt sostituita, assenza di avvisi e rete |
+| T18 | PASS sorgente | CLI Homework senza Qt, runner PASS |
+| T19 | PASS candidato | CI Windows/Ubuntu, commit pulito, manifest e hash dell'installer ricontrollato |
 | T20 | PASS sorgente | Corpus sintetico riproducibile nella suite ordinaria |
 | T21 | PASS sorgente opt-in | Corpus reale completo, 6 test mirati |
-| M9-G01 | DA ESEGUIRE | Cambio directory e rebuild sul pacchetto |
-| M9-G02 | DA ESEGUIRE | Pulizia rifiutata durante job sul pacchetto |
-| M9-G03 | DA ESEGUIRE | Reader problematici sul pacchetto |
-| M9-G04 | DA ESEGUIRE | Ricerca e apertura sotto carico sul pacchetto |
-| M9-G05 | DA ESEGUIRE | Windows pulito senza tool di sviluppo |
-| M9-G06 | DA ESEGUIRE | Account standard distinto |
-| M9-G07 | PASS candidato locale | CI e artefatto da revisione pulita |
+| M9-G01 | PASS PC pulito | Cambio directory e rebuild sul pacchetto |
+| M9-G02 | PASS PC pulito | Pulizia rifiutata durante job sul pacchetto |
+| M9-G03 | PASS PC pulito | PDF problematici e TXT/MD vuoti sul pacchetto |
+| M9-G04 | PASS PC pulito | Ricerca e apertura sotto carico sul pacchetto |
+| M9-G05 | PASS PC pulito | Windows pulito senza Python/tool di sviluppo, offline |
+| M9-G06 | PASS PC pulito | Account standard distinto e vergine |
+| M9-G07 | PASS candidato | CI e artefatto da revisione pulita |
 
 ## Scheda per il PC pulito
 
