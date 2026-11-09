@@ -74,6 +74,15 @@ La build richiede CPython 3.12.2 e Inno Setup 6.7.3 con l'hash bloccato; se
 la toolchain del runner non soddisfa questi vincoli, il job fallisce senza
 pubblicare una versione.
 
+Verifica del 9 novembre 2026: run GitHub Actions `42702410786` verde su
+Windows/Ubuntu, con build e pubblicazione saltate perché `v0.2.0` esiste;
+run manuale `42702437611` verde, con build release e verifica del nuovo
+artefatto su `windows-2022`, senza pubblicazione. Il primo tentativo manuale
+`42700577845` aveva rilevato un percorso Build Tools fisso per la licenza
+Microsoft; la build ora usa il percorso dell'installazione Visual Studio
+risolta da `vswhere`. Il binario prodotto nella prova manuale non sostituisce
+quello 0.2.0 collaudato e pubblicato.
+
 Da PowerShell, nella radice del repository:
 
 ```powershell
