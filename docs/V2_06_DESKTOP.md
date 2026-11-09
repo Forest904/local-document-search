@@ -74,9 +74,11 @@ del risultato e chiusura sono stati provati via UI nativa. QtTest verifica
 anche il passaggio `Tab` dal campo query alla scelta del campo e il ritorno
 alla query con `Ctrl+L`.
 
-Restano da registrare prove manuali complete di tabulazione e Narrator (selezione cartella, risultati,
-anteprima, job, errore e impostazioni). Le etichette di accessibilità e
-i test Qt automatici non sostituiscono l'uso effettivo del lettore di
-schermo. L'inventario del payload è un gate distinto;
+Questa prova del prototipo non includeva tabulazione e Narrator completi.
+Il collaudo manuale del candidato Luma sul PC pulito, confermato dall'utente
+il 9 novembre 2026, ha coperto selezione cartella, ricerca, risultati, apertura,
+Impostazioni, focus e dialoghi nelle due lingue e nei temi: [registro V2-08](V2_08_ACCEPTANCE.md#collaudo-sul-pc-pulito).
+Le etichette di accessibilità e i test Qt automatici da soli non sostituiscono
+l'uso effettivo del lettore di schermo. L'inventario del payload è un gate distinto;
 le licenze e l'installer appartengono a V2-07. I documenti personali e gli
 output del probe restano fuori Git.

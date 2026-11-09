@@ -50,12 +50,16 @@ def test_error_fixtures_are_separate(tmp_path):
 
 def payload(tmp_path):
     folder = tmp_path / "payload"
+    resources = ROOT / "frontend/src/local_document_search_desktop"
+    resource_names = ["local_document_search_desktop/" + path.relative_to(resources).as_posix()
+                      for subdir in ("qml", "assets") for path in (resources / subdir).rglob("*") if path.is_file()]
     for name in ["LocalDocumentSearch.exe", "python312.dll", "PySide6/QtCore.pyd",
                  "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
                  "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
                  "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                  "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
-                 "TERMS-IT.txt", "TERMS-EN.txt"]:
+                 "TERMS-IT.txt", "TERMS-EN.txt", "diagnostics/run_v2_benchmark.py",
+                 "diagnostics/v2_benchmark.py", "diagnostics/m9_corpus.py", *resource_names]:
         path = folder / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"synthetic")

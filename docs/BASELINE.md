@@ -36,7 +36,7 @@ Le misure backend più recenti riportate in [M9, aggiornamento del 7 novembre](a
 
 ## Lacune da trasferire, non prove superate
 
-**M9 resta parzialmente accettata.** Non è richiesto completare ora il collaudo dello ZIP v1. Le prove sotto devono essere effettuate sul pacchetto v2 finale; quelle sorgente non le sostituiscono.
+**M9 v1 resta storicamente parzialmente accettata.** Non è richiesto completare il collaudo dello ZIP v1. Le prove sotto sono state effettuate sul pacchetto v2 finale e registrate nella [matrice V2-08](V2_08_ACCEPTANCE.md#matrice-dei-gate); le prove sorgente da sole non le sostituiscono.
 
 | ID | Mancanza documentata sul pacchetto corrente | Destinazione v2 | Scenario |
 |---|---|---|---|

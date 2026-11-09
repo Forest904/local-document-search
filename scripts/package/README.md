@@ -6,6 +6,25 @@ compilatore `ISCC.exe` è cercato nell'installazione per utente o in Program
 Files (x86); `LDS_ISCC` può specificare un percorso diverso. L'hash del
 compilatore è bloccato in `build.py`.
 
+Per il candidato V2-08 usare `./scripts/package/build.ps1 -Release` da una
+revisione Git pulita. Questa modalità rifiuta modifiche tracciate o file non
+tracciati prima e durante la build. Il payload include i tre script del benchmark
+V2-02 in `diagnostics/`, attribuiti e verificati nel manifest.
+
+L'eseguibile installato espone la diagnostica da PowerShell:
+
+```powershell
+& '<installazione>/LocalDocumentSearch.exe' --diagnostic '<corpus>' '<output-nuovo>' --storage-root '<storage-nuovo>' --cycles 3 --samples 100 --warmups 5
+```
+
+Il corpus è generato con `experiments/v2_benchmark.py generate` sul PC di
+sviluppo. Corpus, output e storage devono essere directory distinte; lo storage
+personale v2 è rifiutato. Il runner verifica gli hash del corpus e dei propri
+script nel payload, crea copie per ciclo e avvia un processo compilato nuovo
+per fase. `report.json` resta `INCOMPLETE` se una fase fallisce; `budget_status`
+indica separatamente se i sei limiti T08 sono rispettati. L'eseguibile è GUI:
+consultare `report.json` nell'output anziché attendersi output nella console.
+
 L'EXE installa per utente, senza elevazione o download. Wizard IT/EN, menu
 Start e desktop opzionale; upgrade completo nella stessa installazione,
 reinstallazione ammessa e downgrade rifiutato. Chiudere l'applicazione prima

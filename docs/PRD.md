@@ -1,6 +1,6 @@
 # PRD — Local Document Search v2
 
-**Stato: approvato per v2 il 7 novembre 2026; implementazione parziale.** V2-01–V2-05 sono chiuse localmente; il desktop V2-06 è implementato dal sorgente con verifiche e limiti nel [rapporto](V2_06_DESKTOP.md). Il collaudo del pacchetto finale resta V2-08. Il prodotto iniziale è descritto nella [baseline](BASELINE.md). Questo documento è la fonte dei requisiti; le scelte tecniche ancora aperte sono nel [registro decisioni](OPEN_DECISIONS.md).
+**Stato: approvato per v2 il 7 novembre 2026; V2-01–V2-08 completate sul candidato 0.2.0 il 9 novembre 2026.** Verifiche, ambiente e limiti del pacchetto finale sono nel [registro V2-08](V2_08_ACCEPTANCE.md); il prodotto iniziale è descritto nella [baseline](BASELINE.md). Questo documento resta la fonte dei requisiti; le scelte tecniche sono nel [registro decisioni](OPEN_DECISIONS.md). La chiusura della milestone non equivale alla pubblicazione della release.
 
 ## Prodotto e utenti
 
