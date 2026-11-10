@@ -26,6 +26,7 @@ class PositionalIndex:
     terms: Mapping[str, Mapping[DocumentId, Posting]]
     vocabulary: tuple[str, ...] = field(init=False)
     reversed_vocabulary: tuple[str, ...] = field(init=False)
+    bigram_terms: Mapping[str, tuple[str, ...]] = field(init=False)
 
     def __post_init__(self) -> None:
         frozen = {}
@@ -36,6 +37,13 @@ class PositionalIndex:
         object.__setattr__(self, "terms", MappingProxyType(frozen))
         object.__setattr__(self, "vocabulary", tuple(sorted(frozen)))
         object.__setattr__(self, "reversed_vocabulary", tuple(sorted(term[::-1] for term in frozen)))
+        grams: dict[str, list[str]] = {}
+        for term in sorted(frozen):
+            for gram in set(character_bigrams(term)):
+                grams.setdefault(gram, []).append(term)
+        object.__setattr__(self, "bigram_terms", MappingProxyType({
+            gram: tuple(terms) for gram, terms in grams.items()
+        }))
 
     def terms_with_prefix(self, prefix: str, limit: int | None = None) -> tuple[str, ...]:
         start = bisect_left(self.vocabulary, prefix)
@@ -53,3 +61,8 @@ class PositionalIndex:
         start = bisect_left(self.reversed_vocabulary, reversed_suffix)
         end = bisect_left(self.reversed_vocabulary, reversed_suffix + chr(0x10ffff))
         return (term[::-1] for term in islice(self.reversed_vocabulary, start, end))
+
+
+def character_bigrams(term: str) -> tuple[str, ...]:
+    marked = "$" + term + "$"
+    return tuple(marked[i:i + 2] for i in range(len(marked) - 1))

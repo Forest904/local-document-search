@@ -39,6 +39,8 @@ La regola corrente V2-09 usa `allow_wildcards=True` per `termine*` e `*termine`.
 
 Lo snapshot conserva l'ordine per percorso dei documenti. La ricerca applicativa calcola il totale su tutti i match e costruisce i risultati della sola pagina richiesta, evitando di ordinare e materializzare tutti i match nelle query ampie. L'API di dominio che restituisce tutti i match mantiene lo stesso ordinamento.
 
+V2-10 usa per campo un indice immutabile di bigrammi delle parole del vocabolario, con `$` ai confini. Per un termine sconosciuto recupera candidati che condividono bigrammi, richiede Jaccard ≥ 0,20 e verifica Levenshtein unitario (≤1 per 3–4 caratteri, ≤2 da 5). Ordina per distanza, Jaccard decrescente e termine. Considera solo parole alfabetiche di almeno tre caratteri; frasi e wildcard non generano proposte. La ricerca esatta non cambia. [ADR 0016](adr/0016-v2-spelling-correction.md).
+
 ## Risultati v2
 
 La ricerca determina prima quali documenti corrispondono, valutando ogni campo autonomamente. I filtri formato/cartella riducono i candidati secondo il [contratto](INTERFACE_CONTRACTS.md); rilevanza ordina solo i match rimasti. La formula [V2-D05](adr/0010-v2-retrieval.md) dà priorità al nome, poi alla frequenza di posizioni distinte nei soli campi che soddisfano tutta la query, quindi al percorso. L'alternativa per percorso preserva l'ordine lessicografico v1 nella UI v2.

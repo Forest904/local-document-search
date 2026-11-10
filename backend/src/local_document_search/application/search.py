@@ -4,13 +4,15 @@ from heapq import nsmallest
 from threading import Condition
 
 from .contracts import (DocumentDetails, InvalidInput, SearchOrder, SearchRequest, SearchResponse,
-                        SearchResult, SearchSnippet, TextRange, SuggestMode, SuggestRequest, SuggestResponse)
+                        SearchResult, SearchSnippet, TextRange, SuggestMode, SuggestRequest, SuggestResponse,
+                        SpellingRequest, SpellingResponse, SpellingReplacement)
 from .errors import ResourceFailure, SnapshotUnavailable
 from .ports import SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
 from local_document_search.domain.analysis import ContentAnalyzer, FilenameAnalyzer, prepare_filename
 from local_document_search.domain.highlighting import matching_ranges, token_spans
 from local_document_search.domain.queries import QueryEvaluator, QueryParser, SearchField
+from local_document_search.domain.spelling import best_candidate
 
 
 def _ranges(query, field, text):
@@ -134,6 +136,57 @@ class SuggestTerms:
                 return SuggestResponse(snapshot.snapshot_id, tuple(sorted(found)[:request.limit]))
         except MemoryError as exc:
             raise ResourceFailure("Memoria insufficiente durante i suggerimenti") from exc
+
+
+class SuggestSpellingCorrections:
+    def __init__(self, snapshots: SnapshotRepositoryPort, runtime=None) -> None:
+        self.snapshots = snapshots
+        self.runtime = runtime
+
+    def submit(self, request: SpellingRequest):
+        if self.runtime is None:
+            raise InvalidInput("Runtime asincrono non configurato")
+        return self.runtime.submit(self._execute, request)
+
+    def execute(self, request: SpellingRequest) -> SpellingResponse:
+        if self.runtime is not None:
+            return self.runtime.run(self._execute, request)
+        return self._execute(request)
+
+    def _execute(self, request: SpellingRequest) -> SpellingResponse:
+        try:
+            with self.snapshots.acquire(request.snapshot_id) as snapshot:
+                try:
+                    QueryParser().parse(request.query, request.field, allow_wildcards=True)
+                    if '"' in request.query or '*' in request.query:
+                        return SpellingResponse(snapshot.snapshot_id, None, ())
+                    spans = token_spans(request.query)
+                    indexes = tuple(index for field, index in (
+                        (SearchField.FILENAME, snapshot.filename_index),
+                        (SearchField.CONTENT, snapshot.content_index),
+                    ) if request.field in (field, SearchField.BOTH))
+                    replacements = []
+                    for span in spans:
+                        original = request.query[span.start:span.end]
+                        if request.field in (SearchField.FILENAME, SearchField.BOTH):
+                            filename_spans = token_spans(original, filename=True)
+                            if len(filename_spans) != 1 or filename_spans[0].term != span.term:
+                                continue
+                        candidate = best_candidate(span.term, indexes)
+                        if candidate is not None:
+                            replacements.append(SpellingReplacement(
+                                span.start, span.end, original, candidate.term,
+                                candidate.distance, candidate.jaccard))
+                    if not replacements:
+                        return SpellingResponse(snapshot.snapshot_id, None, ())
+                    proposal = request.query
+                    for value in reversed(replacements):
+                        proposal = proposal[:value.start] + value.replacement + proposal[value.end:]
+                    return SpellingResponse(snapshot.snapshot_id, proposal, tuple(replacements))
+                except ValueError as exc:
+                    raise InvalidInput(str(exc)) from exc
+        except MemoryError as exc:
+            raise ResourceFailure("Memoria insufficiente durante la correzione") from exc
 
 
 class GetDocument:

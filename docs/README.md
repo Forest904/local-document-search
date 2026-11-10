@@ -43,6 +43,12 @@ La successiva revisione dell'installer aggiunge destinazione selezionabile alla 
 
 Verifica locale della revisione: **44 test degli script**, **50 desktop** e **385 backend con 6 skip** verdi. Il test installer usa AppId e payload sintetici isolati e copre prima installazione Unicode, reinstallazione e rifiuto di `/DIR` divergente. La build completa locale ha prodotto un installer, ma non costituisce collaudo del pacchetto su sistema pulito né nuova release pubblicata.
 
+### V2-10 — correzione ortografica proposta
+
+Implementata sul sorgente locale: proposta separata dopo ogni ricerca desktop di parole esatte, tramite vocabolario dello snapshot, bigrammi/Jaccard e Levenshtein. Richiede selezione esplicita; CLI Homework e ricerca esatta conservano la loro semantica. [ADR 0016](adr/0016-v2-spelling-correction.md), [report e limiti](V2_10_SPELLING_CORRECTION.md). I risultati della release 0.2.0 non costituiscono evidenza di questa estensione.
+
+Verifiche locali: backend **406 passed, 6 skipped**, desktop **59 passed** e runner Homework verde. Il benchmark sorgente target a tre cicli completa tutte le fasi, ma supera i budget di avvio (16,093/15 s), no-change (1,036/1 s) e query frase p95 (108,089/100 ms); il gate prestazionale V2-10 resta aperto. Build, sync incrementale e RAM sono entro budget. Nessun nuovo installer collaudato.
+
 ## Backlog installer
 
 Proposte future, non approvate né implementate: firma digitale con timestamp; riepilogo della versione installata e di quella nuova; riparazione esplicita; messaggi diagnostici e accesso ai log; recupero da aggiornamento interrotto.

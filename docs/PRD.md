@@ -60,3 +60,12 @@ La ricerca supporta anche `*suffisso` con opzione wildcard esplicita e suggerime
 |---|---|---|
 | V2-R20 | Ricerca esplicita per suffisso | `*termine` restituisce match completi nello stesso campo, con limiti e ranking coerenti; T22 |
 | V2-R21 | Suggerimenti per suffisso | Termini dello snapshot in ordine originale; il desktop sostituisce la clausola senza avviare query durante digitazione; T23 |
+
+## Estensione V2-10 — correzione ortografica proposta
+
+V2-10 fa eccezione al limite generale che esclude il fuzzy: aggiunge una **proposta separata**, senza espandere la ricerca esatta. Dopo ogni ricerca desktop, una query di parole esatte può mostrare «Intendevi…?», anche se esistono risultati. L'utente decide se eseguire la proposta. Frasi, wildcard, CLI Homework, documenti e sorgenti restano invariati. [Decisione](adr/0016-v2-spelling-correction.md), [scenari T24/T25](TEST_STRATEGY.md#scenari-di-accettazione).
+
+| ID | Requisito V2-10 | Accettazione |
+|---|---|---|
+| V2-R22 | Proposta ortografica separata | Candidati dal vocabolario dello snapshot, bigrammi/Jaccard/Levenshtein, una query proposta con correzioni anche parziali; T24 |
+| V2-R23 | Scelta esplicita nel desktop | Proposta IT/EN dopo ogni ricerca, risultati originali intatti, selezione da tastiera, scarto di risposte obsolete; T25 |

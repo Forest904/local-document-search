@@ -115,6 +115,41 @@ class SuggestRequest:
 class SuggestResponse:
     snapshot_id: str
     terms: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class SpellingRequest:
+    query: str
+    field: SearchField = SearchField.BOTH
+    snapshot_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.query, str) or not self.query.strip() or not isinstance(self.field, SearchField):
+            raise InvalidInput("Query vuota o campo non valido")
+        if self.snapshot_id is not None and (not isinstance(self.snapshot_id, str) or not self.snapshot_id.strip()):
+            raise InvalidInput("snapshot_id non valido")
+
+
+@dataclass(frozen=True)
+class SpellingReplacement:
+    start: int
+    end: int
+    original: str
+    replacement: str
+    distance: int
+    jaccard: float
+
+
+@dataclass(frozen=True)
+class SpellingResponse:
+    snapshot_id: str
+    proposed_query: str | None
+    replacements: tuple[SpellingReplacement, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "replacements", tuple(self.replacements))
+        if bool(self.proposed_query) != bool(self.replacements):
+            raise ValueError("Proposta ortografica incoerente")
         # SearchDocuments traduce gli errori del parser/analyzer in InvalidInput.
 
 

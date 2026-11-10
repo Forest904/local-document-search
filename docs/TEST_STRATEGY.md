@@ -53,6 +53,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T21 | 12–30 file reali autorizzati, IT/EN e tre formati; provenienza/hash verificati, query con liste attese complete; download mancante → suite reale incompleta, non PASS | V2-01 |
 | T22 | `*suffisso` per campo e BOTH, AND/frasi, Unicode, limiti 256/257, ranking, filtri, snippet e versioni snapshot; regressioni T03–T09/T18 | V2-09 |
 | T23 | Suggerimenti per suffisso in ordine originale, limite/deduplica e snapshot; digitazione senza ricerca, selezione e risposte obsolete nel desktop IT/EN; regressioni T12/T13 | V2-09 |
+| T24 | Parole isolate e query AND: bigrammi, Jaccard, Levenshtein e spareggi; campi/BOTH, Unicode, codici esclusi, proposte parziali, frasi/wildcard escluse; build, sync e versioni snapshot, nessuna espansione della ricerca originale | V2-10 |
+| T25 | Desktop IT/EN: proposta dopo ricerche con e senza risultati, accettazione esplicita e tastiera, query/filtri/snapshot obsoleti scartati, errori della correzione separati dai risultati; misure separate di latenza, build, riapertura e RAM | V2-10 |
 
 ## Gate finale
 

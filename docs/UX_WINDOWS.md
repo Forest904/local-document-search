@@ -20,6 +20,8 @@ Campo, formati e ordine valgono per la sessione; reset al cambio cartella/riavvi
 
 Lingua IT/EN e tema chiaro/scuro persistono nel catalogo, separati dagli snapshot; la pulizia li azzera. Comandi incompatibili con job/chiusura bloccati, lavoro nei worker e risposte obsolete ignorate.
 
+Dopo ogni ricerca di parole esatte, il riquadro «Intendevi…?» mostra una query proposta quando esistono correzioni plausibili, anche con risultati. Elenca le sostituzioni; il pulsante «Cerca con le correzioni», raggiungibile da tastiera e nominato per Narrator, sostituisce la query e cerca dalla prima pagina. La proposta sparisce se cambiano query, filtri, directory o snapshot. La digitazione continua a mostrare i suggerimenti di completamento separati.
+
 ## Sistema visivo e accessibilità
 
 Segoe UI, spazio libero, bordi sottili e angoli morbidi. Palette chiara: avorio `#FAF9F6`, bianco, grafite `#252826`, verde `#315D50`, salvia `#DFEAE2`, lavanda `#E9E5F3`. Scura: `#191D1B`, superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle superfici e match in grassetto, senza marcatori gialli pesanti.

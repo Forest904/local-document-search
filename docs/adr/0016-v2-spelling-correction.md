@@ -1,0 +1,11 @@
+# ADR 0016 — Correzione ortografica delle query
+
+- **Stato:** Accepted, 2026-11-10; decisione V2-10 approvata dal titolare.
+- **Contesto:** la ricerca esatta non recupera una query con un refuso. Le slide del corso, sezione Spelling correction (111–127), distinguono correzione della query e dei documenti, parole isolate e contesto, e propongono n-grammi, Jaccard e distanza di edit.
+- **Decisione:** dopo ogni ricerca desktop proporre, quando possibile, una sola query alternativa da accettare esplicitamente. La ricerca originale non cambia. La proposta può essere parziale e non garantisce risultati. Niente correzione di documenti o ricerca fuzzy implicita.
+- **Lessico e candidati:** usare i termini dello snapshot nei campi selezionati, senza limitare il vocabolario ai filtri. Una parola già presente non viene corretta. Derivare un indice immutabile di bigrammi con marcatori di confine; candidati con Jaccard ≥ 0,20, poi Levenshtein unitario. Soglia distanza 1 per 3–4 caratteri, 2 da 5 in poi. Spareggi: distanza, Jaccard decrescente, ordine lessicografico. Nessuna dipendenza, posting o modifica SQLite.
+- **Scope:** query di termini esatti, anche multiple; frasi e wildcard non ricevono proposte. Solo parole alfabetiche di almeno tre caratteri, senza codici numerici. Una tokenizzazione diversa fra gli analyzer dei campi selezionati lascia invariato il segmento ambiguo.
+- **Interfaccia:** caso d'uso separato con risposta legata allo snapshot e intervalli sul testo originale; il desktop scarta risposte obsolete e mostra la proposta anche in presenza di risultati. Accettarla avvia una nuova ricerca. La CLI Homework resta invariata.
+- **Conseguenze:** il lessico del corpus può includere errori o mancare parole corrette; una parola reale usata al posto di un'altra non viene rilevata. Il filtro per bigrammi può perdere refusi entro la distanza massima. Il costo di build, riapertura, RAM e query va misurato separatamente.
+- **Alternative:** scansione Levenshtein dell'intero lessico, soglia più permissiva, correzione contestuale e ricerca automatica sulla proposta sono rinviate per costo o scope.
+- **Verifica:** T24/T25 in `docs/TEST_STRATEGY.md`; regressioni T03–T09, T12/T13, T18, T22/T23.

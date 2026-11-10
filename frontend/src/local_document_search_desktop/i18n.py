@@ -39,6 +39,8 @@ MESSAGES = {
     "hint": ("Invio per cercare · cac* o *ing · Ctrl+L per la ricerca", "Enter to search · cac* or *ing · Ctrl+L to focus search"),
     "search": ("Cerca", "Search"),
     "suggestions": ("Suggerimenti", "Suggestions"),
+    "didYouMean": ("Intendevi", "Did you mean"),
+    "searchCorrection": ("Cerca con le correzioni", "Search with corrections"),
     "results": ("Risultati", "Results"),
     "resultsIn": ("in", "in"),
     "seconds": ("secondi", "seconds"),

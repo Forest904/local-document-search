@@ -19,9 +19,35 @@ ColumnLayout {
         theme: page.theme
         Layout.fillWidth: true
     }
+    ColumnLayout {
+        objectName: "spellingProposal"
+        visible: page.v.spellingProposal !== ""
+        Layout.fillWidth: true
+        spacing: 4
+        Label {
+            text: desktop.labels.didYouMean + ": " + page.v.spellingProposal + "?"
+            color: page.theme.ink
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+        Label {
+            text: page.v.spellingChanges
+            textFormat: Text.RichText
+            color: page.theme.muted
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+        Button {
+            objectName: "acceptSpelling"
+            text: desktop.labels.searchCorrection
+            Accessible.name: desktop.labels.searchCorrection + ": " + page.v.spellingProposal
+            enabled: page.v.searchable
+            onClicked: desktop.acceptSpelling()
+        }
+    }
     Label {
         objectName: "resultsSummary"
-        text: page.v.reading ? desktop.labels.searching
+        text: page.v.searching ? desktop.labels.searching
               : page.v.hasResponse && page.v.searchDuration >= 0
                 ? desktop.labels.results + " " + page.v.total + " " + desktop.labels.resultsIn
                   + " " + page.v.searchDuration.toFixed(3).replace(".", page.v.language === "it" ? "," : ".")
@@ -51,7 +77,7 @@ ColumnLayout {
             width: parent.width - 32
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
-            visible: results.count === 0 && page.v.hasResponse && !page.v.reading
+            visible: results.count === 0 && page.v.hasResponse && !page.v.searching
             text: desktop.labels.empty
             color: page.theme.muted
         }

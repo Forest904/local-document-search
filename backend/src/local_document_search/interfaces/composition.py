@@ -11,7 +11,7 @@ from local_document_search.application.lifecycle import (
 from local_document_search.infrastructure.settings_storage import SqliteSettingsRepository
 from local_document_search.infrastructure.persistent_storage import PersistentSnapshotRepository
 
-from local_document_search.application.search import GetDocument, SearchDocuments, SuggestTerms, ReadRuntime
+from local_document_search.application.search import GetDocument, SearchDocuments, SuggestTerms, SuggestSpellingCorrections, ReadRuntime
 from local_document_search.application.jobs import RequestSynchronization, GetJobStatus, CancelSynchronization
 from local_document_search.infrastructure.storage_lock import StorageLock
 from local_document_search.application.synchronization import BuildIndex, IndexSynchronizer
@@ -93,6 +93,7 @@ class PersistentApplication:
     _storage_lock: StorageLock
     get_preferences: GetDesktopPreferences | None = None
     save_preferences: SaveDesktopPreferences | None = None
+    suggest_spelling: SuggestSpellingCorrections | None = None
     _close_lock: Lock = field(default_factory=Lock)
     _closed: bool = False
 
@@ -161,7 +162,8 @@ def compose_persistent_application(storage=None, *, v2=False, read_workers=None)
             RequestSynchronization(lifecycle), GetJobStatus(lifecycle.jobs),
             CancelSynchronization(lifecycle.jobs), lifecycle, reads, lock,
             GetDesktopPreferences(settings) if v2 else None,
-            SaveDesktopPreferences(settings) if v2 else None)
+            SaveDesktopPreferences(settings) if v2 else None,
+            suggest_spelling=SuggestSpellingCorrections(snapshots, reads) if v2 else None)
     except BaseException:
         try:
             if lifecycle is not None:

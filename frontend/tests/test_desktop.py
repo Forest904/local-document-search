@@ -16,6 +16,7 @@ from PySide6.QtTest import QTest
 from local_document_search.application.contracts import (
     ApplicationState, CancelOutcome, DocumentDetails, JobDiagnostic, JobPhase, JobRef,
     JobReport, JobState, JobStatus, SearchResponse, SearchResult, SuggestResponse, TextRange,
+    SpellingResponse, SpellingReplacement,
 )
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from local_document_search.application.preferences import DesktopPreferences
@@ -53,6 +54,7 @@ class FakeSession:
     def __init__(self):
         self.state = ApplicationState("C:/source", "N", True)
         self.search, self.get_document, self.suggest = Requests(), Requests(), Requests()
+        self.suggest_spelling = None
         self.preferences = DesktopPreferences()
         self.initialize = operation(lambda: self.state)
         self.status = operation(lambda: self.state)
@@ -87,6 +89,8 @@ def controller(qt):
     c.requestClose()
     for requests in (session.search, session.get_document, session.suggest):
         requests.release()
+    if session.suggest_spelling is not None:
+        session.suggest_spelling.release()
     until(lambda: c.closed)
 
 
@@ -108,6 +112,70 @@ def search(c, s, text="alpha", total=120, items=()):
 def result():
     return SearchResult(DocumentId(1), "alpha.txt", RelativePath("alpha.txt"),
                         DocumentFormat.TXT, frozenset({SearchField.CONTENT}))
+
+
+def test_spelling_proposal_requires_selection_and_discards_stale(controller):
+    c, s = controller
+    s.suggest_spelling = Requests()
+    start(c)
+    search(c, s, "famos", total=1, items=(result(),))
+    until(lambda: len(s.suggest_spelling.calls) == 1)
+    request = s.suggest_spelling.calls[0][0][0]
+    assert request.query == "famos" and request.snapshot_id == "N"
+    s.suggest_spelling.calls[0][1].set_result(SpellingResponse(
+        "N", "famous", (SpellingReplacement(0, 5, "famos", "famous", 1, 0.4),)))
+    until(lambda: c.view["spellingProposal"] == "famous")
+    assert c.query == "famos" and c.response.total_matches == 1
+    c.acceptSpelling()
+    assert c.query == "famous" and c.spelling is None
+    until(lambda: len(s.search.calls) == 2)
+    c.editQuery("other", 5)
+    s.search.calls[-1][1].set_result(SearchResponse("N", (), 0))
+    assert c.view["spellingProposal"] == ""
+    s.suggest_spelling.release()
+
+
+def test_spelling_survives_pagination_but_not_query_change(controller):
+    c, s = controller
+    s.suggest_spelling = Requests()
+    start(c)
+    search(c, s, "famos", total=40)
+    until(lambda: len(s.suggest_spelling.calls) == 1)
+    c.page(1)
+    s.suggest_spelling.calls[0][1].set_result(SpellingResponse(
+        "N", "famous", (SpellingReplacement(0, 5, "famos", "famous", 1, 0.4),)))
+    until(lambda: len(s.search.calls) == 2)
+    s.search.calls[-1][1].set_result(SearchResponse("N", (), 40))
+    until(lambda: c.offset == 20)
+    until(lambda: c.view["spellingProposal"] == "famous")
+    assert len(s.suggest_spelling.calls) == 1
+    c.editQuery("other", 5)
+    assert c.view["spellingProposal"] == ""
+    s.suggest_spelling.release()
+
+
+def test_qml_spelling_button_keyboard(controller, qt):
+    c, s = controller
+    s.suggest_spelling = Requests()
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, "famos", total=0)
+        until(lambda: len(s.suggest_spelling.calls) == 1)
+        s.suggest_spelling.calls[0][1].set_result(SpellingResponse(
+            "N", "famous", (SpellingReplacement(0, 5, "famos", "famous", 1, 0.4),)))
+        until(lambda: c.view["spellingProposal"] == "famous")
+        button = window.findChild(QObject, "acceptSpelling")
+        assert button is not None and button.property("visible")
+        button.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Space)
+        until(lambda: len(s.search.calls) == 2)
+        assert s.search.calls[-1][0][0].query == "famous"
+    finally:
+        s.suggest_spelling.release()
+        window.hide()
+        engine.deleteLater()
 
 
 def test_privacy_precedes_factory_and_typing_only_suggests(controller):

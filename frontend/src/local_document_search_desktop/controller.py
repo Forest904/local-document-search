@@ -1,12 +1,13 @@
 """Coordinamento desktop: contratti applicativi nei worker, Qt nel thread GUI."""
 from concurrent.futures import ThreadPoolExecutor
+from html import escape
 import re
 import time
 
 from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QUrl
 
 from local_document_search.application.contracts import (
-    SearchRequest, SearchField, SearchOrder, SuggestMode, SuggestRequest, JobState, InvalidInput,
+    SearchRequest, SearchField, SearchOrder, SuggestMode, SuggestRequest, SpellingRequest, JobState, InvalidInput,
 )
 from local_document_search.application.errors import SnapshotUnavailable
 from local_document_search.application.preferences import DesktopPreferences
@@ -36,7 +37,7 @@ class DesktopController(QObject):
         self.control_future = self.read_future = None
         self.queued_control = None
         self.queued_reads = {}
-        self.generation = self.suggest_generation = 0
+        self.generation = self.suggest_generation = self.spelling_generation = 0
         self.query = ""
         self.screen = "home"
         self.return_screen = "home"
@@ -48,6 +49,7 @@ class DesktopController(QObject):
         self.offset = 0
         self.search_duration = None
         self.terms = []
+        self.spelling = None
         self.message_key = ""
         self.closing = self.closed = False
         self.last_poll = 0.0
@@ -95,6 +97,9 @@ class DesktopController(QObject):
                 "status": self.tr(status), "message": self.tr(self.message_key) if self.message_key else "",
                 "language": self.preferences.language, "theme": self.preferences.theme,
                 "suggestions": self.terms,
+                "spellingProposal": self.spelling.proposed_query if self.spelling else "",
+                "spellingChanges": ", ".join(f"<b>{escape(item.original)} → {escape(item.replacement)}</b>"
+                                              for item in self.spelling.replacements) if self.spelling else "",
                 "selectedPath": self.selected.relative_path.value if self.selected else "",
                 "total": self.response.total_matches if self.response else 0,
                 "hasResponse": self.response is not None, "offset": self.offset,
@@ -103,6 +108,8 @@ class DesktopController(QObject):
                 "canPrevious": searchable and self.response is not None and self.offset > 0,
                 "canNext": searchable and self.response is not None and self.offset + PAGE_SIZE < self.response.total_matches,
                 "reading": self.read_future is not None or bool(self.queued_reads),
+                "searching": bool(self.read_future and self.read_future[4] == "search" or
+                                  "search" in self.queued_reads),
                 "progress": self.job.progress if self.job and self.job.progress is not None else -1,
                 "phase": self.tr(self.job.phase.value) if self.job and running else "",
                 "counts": f"{self.job.files_completed} / {self.job.files_total or 'â€”'}" if self.job and running else "",
@@ -199,10 +206,12 @@ class DesktopController(QObject):
     def invalidate(self):
         self.generation += 1
         self.suggest_generation += 1
+        self.spelling_generation += 1
         self.response = self.selected = None
         self.search_duration = None
         self.offset = 0
         self.terms = []
+        self.spelling = None
         self.queued_reads.clear()
         self.model.replace([])
         self.changed.emit()
@@ -246,7 +255,7 @@ class DesktopController(QObject):
     def start_read(self):
         if self.read_future or not self.queued_reads or self.closing:
             return
-        kind = next((key for key in ("search", "suggest") if key in self.queued_reads))
+        kind = next((key for key in ("search", "suggest", "spelling") if key in self.queued_reads))
         operation, success, token, current = self.queued_reads.pop(kind)
         if token != current():
             return
@@ -266,6 +275,10 @@ class DesktopController(QObject):
         self.debounce.stop()
         self.suggest_generation += 1
         self.terms = []
+        if offset == 0:
+            self.spelling_generation += 1
+            self.queued_reads.pop("spelling", None)
+            self.spelling = None
         self.generation += 1
         self.selected = None
         try:
@@ -293,8 +306,27 @@ class DesktopController(QObject):
             self.search_duration = max(0.0, time.perf_counter() - started)
             self.model.replace(rows)
             self.message_key = ""
+            if offset == 0 and self.session.suggest_spelling is not None:
+                spelling_request = SpellingRequest(request.query, request.field, response.snapshot_id)
+                spelling_token = self.spelling_generation
+                self.enqueue_read("spelling", lambda: session.suggest_spelling.execute(spelling_request),
+                                  self.complete_spelling, spelling_token, lambda: self.spelling_generation)
 
         self.enqueue_read("search", execute, complete, token, lambda: self.generation)
+
+    def complete_spelling(self, response):
+        if response.snapshot_id == self.state.active_snapshot_id:
+            self.spelling = response if response.proposed_query else None
+
+    @Slot()
+    def acceptSpelling(self):
+        if not self.spelling or not self.view["searchable"]:
+            return
+        proposal = self.spelling.proposed_query
+        self.editQuery(proposal, len(proposal.encode("utf-16-le")) // 2)
+        self.debounce.stop()
+        self.queryReplacement.emit(proposal, len(proposal.encode("utf-16-le")) // 2)
+        self.search_page(0)
 
     @Slot(int)
     def page(self, direction):
@@ -494,7 +526,8 @@ class DesktopController(QObject):
                     if isinstance(exc, SnapshotUnavailable) and kind == "search":
                         self.response = None
                         self.model.replace([])
-                    self.error(exc)
+                    if kind != "spelling":
+                        self.error(exc)
             self.changed.emit()
         if self.closed:
             return

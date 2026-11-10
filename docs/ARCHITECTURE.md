@@ -38,6 +38,8 @@ Lo snapshot immutabile comprende manifest, catalogo, testo, due indici posiziona
 
 V2-09 deriva per ciascun campo anche una tupla ordinata di termini rovesciati dalle chiavi del medesimo indice. È immutabile e ricostruita alla riapertura; non duplica posting né cambia lo schema SQLite.
 
+V2-10 deriva per ciascun campo una mappa immutabile `bigramma → termini` dalle stesse chiavi. La riapertura la ricostruisce in RAM; la correzione consulta solo il lessico dello snapshot acquisito e non modifica posting, testo o schema SQLite. [ADR 0016](adr/0016-v2-spelling-correction.md).
+
 Ogni campo deve soddisfare l’intera query AND/frasi; BOTH unisce i risultati dei due campi. Prefissi espliciti, filtri e ranking non alterano questo vincolo. Snippet e dettagli portano lo `snapshot_id` e usano il testo acquisito, senza rileggere i sorgenti o promettere coordinate/layout PDF. [Semantica](INDEXING_AND_ANALYSIS.md) e [contratti](INTERFACE_CONTRACTS.md).
 
 Il desktop sposta il lavoro nei worker e scarta risposte obsolete rispetto a query, directory e snapshot. Lingua e tema sono preferenze persistenti separate dall’indice. Storage v2 in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, v1 in `%LOCALAPPDATA%/LocalDocumentSearch`: nessuna migrazione automatica o pulizia incrociata. [Privacy e distribuzione](SECURITY_AND_PRIVACY.md).
