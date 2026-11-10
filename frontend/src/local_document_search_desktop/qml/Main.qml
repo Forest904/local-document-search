@@ -60,8 +60,8 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: root.v.screen === "results"
-        onActivated: desktop.navigate("home")
+        enabled: root.v.screen === "results" || root.v.screen === "viewer"
+        onActivated: desktop.navigate(root.v.screen === "viewer" ? "back" : "home")
     }
     Shortcut {
         sequence: "Ctrl+O"
@@ -110,7 +110,7 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.maximumWidth: root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880
             Layout.alignment: Qt.AlignHCenter
-            sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "results" ? results : home
+            sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "viewer" ? viewer : root.v.screen === "results" ? results : home
             onLoaded: Qt.callLater(function () {
                 if (content.item && content.item.focusQuery)
                     content.item.focusQuery();
@@ -177,6 +177,12 @@ ApplicationWindow {
             onChooseFolder: dialogs.choose()
             onClearRequested: dialogs.clear()
             onDiagnosticsRequested: dialogs.diagnostics()
+        }
+    }
+    Component {
+        id: viewer
+        PdfViewerPage {
+            theme: design
         }
     }
     AppDialogs {

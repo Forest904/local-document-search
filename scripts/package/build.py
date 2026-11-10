@@ -68,8 +68,8 @@ def validate_payload(folder):
 
 def remove_unused_qt_modules(folder):
     """Rimuove addon non importati dalla UI; opera solo nello staging di build."""
-    banned = ("qt6webengine", "qt6multimedia", "qt6pdf", "qtwebengine", "qtmultimedia", "qtpdf")
-    explicit = [folder / "PySide6/qml/QtQuick/Pdf", folder / "PySide6/qt-plugins/imageformats/qpdf.dll"]
+    banned = ("qt6webengine", "qt6multimedia", "qtwebengine", "qtmultimedia")
+    explicit = []
     for path in explicit:
         if path.is_dir():
             safe_clean(path)
@@ -113,7 +113,7 @@ def redist_notice(visual_studio):
 def collect_licenses(folder, visual_studio):
     destination = folder / "licenses"
     destination.mkdir(exist_ok=True)
-    packages = ["markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "shiboken6", "Nuitka"]
+    packages = ["markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "PySide6_Pdf", "shiboken6", "Nuitka"]
     for name in packages:
         dist = metadata.distribution(name)
         output = destination / name
@@ -183,7 +183,7 @@ def payload_components(folder):
                    "files": qt},
             "microsoft_runtime": {"files": microsoft},
             "python_packages": {name: metadata.version(name) for name in
-                ("markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "shiboken6")}}
+                ("markdown-it-py", "mdurl", "pypdf", "PySide6", "PySide6_Essentials", "PySide6_Pdf", "shiboken6")}}
 
 
 def toolchain():

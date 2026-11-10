@@ -162,6 +162,7 @@ class SearchResult:
     matched_fields: frozenset[SearchField]
     snippet: SearchSnippet | None = None
     filename_highlights: tuple[TextRange, ...] = ()
+    pdf_target_page: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "matched_fields", frozenset(self.matched_fields))
@@ -170,6 +171,10 @@ class SearchResult:
             for field in self.matched_fields
         ):
             raise ValueError("matched_fields richiede campi concreti")
+        if self.pdf_target_page is not None:
+            require_nonnegative(self.pdf_target_page, "pdf_target_page")
+            if self.format is not DocumentFormat.PDF:
+                raise ValueError("Pagina di destinazione solo per PDF")
 
 
 @dataclass(frozen=True)

@@ -47,4 +47,6 @@ La ricerca determina prima quali documenti corrispondono, valutando ogni campo a
 
 Snippet ed evidenziazioni derivano da testo estratto persistito e versione acquisita, non dal file sorgente. La mappatura dei token restituisce intervalli Unicode `[start, end)` sul testo originale; i prefissi evidenziano il token completo e le frasi l'intervallo dei token consecutivi. [V2-D06](adr/0010-v2-retrieval.md) fissa una finestra massima di 240 caratteri. Non promettere coordinate di pagina o fedeltà al layout PDF.
 
+V2-11 conserva per ogni pagina PDF un intervallo nel medesimo testo estratto, incluse pagine senza testo. Gli indici e la semantica delle frasi restano sul testo unico; la pagina del primo match deriva dal primo intervallo di evidenziazione del contenuto. La mappa non contiene coordinate geometriche; [ADR 0017](adr/0017-v2-pdf-page-navigation.md).
+
 Diff, metadati in ingestione e pubblicazione sono definiti in [architettura](ARCHITECTURE.md#snapshot-e-sincronizzazione).

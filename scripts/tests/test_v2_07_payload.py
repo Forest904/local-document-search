@@ -53,6 +53,16 @@ def test_qt_inventory_requires_known_module_and_source(tmp_path):
         payload_audit.qt_file_inventory(tmp_path, sources)
 
 
+def test_pdf_payload_requires_matching_source(tmp_path):
+    (tmp_path / "Qt6Pdf.dll").write_bytes(b"synthetic")
+    with pytest.raises(RuntimeError, match="Sorgente Qt mancante"):
+        payload_audit.qt_file_inventory(tmp_path, {})
+    sources = {"qtwebengine": {"file": "sources/qtwebengine-6.140.0.tar.xz"}}
+    record = payload_audit.qt_file_inventory(tmp_path, sources)[0]
+    assert record["source"] == "sources/qtwebengine-6.140.0.tar.xz"
+    assert record["version"] == "6.140.0"
+
+
 def test_full_inventory_rejects_unknown_runtime_and_missing_notices(tmp_path):
     (tmp_path / "mystery.dll").write_bytes(b"synthetic")
     with pytest.raises(RuntimeError, match="privo di attribuzione"):

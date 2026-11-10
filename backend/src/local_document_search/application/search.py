@@ -1,5 +1,6 @@
 """Ricerca applicativa su una sola versione immutabile per richiesta."""
 from concurrent.futures import ThreadPoolExecutor
+from bisect import bisect_right
 from heapq import nsmallest
 from threading import Condition
 
@@ -86,10 +87,17 @@ class SearchDocuments:
                                               prepare_filename(metadata.filename)) if SearchField.FILENAME in match.matched_fields else ()
                     content_ranges = _ranges(query, SearchField.CONTENT,
                                              document.extracted_text) if SearchField.CONTENT in match.matched_fields else ()
+                    target_page = None
+                    if metadata.format.value == "pdf" and document.pdf_pages:
+                        if content_ranges:
+                            starts = tuple(page.start for page in document.pdf_pages)
+                            target_page = max(0, bisect_right(starts, content_ranges[0].start) - 1)
+                        else:
+                            target_page = 0
                     results.append(SearchResult(
                         match.document_id, metadata.filename, metadata.relative_path,
                         metadata.format, match.matched_fields,
-                        _snippet(document.extracted_text, content_ranges), filename_ranges,
+                        _snippet(document.extracted_text, content_ranges), filename_ranges, target_page,
                     ))
                 return SearchResponse(snapshot.snapshot_id, tuple(results), total)
         except MemoryError as exc:

@@ -12,7 +12,7 @@ packages = Nuitka==4.1.1
 [qt]
 qml_files = local_document_search_desktop/qml/Main.qml
 excluded_qml_plugins =
-modules = Core,Gui,Qml,Quick,QuickControls2
+modules = Core,Gui,Qml,Quick,QuickControls2,Pdf
 plugins = platforms,qml,imageformats,iconengines
 
 [nuitka]

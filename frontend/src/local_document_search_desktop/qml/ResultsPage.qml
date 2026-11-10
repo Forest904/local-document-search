@@ -63,10 +63,12 @@ ColumnLayout {
         clip: true
         spacing: 4
         model: desktop.results
-        currentIndex: -1
+        currentIndex: page.v.resultsIndex
         activeFocusOnTab: true
         Accessible.name: desktop.labels.results
         ScrollBar.vertical: ScrollBar {}
+        Component.onCompleted: Qt.callLater(function () { results.contentY = page.v.resultsScroll; })
+        Component.onDestruction: desktop.rememberResultsScroll(results.contentY)
         Keys.onReturnPressed: if (currentIndex >= 0)
             desktop.openResult(currentIndex)
         delegate: ResultItem {

@@ -7,6 +7,10 @@ build compatibile Qt 6.12.0 per Windows x64, conservando nome e ABI, e avviare
 la copia. Non modificare l'installazione originale durante la prova. Per
 ripristinare, ricopiare i file originali dal medesimo installer completo.
 
+Per Qt PDF usare una build compatibile Qt PDF 6.140.0 per Qt 6.12.0;
+il sorgente Qt PDF/PDFium corrispondente e incluso nell'archivio qtwebengine
+elencato in SOURCES.json. La prova storica V2-07 non copre Qt PDF.
+
 Gli archivi sorgente upstream Qt e PySide6 si trovano in sources/; provenienza
 e SHA-256 sono in licenses/upstream/SOURCES.json. I componenti Qt distribuiti
 sono elencati in BUILD-MANIFEST.json, payload_components.qt.files. Conservare

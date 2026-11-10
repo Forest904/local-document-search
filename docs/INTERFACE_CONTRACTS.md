@@ -18,6 +18,8 @@ Composizione persistente v2: `compose_v2_application`; quella v1 rimane per regr
 
 ## Operazioni di ricerca
 
+V2-11 aggiunge `SearchResult.pdf_target_page: int | None` (zero-based). È valorizzato per i PDF con mappa delle pagine dello snapshot richiesto: prima corrispondenza nel contenuto, oppure pagina 0 se corrisponde solo il nome. È `None` per TXT/MD e per snapshot storici senza mappa. La UI non rilegge il file durante la ricerca; [ADR 0017](adr/0017-v2-pdf-page-navigation.md).
+
 | Operazione logica | Input | Output e invarianti |
 |---|---|---|
 | Ricerca | Query, campo `filename/content/both`, filtri formato/cartella opzionali, ordine rilevanza/percorso, opzioni esplicite per prefissi, pagina | `snapshot_id`, risultati della pagina e totale del medesimo insieme filtrato; ogni risultato porta documento, percorso, formato, campi corrispondenti e dati per snippet/evidenziazione |

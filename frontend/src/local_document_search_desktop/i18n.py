@@ -1,5 +1,11 @@
 """Catalogo locale completo per i flussi desktop, senza servizi remoti."""
 MESSAGES = {
+    "zoomOut": ("Riduci zoom", "Zoom out"),
+    "zoomIn": ("Aumenta zoom", "Zoom in"),
+    "fitWidth": ("Adatta larghezza", "Fit width"),
+    "openExternal": ("Apri nell'app predefinita", "Open in default app"),
+    "pdfOpenError": ("Impossibile aprire il PDF.", "Cannot open the PDF."),
+    "pdfPageUnavailable": ("Pagina richiesta non disponibile; mostrata la prima pagina.", "Requested page unavailable; showing the first page."),
     "appName": ("LOCAL DOCUMENT SEARCH", "LOCAL DOCUMENT SEARCH"),
     "app": ("Ricerca documenti", "Document search"),
     "tagline": ("I tuoi documenti, sul tuo dispositivo.", "Your documents, on your device."),

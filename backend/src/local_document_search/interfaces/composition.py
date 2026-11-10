@@ -22,6 +22,7 @@ from local_document_search.infrastructure.readers.pdf import PdfReader
 from local_document_search.infrastructure.readers.registry import DocumentReader
 from local_document_search.domain.documents import DocumentFormat
 from local_document_search.infrastructure.snapshot_storage import InMemorySnapshotRepository
+from local_document_search.infrastructure.v2_snapshot_storage import SCHEMA_VERSION as DESKTOP_SCHEMA_VERSION
 from local_document_search.application.errors import StorageFailure
 from local_document_search.application.preferences import GetDesktopPreferences, SaveDesktopPreferences
 from local_document_search.infrastructure.sqlite_snapshot_storage import storage_directory
@@ -147,7 +148,7 @@ def compose_persistent_application(storage=None, *, v2=False, read_workers=None)
         reader = _create_reader()
         lifecycle = ApplicationLifecycle(settings, snapshots,
                                         IndexSynchronizer(DocumentFileDiscovery(), reader, snapshots,
-                                                          schema_version="2" if v2 else "1",
+                                                          schema_version=DESKTOP_SCHEMA_VERSION if v2 else "1",
                                                           read_workers=(read_workers if read_workers is not None
                                                                         else (2 if v2 else 1)),
                                                           worker_reader_factory=_create_reader if v2 else None),

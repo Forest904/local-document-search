@@ -14,7 +14,7 @@ licenses/upstream/MIT.txt e licenses/upstream/BSL-1.0.txt.
 markdown-it-py 4.2.0, mdurl 0.1.2: MIT; pypdf 7.0.0: BSD-3-Clause.
 Testi e copyright originali nelle rispettive cartelle sotto licenses/.
 
-PySide6, Shiboken6 e Qt 6.12.0: componenti open source, LGPLv3 e alternative
+PySide6, PySide6_Pdf, Shiboken6, Qt 6.12.0 e Qt PDF 6.140.0: componenti open source, LGPLv3 e alternative
 indicate nei METADATA originali. Qt Core, Gui e Quick sono caricati come DLL
 separate. Il testo LGPLv3 e GPLv3 e incluso in licenses/upstream/.
 Le DLL compatibili possono essere sostituite mantenendo nomi e struttura;
@@ -23,7 +23,7 @@ Non viene imposta alcuna restrizione aggiuntiva al reverse engineering
 necessario al debug di modifiche dei componenti LGPL.
 I METADATA delle wheel possono includere anche un avviso commerciale:
 questo pacchetto non dichiara ne concede una licenza commerciale Qt.
-Gli archivi sorgente corrispondenti, scaricati dai server ufficiali Qt e
+Gli archivi sorgente corrispondenti, scaricati dai server Qt o da mirror Qt e
 verificati tramite SHA-256, si trovano nella cartella sources/ installata.
 Provenienza e hash di ciascun archivio sono in licenses/upstream/SOURCES.json
 e BUILD-MANIFEST.json. La licenza del codice sorgente di ciascun componente
@@ -31,6 +31,10 @@ e i relativi avvisi vanno letti anche all'interno dell'archivio.
 Avvisi QtBase e relativi componenti terzi sono inclusi integralmente da
 LICENSES e src/3rdparty dell'archivio QtBase, con provenienza in SOURCES.json.
 Gli archivi upstream possono contenere componenti non distribuiti dall'app.
+Qt PDF 6.140.0 usa PDFium. Il sorgente qtwebengine 6.140.0, che comprende
+Qt PDF e PDFium, e incluso in sources/; la pagina Qt-third-party.html
+identifica PDFium come componente terzo con licenza BSD. L'archivio e stato
+verificato anche contro l'hash SHA-1 pubblicato dal mirror Qt.
 
 Nuitka 4.1.1 compila l'applicazione; avvisi originali in licenses/Nuitka.
 Le versioni degli strumenti di build non implicano che tutti i relativi

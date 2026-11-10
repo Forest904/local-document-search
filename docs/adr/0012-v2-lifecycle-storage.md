@@ -12,3 +12,5 @@
 ## Revisione approvata ? 10 novembre 2026
 
 Il percorso corrente diventa `%LOCALAPPDATA%/LocalDocumentSearch/Data`; il percorso V2-D04 sopra descrive la release storica. Formato SQLite e identificatori interni non cambiano. Nessuna migrazione automatica: il primo avvio riparte dalla selezione della cartella. I dati nella radice storica v1 e in `LocalDocumentSearchV2` rimangono intatti e non vengono letti o rimossi. Backend e rilevamento sessione desktop condividono la risoluzione del percorso.
+
+**Estensione V2-11:** [ADR 0017](0017-v2-pdf-page-navigation.md) porta lo schema desktop a 3 per persistere i confini delle pagine PDF. Gli indici precedenti richiedono rebuild esplicito secondo la politica di incompatibilità già approvata.

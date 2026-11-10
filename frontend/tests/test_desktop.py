@@ -12,6 +12,7 @@ import pytest
 from PySide6.QtCore import QObject, QUrl, Qt, QTimer
 from PySide6.QtGui import QTextDocument
 from PySide6.QtTest import QTest
+from pypdf import PdfWriter
 
 from local_document_search.application.contracts import (
     ApplicationState, CancelOutcome, DocumentDetails, JobDiagnostic, JobPhase, JobRef,
@@ -112,6 +113,70 @@ def search(c, s, text="alpha", total=120, items=()):
 def result():
     return SearchResult(DocumentId(1), "alpha.txt", RelativePath("alpha.txt"),
                         DocumentFormat.TXT, frozenset({SearchField.CONTENT}))
+
+
+def test_pdf_viewer_navigates_to_result_page(controller, qt, tmp_path):
+    c, s = controller
+    writer = PdfWriter()
+    for _ in range(3):
+        writer.add_blank_page(width=200, height=200)
+    writer.write(tmp_path / "sample.pdf")
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        pdf_result = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                                  DocumentFormat.PDF, frozenset({SearchField.CONTENT}), pdf_target_page=2)
+        search(c, s, items=(pdf_result,), total=1)
+        c.openResult(0)
+        assert c.view["screen"] == "viewer"
+        until(lambda: window.findChild(QObject, "pdfViewer") is not None)
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer.property("currentPage") == 2)
+        c.savePreferences("en", "dark")
+        until(lambda: c.view["language"] == "en")
+        assert window.findChild(QObject, "openPdfExternally").property("text") == "Open in default app"
+        c.navigate("back")
+        assert c.view["screen"] == "results"
+        assert c.view["viewerSource"] == ""
+        QTest.qWait(30)
+        c.response = SearchResponse("N", (replace(pdf_result, pdf_target_page=9),), 1)
+        c.openResult(0)
+        until(lambda: window.findChild(QObject, "pdfViewer") is not None)
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer.property("currentPage") == 0)
+        warning = window.findChild(QObject, "pdfWarning")
+        until(lambda: warning is not None and warning.property("visible"))
+        c.navigate("back")
+        QTest.qWait(30)
+        missing = replace(pdf_result, filename="missing.pdf", relative_path=RelativePath("missing.pdf"))
+        c.response = SearchResponse("N", (missing,), 1)
+        c.openResult(0)
+        assert c.view["screen"] == "viewer"
+        warning = window.findChild(QObject, "pdfWarning")
+        until(lambda: warning is not None and warning.property("visible"))
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+            QTest.qWait(30)
+        engine.deleteLater()
+
+
+def test_snapshot_change_keeps_open_pdf_but_drops_old_selection(controller):
+    c, s = controller
+    start(c)
+    c.screen = "viewer"
+    c.viewer.source = "file:///sample.pdf"
+    c.viewer.relative_path = RelativePath("sample.pdf")
+    c.selected = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                              DocumentFormat.PDF, frozenset({SearchField.CONTENT}), pdf_target_page=1)
+    c.apply_state(ApplicationState("C:/source", "new", True))
+    assert c.view["screen"] == "viewer"
+    assert c.view["viewerSource"] == "file:///sample.pdf"
+    assert c.selected is None
+    c.navigate("back")
+    assert c.view["screen"] == "results"
 
 
 def test_spelling_proposal_requires_selection_and_discards_stale(controller):

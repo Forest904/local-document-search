@@ -33,10 +33,13 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 | V2-R17 | Privacy e distribuzione verificabili | Nessuna telemetria/upload; termini e inventario dipendenze verificati; avvisi della release non firmata documentati | V2-07, V2-08 / T17 |
 | V2-R18 | Preservare CLI Homework e backend condiviso | Sintassi, ordine per percorso, output e codici esistenti; nessuna dipendenza Qt della CLI | V2-03, V2-05, V2-08 / T18 |
 | V2-R19 | Corpus ibrido riproducibile per validazione funzionale | Sintetici TXT/MD/PDF deterministici; circa 12–30 documenti Internet indicizzabili con permessi espliciti, italiano/inglese e almeno un file reale per formato; ground truth completa e versionata; suite reale opt-in valida solo con corpus completo | V2-01 / T20, T21 |
+| V2-R20 | Aprire i PDF alla pagina del primo match | Mappa delle pagine persistita con lo snapshot; viewer interno naviga alla pagina del primo match nel contenuto, o alla prima se il match è solo nel nome; ritorno ai risultati ed errori gestibili | V2-11 / T26, T27 |
 
 ## Limiti e non-obiettivi
 
-Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Nessuna promessa di rendering PDF, coordinate di pagina o conservazione del layout originale nelle anteprime.
+**Estensione V2-11:** il desktop apre i PDF in un viewer interno alla pagina fisica del primo match nel testo indicizzato; i risultati che corrispondono solo nel nome partono dalla prima pagina. La navigazione usa una mappa delle pagine salvata nello snapshot. Non sono promessi scorrimento alla parola, evidenziazione sul PDF o corrispondenza con un sorgente modificato dopo l'indicizzazione. [Decisione](adr/0017-v2-pdf-page-navigation.md).
+
+Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Il viewer V2-11 rende le pagine PDF; non promette coordinate della query né conservazione del layout originale nel testo estratto.
 
 Il diff resta basato su path, size e mtime_ns. Modifiche che preservano dimensione e timestamp possono non essere rilevate, anche con i nuovi controlli in ingestione. I risultati possono diventare obsoleti fino al sync. PDF multicolonna e tabelle possono produrre testo imperfetto; le frasi operano sul testo canonico unico.
 

@@ -165,7 +165,7 @@ class IndexBuilder:
         content = ContentAnalyzer().analyze(document.content)
         indexed = IndexedDocument(
             DocumentDescriptor(document_id, document.metadata), document.content,
-            len(filename), len(content),
+            len(filename), len(content), document.pdf_pages,
         )
         entry = FileEntry(document.metadata, EntryOutcome.INDEXED, document_id)
         filename_postings = self._postings(filename)

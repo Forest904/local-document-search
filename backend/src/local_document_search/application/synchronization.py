@@ -1,6 +1,7 @@
 """Build completo M3 e sincronizzazione incrementale bloccante M6."""
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
+from dataclasses import replace
 from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
@@ -142,7 +143,9 @@ class IndexSynchronizer:
                         identity = DocumentId(next_id)
                         next_id += 1
                     builder.remove(path)
-                    builder.add(identity, result.document)
+                    document = (replace(result.document, pdf_pages=None)
+                                if self.schema_version == "1" else result.document)
+                    builder.add(identity, document)
                 elif isinstance(result, Excluded):
                     builder.exclude(candidate.metadata, result.reason)
                     observed_exclusions.append(JobDiagnostic("excluded", JobPhase.EXTRACTING,

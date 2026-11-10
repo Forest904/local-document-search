@@ -173,7 +173,8 @@ def test_v2_reuses_unchanged_versions_and_rebuilds_explicitly(tmp_path):
         assert len(by_path["second.txt"]) == 1
 
 
-def test_v2_physical_incompatibility_requires_rebuild(tmp_path):
+@pytest.mark.parametrize("old_schema", [2, 99])
+def test_v2_physical_incompatibility_requires_rebuild(tmp_path, old_schema):
     source = tmp_path / "source"
     source.mkdir()
     (source / "note.txt").write_text("alfa", encoding="utf-8")
@@ -183,7 +184,7 @@ def test_v2_physical_incompatibility_requires_rebuild(tmp_path):
         app._lifecycle.jobs.wait(job.job_id)
         name = app.snapshots.settings.selected()
     with sqlite3.connect(storage / name) as db:
-        db.execute("PRAGMA user_version=99")
+        db.execute(f"PRAGMA user_version={old_schema}")
     with compose_v2_application(storage) as app:
         assert not app.initialize.execute().search_available
         assert app.snapshots.settings.selected() == name

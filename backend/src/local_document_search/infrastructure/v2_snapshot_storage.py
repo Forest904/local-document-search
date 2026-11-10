@@ -11,7 +11,7 @@ import zlib
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from local_document_search.domain.documents import (
     DocumentDescriptor, DocumentFormat, DocumentId, DocumentMetadata,
-    FileFingerprint, IndexedDocument, RelativePath,
+    FileFingerprint, IndexedDocument, PdfPageSpan, RelativePath,
 )
 from local_document_search.domain.index import PositionalIndex, Posting
 from local_document_search.domain.snapshots import (
@@ -24,15 +24,35 @@ SCHEMA = """
 CREATE TABLE snapshots(id TEXT PRIMARY KEY, root TEXT NOT NULL, created TEXT NOT NULL,
     schema_version TEXT NOT NULL, processing_version TEXT NOT NULL);
 CREATE TABLE versions(id TEXT PRIMARY KEY, text TEXT NOT NULL, filename_count INTEGER NOT NULL,
-    content_count INTEGER NOT NULL, filename_blob BLOB NOT NULL, content_blob BLOB NOT NULL);
+    content_count INTEGER NOT NULL, filename_blob BLOB NOT NULL, content_blob BLOB NOT NULL,
+    pdf_pages TEXT);
 CREATE TABLE manifest(snapshot TEXT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
     path TEXT NOT NULL, filename TEXT NOT NULL, format TEXT NOT NULL, size INTEGER NOT NULL,
     mtime INTEGER NOT NULL, outcome TEXT NOT NULL, document_id INTEGER, reason TEXT,
     version TEXT REFERENCES versions(id), PRIMARY KEY(snapshot,path));
 CREATE TABLE active(singleton INTEGER PRIMARY KEY CHECK(singleton=1),
     current TEXT REFERENCES snapshots(id), previous TEXT REFERENCES snapshots(id));
-PRAGMA user_version=2;
+PRAGMA user_version=3;
 """
+
+SCHEMA_VERSION = "3"
+PROCESSING_VERSION = "1"
+
+
+def _encode_pages(pages):
+    return json.dumps([[span.start, span.end] for span in pages], separators=(",", ":")) if pages is not None else None
+
+
+def _decode_pages(value):
+    if value is None:
+        return None
+    try:
+        pairs = json.loads(value)
+        if not isinstance(pairs, list) or any(not isinstance(p, list) or len(p) != 2 for p in pairs):
+            raise ValueError("Mappa PDF non valida")
+        return tuple(PdfPageSpan(*p) for p in pairs)
+    except (ValueError, TypeError) as exc:
+        raise StorageFailure("Mappa PDF danneggiata") from exc
 
 
 def _encode(postings):
@@ -99,7 +119,7 @@ class V2SqliteSnapshotRepository:
                 try:
                     version = probe.execute("PRAGMA user_version").fetchone()[0]
                     tables = probe.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-                    if version != 2 and (version != 0 or tables):
+                    if version != 3 and (version != 0 or tables):
                         raise SnapshotUnavailable("Schema v2 incompatibile")
                 finally:
                     probe.close()
@@ -133,15 +153,15 @@ class V2SqliteSnapshotRepository:
         db = self._db
         row = db.execute("SELECT root,created,schema_version,processing_version FROM snapshots WHERE id=?",
                          (key,)).fetchone()
-        if row is None or row[2:] != ("2", "1"):
+        if row is None or row[2:] != (SCHEMA_VERSION, PROCESSING_VERSION):
             raise SnapshotUnavailable("Snapshot v2 incompatibile o assente")
         entries, documents = {}, {}
         fields = {"filename": {}, "content": {}}
         for (path, filename, fmt, size, mtime, outcome, doc_id, reason, version,
-             text, filename_count, content_count, filename_blob, content_blob) in db.execute(
+             text, filename_count, content_count, filename_blob, content_blob, pdf_pages) in db.execute(
                 "SELECT m.path,m.filename,m.format,m.size,m.mtime,m.outcome,m.document_id,"
                 "m.reason,m.version,v.text,v.filename_count,v.content_count,"
-                "v.filename_blob,v.content_blob FROM manifest AS m "
+                "v.filename_blob,v.content_blob,v.pdf_pages FROM manifest AS m "
                 "LEFT JOIN versions AS v ON v.id=m.version WHERE m.snapshot=?", (key,)):
             metadata = DocumentMetadata(RelativePath(path), filename, DocumentFormat(fmt),
                                         FileFingerprint(size, mtime))
@@ -153,8 +173,13 @@ class V2SqliteSnapshotRepository:
                 continue
             if text is None or identity in documents:
                 raise StorageFailure("Versione documento mancante o ripetuta")
-            documents[identity] = IndexedDocument(DocumentDescriptor(identity, metadata),
-                                                  text, filename_count, content_count)
+            if metadata.format is DocumentFormat.PDF and pdf_pages is None:
+                raise StorageFailure("Mappa PDF mancante")
+            try:
+                documents[identity] = IndexedDocument(DocumentDescriptor(identity, metadata),
+                                                      text, filename_count, content_count, _decode_pages(pdf_pages))
+            except (ValueError, TypeError) as exc:
+                raise StorageFailure("Mappa PDF danneggiata") from exc
             for field, blob, count in (("filename", filename_blob, filename_count),
                                        ("content", content_blob, content_count)):
                 for term, posting in _decode(blob, count).items():
@@ -195,8 +220,11 @@ class V2SqliteSnapshotRepository:
         with self._lock:
             if self._candidate is not None:
                 raise StorageFailure("Candidato già presente")
-            if (snapshot.schema_version, snapshot.processing_version) != ("2", "1"):
+            if (snapshot.schema_version, snapshot.processing_version) != (SCHEMA_VERSION, PROCESSING_VERSION):
                 raise SnapshotUnavailable("Versione snapshot incompatibile")
+            if any(doc.descriptor.metadata.format is DocumentFormat.PDF and doc.pdf_pages is None
+                   for doc in snapshot.catalog.documents.values()):
+                raise StorageFailure("Mappa PDF mancante")
             db = self._db
             try:
                 db.execute("BEGIN IMMEDIATE")
@@ -204,7 +232,7 @@ class V2SqliteSnapshotRepository:
                 self._validated = False
                 db.execute("INSERT INTO snapshots VALUES (?,?,?,?,?)",
                            (snapshot.snapshot_id, snapshot.root_directory,
-                            snapshot.created_at.isoformat(), "2", "1"))
+                            snapshot.created_at.isoformat(), SCHEMA_VERSION, PROCESSING_VERSION))
                 old_versions = {}
                 if self._active and self._active.root_directory == snapshot.root_directory:
                     old_versions = {p: (v, s, m) for p, v, s, m in db.execute(
@@ -245,8 +273,8 @@ class V2SqliteSnapshotRepository:
                     version_row = (
                         version, doc.extracted_text, doc.filename_token_count,
                         doc.content_token_count, _encode(postings[identity][0]),
-                        _encode(postings[identity][1]))
-                    db.execute("INSERT INTO versions VALUES (?,?,?,?,?,?)", version_row)
+                        _encode(postings[identity][1]), _encode_pages(doc.pdf_pages))
+                    db.execute("INSERT INTO versions VALUES (?,?,?,?,?,?,?)", version_row)
                     _digest_record(digest, version_row)
                     del postings[identity]
                 db.executemany("INSERT INTO manifest VALUES (?,?,?,?,?,?,?,?,?,?)", manifest_rows)
@@ -267,7 +295,7 @@ class V2SqliteSnapshotRepository:
                     "FROM manifest WHERE snapshot=? ORDER BY path", (snapshot_id,)):
                 _digest_record(digest, row_values)
             for row_values in self._db.execute(
-                    "SELECT id,text,filename_count,content_count,filename_blob,content_blob "
+                    "SELECT id,text,filename_count,content_count,filename_blob,content_blob,pdf_pages "
                     "FROM versions WHERE id LIKE ? ORDER BY id", (snapshot_id + ":%",)):
                 _digest_record(digest, row_values)
             if digest.digest() != self._candidate_digest:

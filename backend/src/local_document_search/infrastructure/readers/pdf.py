@@ -6,7 +6,7 @@ from pypdf import PdfReader as Parser
 from local_document_search.application.ports import (
     Extracted, Excluded, ExtractionFailed, FileCandidate, ReaderResult,
 )
-from local_document_search.domain.documents import CanonicalDocument
+from local_document_search.domain.documents import CanonicalDocument, PdfPageSpan
 
 
 class PdfReader:
@@ -17,10 +17,16 @@ class PdfReader:
                 reader = Parser(stream)
                 if reader.is_encrypted and not reader.decrypt(""):
                     return ExtractionFailed(f"{candidate.metadata.relative_path.value}: password necessaria")
-                content = "\n".join(page.extract_text() or "" for page in reader.pages)
+                parts = [page.extract_text() or "" for page in reader.pages]
+                content = "\n".join(parts)
             if not content.strip():
                 return Excluded("PDF senza testo estraibile non-whitespace")
-            return Extracted(CanonicalDocument(candidate.metadata, content))
+            pages = []
+            offset = 0
+            for part in parts:
+                pages.append(PdfPageSpan(offset, offset + len(part)))
+                offset += len(part) + 1
+            return Extracted(CanonicalDocument(candidate.metadata, content, tuple(pages)))
         except MemoryError:
             raise
         except Exception as exc:

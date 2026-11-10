@@ -20,6 +20,7 @@
 | [0014](0014-v2-performance-budgets.md) | Metodo e budget prestazionali | V2-D01 |
 | [0015](0015-v2-suffix-wildcards.md) | Suffissi, vocabolario rovesciato e wildcard esplicite | V2-09 |
 | [0016](0016-v2-spelling-correction.md) | Correzione proposta delle query tramite bigrammi e Levenshtein | V2-10 |
+| [0017](0017-v2-pdf-page-navigation.md) | Mappa delle pagine PDF e viewer interno | V2-11 |
 
 V2-D10–D13 (fonti, permessi, manifest, cache, sintetici e ground truth) sono risolte nella [specifica del corpus](../TEST_DATASETS.md). Non richiedono un ADR per il solo layout dei dati.
 

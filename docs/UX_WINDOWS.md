@@ -1,5 +1,7 @@
 # Esperienza desktop Luma — Windows 11
 
+V2-11: selezionare un risultato PDF apre una pagina interna con il documento alla pagina del primo match, numero di pagina, zoom, adattamento alla larghezza e apertura nell'app predefinita. Indietro/Escape tornano ai risultati. TXT e MD conservano l'apertura esterna. Il viewer non evidenzia la parola sul PDF; [specifica](V2_11_PDF_PAGE_NAVIGATION.md).
+
 **Local Document Search** è il nome dell’app; **Luma** quello del motore. Qt Quick/QML e backend in-process. La revisione approvata dell’8 novembre 2026 sostituisce sidebar e anteprima con apertura diretta: [ADR 0011](adr/0011-v2-desktop.md).
 
 ## Percorsi

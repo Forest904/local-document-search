@@ -7,3 +7,5 @@
 - **Consequences:** analyzer indipendenti dal formato e snippet futuri; perdita delle pagine, maggior spazio disco, phrase queries che possono attraversare confini originari.
 - **v1 clarification (2026-11-06):** testo in SQLite, PDF concatenato in ordine di pagina; snippet e offset per highlighting fuori v1. Vedi [ADR 0007](0007-analysis-and-readers.md) e [ADR 0008](0008-sqlite-snapshots.md).
 - **Related:** [Domain Model](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/DOMAIN_MODEL.md), [Privacy](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/SECURITY_AND_PRIVACY.md).
+
+**Estensione V2-11:** [ADR 0017](0017-v2-pdf-page-navigation.md) conserva i confini delle pagine come metadati del testo unico, senza trasformare le pagine in documenti.

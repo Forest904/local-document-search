@@ -107,7 +107,7 @@ def test_unused_qt_addons_removed_from_staging_only(tmp_path, monkeypatch):
     (folder / "qt6quick.dll").write_bytes(b"needed")
     packaging.remove_unused_qt_modules(folder)
     assert not (folder / "PySide6/qml/QtWebEngine").exists()
-    assert not (folder / "qt6pdf.dll").exists()
+    assert (folder / "qt6pdf.dll").exists()
     assert (folder / "qt6quick.dll").read_bytes() == b"needed"
 
 

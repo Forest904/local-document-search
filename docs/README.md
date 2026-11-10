@@ -49,6 +49,10 @@ Implementata sul sorgente locale: proposta separata dopo ogni ricerca desktop di
 
 Verifiche locali: backend **406 passed, 6 skipped**, desktop **59 passed** e runner Homework verde. Il benchmark sorgente target a tre cicli completa tutte le fasi, ma supera i budget di avvio (16,093/15 s), no-change (1,036/1 s) e query frase p95 (108,089/100 ms); il gate prestazionale V2-10 resta aperto. Build, sync incrementale e RAM sono entro budget. Nessun nuovo installer collaudato.
 
+### V2-11 — Navigazione PDF alla pagina del match
+
+Implementazione sul sorgente locale in verifica: mappa delle pagine nello snapshot desktop schema 3, destinazione nel risultato e viewer interno Qt Quick PDF. Gli indici desktop precedenti richiedono rebuild esplicito. Suite backend **410 passed, 6 skipped**, desktop/script **106 passed**, runner Homework verde. Il benchmark target a tre cicli è completo ma supera i budget di avvio, no-change e query p95: gate prestazionale aperto. La [specifica e le evidenze](V2_11_PDF_PAGE_NAVIGATION.md) distinguono test sorgente, benchmark e collaudo del pacchetto; nessuna nuova release pubblicata.
+
 ## Backlog installer
 
 Proposte future, non approvate né implementate: firma digitale con timestamp; riepilogo della versione installata e di quella nuova; riparazione esplicita; messaggi diagnostici e accesso ai log; recupero da aggiornamento interrotto.

@@ -6,7 +6,7 @@ import re
 import subprocess
 
 
-QML_IMPORTS = ("QtQuick", "QtQuick.Controls.Basic", "QtQuick.Layouts", "QtQuick.Dialogs")
+QML_IMPORTS = ("QtQuick", "QtQuick.Controls.Basic", "QtQuick.Layouts", "QtQuick.Dialogs", "QtQuick.Pdf")
 PYSIDE_MODULES = {"QtCore.pyd", "QtGui.pyd", "QtNetwork.pyd", "QtOpenGL.pyd",
                   "QtQml.pyd", "QtQuick.pyd", "QtQuickControls2.pyd", "QtWidgets.pyd"}
 GPL_MODULES = ("qt6graphs", "qt63d", "qt6quicktimeline", "qt6virtualkeyboard", "qt6qmlcompiler")
@@ -122,6 +122,7 @@ def trim_qt(folder, dumpbin):
 def qt_file_inventory(folder, sources):
     """Attribuisce ogni binario Qt distribuito a un archivio sorgente."""
     mapping = {
+        "qt6pdf": "qtwebengine",
         "qt6svg": "qtsvg", "qt6statemachine": "qtscxml",
         "qt6shadertools": "qtshadertools",
         "qt6quick": "qtdeclarative", "qt6qml": "qtdeclarative",
@@ -142,7 +143,7 @@ def qt_file_inventory(folder, sources):
         elif relative == "PySide6/qt-plugins/platforms/qwindows.dll":
             component = "qtbase"
         elif relative.startswith("PySide6/") and path.suffix.lower() in {".dll", ".pyd"}:
-            component = "pyside6" if path.suffix.lower() == ".pyd" else (
+            component = "qtwebengine" if "/qml/QtQuick/Pdf/" in relative else "pyside6" if path.suffix.lower() == ".pyd" else (
                 "qtdeclarative" if "/qml/" in relative else "qtbase")
         elif name.startswith(("pyside6", "shiboken6")) and path.suffix.lower() == ".dll":
             component = "pyside6"
@@ -151,7 +152,7 @@ def qt_file_inventory(folder, sources):
         if component:
             if component not in sources:
                 raise RuntimeError(f"Sorgente Qt mancante: {relative} → {component}")
-            result.append({"file": relative, "version": "6.12.0", "license": "LGPL-3.0",
+            result.append({"file": relative, "version": "6.140.0" if component == "qtwebengine" else "6.12.0", "license": "LGPL-3.0",
                            "notice": "THIRD_PARTY_NOTICES.txt", "source": sources[component]["file"]})
     return result
 
@@ -172,14 +173,14 @@ def full_file_inventory(folder, qt_sources):
                 source = entry["source"]
                 component = next(key for key, value in qt_sources.items() if value["file"] == source)
             else:
-                component = "qtdeclarative"
+                component = "qtwebengine" if name.startswith("PySide6/qml/QtQuick/Pdf/") else "qtdeclarative"
                 source = qt_sources[component]["file"]
             # Plugin Qt della piattaforma proviene da QtBase, non da PySide.
             if name == "PySide6/qt-plugins/platforms/qwindows.dll":
                 component = "qtbase"
                 source = qt_sources[component]["file"]
-            version, license_id = "6.12.0", "LGPL-3.0"
-            notice, provenance = "licenses/upstream/LGPL-3.0.txt", "PySide6_Essentials 6.12.0 wheel"
+            version, license_id = ("6.140.0" if component == "qtwebengine" else "6.12.0"), "LGPL-3.0"
+            notice, provenance = "licenses/upstream/LGPL-3.0.txt", ("PySide6_Pdf 6.12.0.140 wheel" if component == "qtwebengine" else "PySide6_Essentials 6.12.0 wheel")
         elif name.startswith("PySide6/") or name in ("pyside6.abi3.dll", "pyside6qml.abi3.dll"):
             component, version, license_id = "pyside6", "6.12.0", "LGPL-3.0"
             notice, provenance, source = "licenses/upstream/LGPL-3.0.txt", "PySide6 6.12.0 wheel", qt_sources["pyside6"]["file"]

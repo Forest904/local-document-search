@@ -11,3 +11,5 @@
 - **Conseguenze:** più memoria/persistenza potenziale; ordine, vocabolario e posting devono restare coerenti. Un BST non è assunto più veloce di un dizionario per lookup esatto.
 - **Relazione con v1:** estende [ADR 0003](0003-positional-index.md) e [0007](0007-analysis-and-readers.md), senza sostituire la semantica v1 delle query esatte o della CLI.
 - **Verifica:** V2-03/V2-05, scenari T03–T08 e T18 nella [strategia](../TEST_STRATEGY.md).
+
+**Estensione V2-11:** [ADR 0017](0017-v2-pdf-page-navigation.md) deriva la pagina del primo intervallo evidenziato nel contenuto, senza cambiare il ranking.
