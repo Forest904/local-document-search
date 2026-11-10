@@ -4,7 +4,7 @@ import re
 import unicodedata
 
 from .analysis import ContentAnalyzer, FilenameAnalyzer
-from .queries import PhraseClause, PrefixClause, SearchQuery, SearchField, _analyze
+from .queries import PhraseClause, PrefixClause, SuffixClause, SearchQuery, SearchField, _analyze
 
 
 @dataclass(frozen=True)
@@ -72,6 +72,8 @@ def matching_ranges(query: SearchQuery, field: SearchField,
             sequence = tuple(span.term for span in spans[index:index + width])
             if isinstance(clause, PrefixClause):
                 found = sequence[0].startswith(terms[0])
+            elif isinstance(clause, SuffixClause):
+                found = sequence[0].endswith(terms[0])
             elif isinstance(clause, PhraseClause):
                 found = sequence == terms
             else:
@@ -79,11 +81,11 @@ def matching_ranges(query: SearchQuery, field: SearchField,
             if found:
                 if isinstance(clause, PhraseClause):
                     ranges.append((spans[index].start, spans[index + width - 1].end))
-                elif isinstance(clause, PrefixClause):
+                elif isinstance(clause, (PrefixClause, SuffixClause)):
                     ranges.append((spans[index].start, spans[index].end))
                 else:
                     pass
-        if not isinstance(clause, (PrefixClause, PhraseClause)):
+        if not isinstance(clause, (PrefixClause, SuffixClause, PhraseClause)):
             ranges.extend((span.start, span.end) for span in spans if span.term in terms)
     merged = []
     for start, end in sorted(ranges):

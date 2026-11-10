@@ -31,7 +31,11 @@ Query vuote, virgolette sbilanciate e clausole senza token (anche frasi vuote) d
 
 Ogni snapshot comprende una tupla ordinata immutabile delle chiavi di ciascun indice, ricostruita alla riapertura dalle chiavi dell’indice. Il dizionario resta per i termini esatti. La scelta V2-D02 confronta albero bilanciato, scansione del dizionario e tupla ordinata su lookup, intervalli, build, RAM e ricostruzione; [misure](PERFORMANCE.md#v2-03). Le posting posizionali restano la fonte dei match.
 
+V2-09 aggiunge per campo una seconda tupla ordinata dei termini normalizzati con caratteri invertiti, derivata dalle stesse chiavi al freeze e alla riapertura. `*suffisso` inverte il frammento e usa `bisect` su questa tupla; i posting originali restano la fonte dei match. Nessuna nuova tabella SQLite. [ADR 0015](adr/0015-v2-suffix-wildcards.md).
+
 V2-D03 abilita `termine*` solo con opzione esplicita, fuori dalle frasi. Prefisso iniziale/interno/ripetuto, token multipli nel campo, lunghezza normalizzata inferiore a due o oltre 256 espansioni per campo sono input invalidi. Il limite si verifica anche quando un'altra clausola non trova match. AND e BOTH continuano a essere risolti interamente per campo. La CLI Homework resta invariata. [Decisione](adr/0010-v2-retrieval.md).
+
+La regola corrente V2-09 usa `allow_wildcards=True` per `termine*` e `*termine`. Wildcard interne, ripetute, su entrambi i lati o nelle frasi sono invalide. Per entrambi valgono un token per campo, minimo due caratteri e massimo 256 espansioni per clausola/campo. Con l'opzione disabilitata l'asterisco segue il trattamento storico della punteggiatura. I suggerimenti per suffisso non applicano il limite di espansione della ricerca.
 
 Lo snapshot conserva l'ordine per percorso dei documenti. La ricerca applicativa calcola il totale su tutti i match e costruisce i risultati della sola pagina richiesta, evitando di ordinare e materializzare tutti i match nelle query ampie. L'API di dominio che restituisce tutti i match mantiene lo stesso ordinamento.
 

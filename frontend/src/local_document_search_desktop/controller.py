@@ -6,7 +6,7 @@ import time
 from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QUrl
 
 from local_document_search.application.contracts import (
-    SearchRequest, SearchField, SearchOrder, SuggestRequest, JobState, InvalidInput,
+    SearchRequest, SearchField, SearchOrder, SuggestMode, SuggestRequest, JobState, InvalidInput,
 )
 from local_document_search.application.errors import SnapshotUnavailable
 from local_document_search.application.preferences import DesktopPreferences
@@ -269,7 +269,7 @@ class DesktopController(QObject):
         self.generation += 1
         self.selected = None
         try:
-            request = SearchRequest(self.query, self.field, offset=offset, limit=PAGE_SIZE, allow_prefixes=True,
+            request = SearchRequest(self.query, self.field, offset=offset, limit=PAGE_SIZE, allow_wildcards=True,
                                     formats=self.formats, folder=self.folder, order=self.order,
                                     snapshot_id=self.state.active_snapshot_id)
         except InvalidInput as exc:
@@ -310,19 +310,24 @@ class DesktopController(QObject):
         match = re.search(r"[^\W_]+$", before, re.UNICODE)
         if not match or len(match[0]) < 2:
             return None
-        if match.start() and before[match.start() - 1] not in ' \t\n':
+        start = match.start()
+        mode = SuggestMode.PREFIX
+        if start and before[start - 1] == '*':
+            start -= 1
+            mode = SuggestMode.SUFFIX
+        if start and before[start - 1] not in ' \t\n':
             return None
         after = re.match(r"[^\W_]*", self.query[self.cursor:])[0]
         end = self.cursor + len(after)
-        if self.query[end:end + 1] == "*":
+        if self.query[end:end + 1] == "*" or '*' in self.query[self.cursor:end]:
             return None
-        return match.start(), end, match[0]
+        return start, end, match[0], mode
 
     def suggest(self):
         span = self.suggestion_span()
         if not span or not self.view["searchable"]:
             return
-        request = SuggestRequest(span[2], self.field, 10, self.state.active_snapshot_id)
+        request = SuggestRequest(span[2], self.field, 10, self.state.active_snapshot_id, span[3])
         token = (self.generation, self.suggest_generation)
         session = self.session
 

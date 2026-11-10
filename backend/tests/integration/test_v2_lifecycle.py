@@ -38,7 +38,7 @@ def test_v2_reopen_sync_and_versioned_results(tmp_path):
         state = app.initialize.execute()
         assert state.search_available
         assert app.search.execute(SearchRequest("gamma")).total_matches == 1
-        assert app.search.execute(SearchRequest("gam*", allow_prefixes=True)).total_matches == 1
+        assert app.search.execute(SearchRequest("gam*", allow_wildcards=True)).total_matches == 1
         assert app.suggest.execute(SuggestRequest("gam")).terms == ("gamma",)
         app._lifecycle.jobs.wait(state.job.job_id)
 

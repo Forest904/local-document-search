@@ -1,5 +1,13 @@
 # Esperimenti v1 e baseline v2
 
+## V2-09: suffissi e suggerimenti
+
+`compare_v2_vocab.py` misura lookup con vocabolario rovesciato, scansione e suggerimenti su 20.000 termini sintetici; salvare l'output sotto `experiments/results/` (ignorata da Git). Il runner V2-02 conserva le query precedenti e aggiunge una ricerca e un suggerimento per suffisso. Usare lo stesso comando di generazione e i tre cicli indicati sotto; registrare i risultati in [V2-09](../docs/V2_09_SUFFIX_SEARCH.md), senza sovrascrivere le evidenze V2-02 storiche.
+
+```powershell
+backend/.venv/Scripts/python.exe experiments/compare_v2_vocab.py --output experiments/results/v2-09-vocab.json
+```
+
 ## V2-02: corpus e benchmark prestazionale
 
 Da radice repository, con il backend installato, generare e verificare un corpus

@@ -2,6 +2,7 @@
 from collections.abc import Mapping
 from bisect import bisect_left
 from dataclasses import dataclass, field
+from itertools import islice
 from types import MappingProxyType
 from .documents import DocumentId, require_nonnegative
 
@@ -24,6 +25,7 @@ class Posting:
 class PositionalIndex:
     terms: Mapping[str, Mapping[DocumentId, Posting]]
     vocabulary: tuple[str, ...] = field(init=False)
+    reversed_vocabulary: tuple[str, ...] = field(init=False)
 
     def __post_init__(self) -> None:
         frozen = {}
@@ -33,6 +35,7 @@ class PositionalIndex:
             frozen[term] = MappingProxyType(dict(postings))
         object.__setattr__(self, "terms", MappingProxyType(frozen))
         object.__setattr__(self, "vocabulary", tuple(sorted(frozen)))
+        object.__setattr__(self, "reversed_vocabulary", tuple(sorted(term[::-1] for term in frozen)))
 
     def terms_with_prefix(self, prefix: str, limit: int | None = None) -> tuple[str, ...]:
         start = bisect_left(self.vocabulary, prefix)
@@ -40,3 +43,13 @@ class PositionalIndex:
         if limit is not None:
             end = min(end, start + limit)
         return self.vocabulary[start:end]
+
+    def terms_with_suffix(self, suffix: str, limit: int | None = None) -> tuple[str, ...]:
+        terms = self.iter_terms_with_suffix(suffix)
+        return tuple(islice(terms, limit)) if limit is not None else tuple(terms)
+
+    def iter_terms_with_suffix(self, suffix: str):
+        reversed_suffix = suffix[::-1]
+        start = bisect_left(self.reversed_vocabulary, reversed_suffix)
+        end = bisect_left(self.reversed_vocabulary, reversed_suffix + chr(0x10ffff))
+        return (term[::-1] for term in islice(self.reversed_vocabulary, start, end))

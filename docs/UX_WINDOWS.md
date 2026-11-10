@@ -8,7 +8,7 @@
 2. **Preparazione:** cartella, fase, conteggi e progresso reale sulla stessa pagina; fasi senza percentuale indeterminate, nessuna ETA inventata. Consigli IT/EN ogni otto secondi, senza prendere focus o annuncio continuo a Narrator.
 3. **Completamento:** home solo con snapshot ricercabile. Errore/cancel senza snapshot lascia retry, scelta cartella, ricostruzione e diagnostiche; recupero del precedente disponibile nel backend.
 4. **Riapertura:** catalogo v2 esistente → recupero automatico, home e sync in background. Se il sorgente manca, ricerca sullo snapshot con avviso di possibile obsolescenza.
-5. **Home:** marchio statico senza slogan, barra con lente e Impostazioni. Invio/lente eseguono; digitare propone suggerimenti. Selezionarne uno completa la query e avvia la ricerca.
+5. **Home:** marchio statico senza slogan, barra con lente e Impostazioni. Invio/lente eseguono; digitare propone suggerimenti per prefisso o, dopo `*`, per suffisso. Selezionarne uno sostituisce l'intera clausola con il termine esatto e avvia la ricerca. Non si propongono completamenti dentro frasi o wildcard malformate.
 6. **Risultati:** titolo, percorso, formato ed estratto evidenziato dallo snapshot. Clic/Invio sul risultato apre l’app Windows associata, senza richiedere dettagli o anteprima interna. Esc torna alla home; eseguire una barra vuota torna alla home senza cercare.
 7. **Impostazioni:** aspetto/lingua, ricerca, cartella/indice; sync, rebuild e diagnostiche. Campo e formati affiancati; reset e pulizia confermata in fondo. Sottocartella e recupero non sono esposti. Indietro preserva schermata/query; il pulsante Impostazioni compare solo in home.
 

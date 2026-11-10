@@ -92,7 +92,7 @@ def actual_text_bytes(app, manifest):
 
 
 def check_queries(app, manifest):
-    from local_document_search.application.contracts import SearchField, SearchRequest, SuggestRequest
+    from local_document_search.application.contracts import SearchField, SearchRequest, SuggestMode, SuggestRequest
     for query, field in QUERIES:
         page = app.search.execute(SearchRequest(query, SearchField(field), limit=manifest["count"]))
         actual = [r.relative_path.value for r in page.results]
@@ -102,11 +102,19 @@ def check_queries(app, manifest):
     for prefix, marker in (("marcatoremed*", MARKERS[1]),
                            ("marcatorerar*", MARKERS[2])):
         page = app.search.execute(SearchRequest(prefix, SearchField.CONTENT,
-                                                limit=manifest["count"], allow_prefixes=True))
+                                                limit=manifest["count"], allow_wildcards=True))
         if [r.relative_path.value for r in page.results] != expected_paths(manifest, marker, "content"):
             raise AssertionError(f"Prefisso errato: {prefix}")
     if app.suggest.execute(SuggestRequest("marcatoreme", SearchField.CONTENT)).terms != (MARKERS[1],):
         raise AssertionError("Suggerimento errato")
+    suffix = MARKERS[1][-6:]
+    page = app.search.execute(SearchRequest("*" + suffix, SearchField.CONTENT,
+                                            limit=manifest["count"], allow_wildcards=True))
+    if [r.relative_path.value for r in page.results] != expected_paths(manifest, MARKERS[1], "content"):
+        raise AssertionError("Suffisso errato")
+    if MARKERS[1] not in app.suggest.execute(SuggestRequest(
+            suffix, SearchField.CONTENT, mode=SuggestMode.SUFFIX)).terms:
+        raise AssertionError("Suggerimento per suffisso errato")
 
 
 def phase(args):
@@ -191,9 +199,16 @@ def phase(args):
                 check_queries(app, manifest)
                 requests = [(q, f, SearchRequest(q, SearchField(f), limit=50)) for q, f in QUERIES]
                 requests.extend((q, "content", SearchRequest(q, SearchField.CONTENT, limit=50,
-                                                                allow_prefixes=True))
+                                                                allow_wildcards=True))
                                 for q in ("marcatoremed*", "marcatorerar*", "frasecom*"))
+                requests.append(("*" + MARKERS[1][-6:], "content",
+                                 SearchRequest("*" + MARKERS[1][-6:], SearchField.CONTENT,
+                                               limit=50, allow_wildcards=True)))
                 requests.append(("marcatoreme", "suggest", SuggestRequest("marcatoreme", SearchField.CONTENT)))
+                from local_document_search.application.contracts import SuggestMode
+                requests.append((MARKERS[1][-6:], "suggest_suffix",
+                                 SuggestRequest(MARKERS[1][-6:], SearchField.CONTENT,
+                                                mode=SuggestMode.SUFFIX)))
                 for _, _, request in requests:
                     for _ in range(args.warmups):
                         (app.suggest if isinstance(request, SuggestRequest) else app.search).execute(request)

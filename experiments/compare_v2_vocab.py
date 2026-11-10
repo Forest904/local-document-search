@@ -2,6 +2,7 @@
 import argparse
 from bisect import bisect_left
 import json
+from heapq import nsmallest
 from pathlib import Path
 import statistics
 import sys
@@ -44,6 +45,13 @@ def array_prefix(values, prefix):
     return end - start
 
 
+def suffix_candidates(reversed_values, suffix):
+    key = suffix[::-1]
+    start = bisect_left(reversed_values, key)
+    end = bisect_left(reversed_values, key + chr(0x10ffff))
+    return (value[::-1] for value in reversed_values[start:end])
+
+
 def measure(operation, repeat=100):
     samples = []
     for _ in range(repeat):
@@ -83,6 +91,27 @@ def main():
             "prefix_us": {p: measure(lambda p=p: prefix(p)) for p in prefixes},
             "reopen_rebuild_us": measure(build, 10),
         }
+    reversed_values = tuple(sorted(value[::-1] for value in values))
+    tracemalloc.start()
+    rebuilt = tuple(sorted(value[::-1] for value in values))
+    _, reverse_peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    del rebuilt
+    def reverse_lookup(suffix):
+        key = suffix[::-1]
+        start = bisect_left(reversed_values, key)
+        end = bisect_left(reversed_values, key + chr(0x10ffff))
+        return sum(1 for _ in range(start, end))
+    results["suffix"] = {
+        "incremental_peak_bytes": reverse_peak,
+        "build_us": measure(lambda: tuple(sorted(value[::-1] for value in values)), 10),
+        "reopen_rebuild_us": measure(lambda: tuple(sorted(value[::-1] for value in values)), 10),
+        "lookup_us": {suffix: {"reversed": measure(lambda s=suffix: reverse_lookup(s)),
+                                "scan": measure(lambda s=suffix: sum(v.endswith(s) for v in values))}
+                      for suffix in ("12345", "45", "5")},
+        "suggest_us": {suffix: measure(lambda s=suffix: nsmallest(10, suffix_candidates(reversed_values, s)))
+                       for suffix in ("12345", "45", "5")},
+    }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(results, indent=2))

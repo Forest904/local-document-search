@@ -51,3 +51,12 @@ La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [stato
 ## Nome pubblico stabile (10 novembre 2026)
 
 Il prodotto si presenta come Local Document Search senza suffissi generazionali; i numeri tecnici di release restano disponibili. V2-R14/R16 preservano sia i dati v1 sia quelli della precedente installazione in `LocalDocumentSearchV2`. Nuovi dati in `LocalDocumentSearch/Data`; installazione predefinita in `Programs/LocalDocumentSearch` sotto `%LOCALAPPDATA%`, con scelta di una diversa cartella locale fissa solo alla prima installazione. Passaggio dalla precedente installazione tramite disinstallazione conservativa e nuovo avvio, senza migrazione; V2-R15 mantiene gli aggiornamenti successivi nel percorso registrato.
+
+## Estensione V2-09 — suffissi espliciti
+
+La ricerca supporta anche `*suffisso` con opzione wildcard esplicita e suggerimenti di termini che terminano nel frammento digitato. Sono ammessi solo `prefisso*` e `*suffisso` fuori dalle frasi. Restano invariati ricerca esatta, AND/frasi nello stesso campo, CLI Homework e trattamento della punteggiatura con wildcard disabilitate. Per ogni campo lo snapshot deriva un vocabolario ordinato rovesciato, senza nuovi posting o schema SQLite. [Decisione](adr/0015-v2-suffix-wildcards.md), [scenari T22/T23](TEST_STRATEGY.md#scenari-di-accettazione).
+
+| ID | Requisito V2-09 | Accettazione |
+|---|---|---|
+| V2-R20 | Ricerca esplicita per suffisso | `*termine` restituisce match completi nello stesso campo, con limiti e ranking coerenti; T22 |
+| V2-R21 | Suggerimenti per suffisso | Termini dello snapshot in ordine originale; il desktop sostituisce la clausola senza avviare query durante digitazione; T23 |

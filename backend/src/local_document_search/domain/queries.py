@@ -43,7 +43,16 @@ class PrefixClause:
             raise ValueError("Prefisso vuoto")
 
 
-type QueryClause = TermsClause | PhraseClause | PrefixClause
+@dataclass(frozen=True)
+class SuffixClause:
+    text: str
+
+    def __post_init__(self) -> None:
+        if not self.text.strip():
+            raise ValueError("Suffisso vuoto")
+
+
+type QueryClause = TermsClause | PhraseClause | PrefixClause | SuffixClause
 
 
 @dataclass(frozen=True)
@@ -54,7 +63,7 @@ class SearchQuery:
     def __post_init__(self) -> None:
         object.__setattr__(self, "clauses", tuple(self.clauses))
         if not self.clauses or not all(
-            isinstance(c, (TermsClause, PhraseClause, PrefixClause)) for c in self.clauses
+            isinstance(c, (TermsClause, PhraseClause, PrefixClause, SuffixClause)) for c in self.clauses
         ):
             raise ValueError("Sono richieste clausole termini/frasi")
         if not isinstance(self.field, SearchField):
@@ -73,37 +82,38 @@ def _analyze(query: SearchQuery) -> dict[SearchField, tuple[tuple[str, ...], ...
                         for clause in query.clauses)
         if any(not terms for terms in clauses):
             raise ValueError("Clausola senza token ricercabili")
-        if any(isinstance(clause, PrefixClause) and
+        if any(isinstance(clause, (PrefixClause, SuffixClause)) and
                (len(terms) != 1 or len(terms[0]) < 2)
                for clause, terms in zip(query.clauses, clauses)):
-            raise ValueError("Prefisso: un solo token di almeno due caratteri")
+            raise ValueError("Wildcard: un solo token di almeno due caratteri")
         analyzed[field] = clauses
     return analyzed
 
 
 class QueryParser:
     def parse(self, text: str, field: SearchField = SearchField.BOTH,
-              allow_prefixes: bool = False) -> SearchQuery:
+              allow_wildcards: bool = False) -> SearchQuery:
         if text.count('"') % 2:
             raise ValueError("Virgolette sbilanciate")
         clauses: list[QueryClause] = []
         for i, part in enumerate(text.split('"')):
             if i % 2:
-                if allow_prefixes and "*" in part:
-                    raise ValueError("Prefisso non ammesso in frase")
+                if allow_wildcards and "*" in part:
+                    raise ValueError("Wildcard non ammessa in frase")
                 clauses.append(PhraseClause(part))
             elif part.strip():
-                if not allow_prefixes or "*" not in part:
+                if not allow_wildcards or "*" not in part:
                     clauses.append(TermsClause(part))
                 else:
                     for word in re.findall(r"\S+", part):
                         if "*" in word:
-                            if word.count("*") != 1 or not word.endswith("*"):
-                                raise ValueError("Sintassi prefisso non valida")
+                            if word.count("*") != 1 or not (word.startswith("*") or word.endswith("*")):
+                                raise ValueError("Sintassi wildcard non valida")
+                            value = word[1:] if word.startswith("*") else word[:-1]
                             if not all(unicodedata.category(char)[0] in {"L", "N", "M"}
-                                       for char in word[:-1]):
-                                raise ValueError("Sintassi prefisso non valida")
-                            clauses.append(PrefixClause(word[:-1]))
+                                       for char in value):
+                                raise ValueError("Sintassi wildcard non valida")
+                            clauses.append(SuffixClause(value) if word.startswith("*") else PrefixClause(value))
                         else:
                             clauses.append(TermsClause(word))
         query = SearchQuery(tuple(clauses), field)
@@ -141,8 +151,8 @@ class QueryEvaluator:
             index = snapshot.filename_index if field is SearchField.FILENAME else snapshot.content_index
             positions = set()
             for clause, terms in zip(query.clauses, analyzed[field]):
-                if isinstance(clause, PrefixClause):
-                    for term in index.terms_with_prefix(terms[0], 257):
+                if isinstance(clause, (PrefixClause, SuffixClause)):
+                    for term in self._expand(index, clause, terms[0], 257):
                         posting = index.terms[term].get(document_id)
                         if posting:
                             positions.update(posting.positions)
@@ -199,17 +209,17 @@ class QueryEvaluator:
         for field, clauses in analyzed.items():
             index = snapshot.filename_index if field is SearchField.FILENAME else snapshot.content_index
             for position, (clause, terms) in enumerate(zip(query.clauses, clauses)):
-                if isinstance(clause, PrefixClause):
-                    values = index.terms_with_prefix(terms[0], 257)
+                if isinstance(clause, (PrefixClause, SuffixClause)):
+                    values = self._expand(index, clause, terms[0], 257)
                     if len(values) > 256:
-                        raise ValueError("Prefisso con oltre 256 espansioni")
+                        raise ValueError("Wildcard con oltre 256 espansioni")
                     expansions[field, position] = values
         matches: dict[SearchField, set[DocumentId]] = {}
         for field, clauses in analyzed.items():
             index = snapshot.filename_index if field is SearchField.FILENAME else snapshot.content_index
             candidates: set[DocumentId] | None = None
             for position, (clause, terms) in enumerate(zip(query.clauses, clauses)):
-                if isinstance(clause, PrefixClause):
+                if isinstance(clause, (PrefixClause, SuffixClause)):
                     found = set().union(*(index.terms[term] for term in expansions[field, position]))
                 else:
                     found = self._match_clause(index, terms, isinstance(clause, PhraseClause))
@@ -218,6 +228,13 @@ class QueryEvaluator:
                     break
             matches[field] = candidates or set()
         return matches
+
+    @staticmethod
+    def _expand(index: PositionalIndex, clause: QueryClause, term: str,
+                limit: int) -> tuple[str, ...]:
+        if isinstance(clause, SuffixClause):
+            return index.terms_with_suffix(term, limit)
+        return index.terms_with_prefix(term, limit)
 
     @staticmethod
     def _match_clause(index: PositionalIndex, terms: tuple[str, ...], phrase: bool) -> set[DocumentId]:

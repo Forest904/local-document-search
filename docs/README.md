@@ -31,6 +31,10 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 
 ## Modifiche successive alla release 0.2.0
 
+### V2-09 — ricerca per suffisso
+
+Milestone implementata e verificata sul sorgente locale: `*suffisso` e suggerimenti dinamici usano un vocabolario rovesciato immutabile per campo. L'API Python rinomina `allow_prefixes` in `allow_wildcards` senza alias; il desktop abilita entrambe le forme. Suite backend **394 passed, 6 skipped**, frontend/script **100 passed**, runner Homework verde; benchmark sintetico target su tre cicli **PASS** e probe Qt offscreen **PASS**. [ADR 0015](adr/0015-v2-suffix-wildcards.md), [report e limiti](V2_09_SUFFIX_SEARCH.md). Verifiche su working tree modificato, non su installer o nuova release; i risultati della release 0.2.0 e i benchmark V2-02 restano evidenze storiche separate.
+
 Nome pubblico stabile senza etichetta generazionale, nuovi percorsi di installazione e dati, transizione tramite reinstallazione pulita: [ADR 0013](adr/0013-v2-distribution.md#revisione-approvata--10-novembre-2026). Queste modifiche non costituiscono una nuova release pubblicata; il collaudo del nuovo pacchetto Windows resta distinto dalle evidenze storiche V2-07/V2-08.
 
 Verifiche locali del 10 novembre 2026 per il nome pubblico: suite backend e script **418 passed, 6 skipped**; dopo gli ultimi controlli aggiunti, suite desktop con compilazione sintetica/pulizia **54 passed**, suite dedicata packaging **6 passed** (esecuzioni sovrapposte, conteggi non sommabili). Coperti isolamento dei dati storici, primo avvio/riapertura/pulizia, junction negli antenati e confini della pulizia upgrade. Inno Setup compila lo script con payload sintetico; questo non ? un pacchetto applicativo distribuibile. Non eseguiti build completa n? collaudo install/update/uninstall su Windows pulito; blocco della vecchia installazione e nomi dei collegamenti richiedono ancora quel collaudo. Nessuna nuova release pubblicata.

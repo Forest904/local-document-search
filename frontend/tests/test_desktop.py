@@ -124,18 +124,40 @@ def test_privacy_precedes_factory_and_typing_only_suggests(controller):
     c.search()
     until(lambda: bool(s.search.calls))
     request = s.search.calls[0][0][0]
-    assert request.limit == 20 and request.allow_prefixes
+    assert request.limit == 20 and request.allow_wildcards
     assert request.order.value == "relevance"
 
 
 @pytest.mark.parametrize("query,cursor,expected", [
     ('"al', 3, None), ('al*', 2, None), ('alpha be', 8, (6, 8, 'be')),
     ('alpha beta', 8, (6, 10, 'be')), ('a', 1, None), ('foo-bar', 7, None),
+    ('alpha *ing beta', 10, (6, 10, 'ing')), ('*ing', 3, (0, 4, 'in')),
+    ('x*ing', 5, None), ('**ing', 5, None), ('*ing*', 4, None),
 ])
 def test_suggestion_token_boundaries(controller, query, cursor, expected):
     c, _ = controller
     c.query, c.cursor = query, cursor
-    assert c.suggestion_span() == expected
+    span = c.suggestion_span()
+    assert (None if span is None else span[:3]) == expected
+
+
+def test_suffix_suggestion_replaces_whole_clause(controller):
+    from local_document_search.application.contracts import SuggestMode
+
+    c, s = controller
+    start(c)
+    c.editQuery("alpha *ing beta", 10)
+    c.suggest()
+    until(lambda: bool(s.suggest.calls))
+    request = s.suggest.calls[-1][0][0]
+    assert request.text == "ing" and request.mode is SuggestMode.SUFFIX
+    assert not s.search.calls
+    s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("walking",)))
+    until(lambda: c.terms == ["walking"])
+    c.acceptSuggestionAndSearch(0)
+    assert c.query == "alpha walking beta"
+    until(lambda: bool(s.search.calls))
+    assert s.search.calls[-1][0][0].allow_wildcards
 
 
 @pytest.mark.parametrize("change,error", [("query", False), ("query", True), ("options", False), ("directory", True)])

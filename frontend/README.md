@@ -6,7 +6,7 @@ PySide6/Qt Quick, QML e backend v2 nello stesso processo. [Installazione e avvio
 
 Al primo avvio premi **Accetta e scegli una cartella**. La home appare quando l’indice è ricercabile; agli avvii successivi il catalogo viene recuperato e sincronizzato in background.
 
-Invio o la lente eseguono la query; `termine*` cerca prefissi espliciti. Digitare propone suggerimenti: selezionarne uno completa la query e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il file nell’app Windows associata.
+Invio o la lente eseguono la query; `termine*` cerca prefissi e `*termine` cerca suffissi. Digitare propone suggerimenti anche dopo `*`: selezionarne uno sostituisce la clausola con il termine completo e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il file nell’app Windows associata.
 
 **Impostazioni**, accessibile dalla home, contiene campo, formati, ordine, cartella, sync, rebuild, diagnostiche, pulizia, lingua e tema. Filtri solo di sessione, azzerati al cambio cartella/riavvio; lingua e tema persistono. Il filtro sottocartella, il recupero del precedente e i dettagli completi restano API backend, senza controlli dedicati nella UI.
 

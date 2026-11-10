@@ -36,6 +36,8 @@ Il manifest ha una entry per percorso: INDEXED riferisce un unico documento coer
 
 Lo snapshot immutabile comprende manifest, catalogo, testo, due indici posizionali (`filename`, `content`) e una tupla ordinata del vocabolario per campo. Mappe copiate e in sola lettura, posizioni/clausole in tuple. Le posting riferiscono solo ID del catalogo e posizioni zero-based strettamente crescenti, indipendenti per campo; sostituzioni/rimozioni non lasciano occorrenze obsolete. Lo snapshot valida riferimenti, metadati e copertura dei token senza rianalizzare il testo; vocabolario e indice primario devono riferirsi agli stessi termini e versione. Nessuna query legge un draft. Schema e processing devono essere compatibili prima della ricerca.
 
+V2-09 deriva per ciascun campo anche una tupla ordinata di termini rovesciati dalle chiavi del medesimo indice. È immutabile e ricostruita alla riapertura; non duplica posting né cambia lo schema SQLite.
+
 Ogni campo deve soddisfare l’intera query AND/frasi; BOTH unisce i risultati dei due campi. Prefissi espliciti, filtri e ranking non alterano questo vincolo. Snippet e dettagli portano lo `snapshot_id` e usano il testo acquisito, senza rileggere i sorgenti o promettere coordinate/layout PDF. [Semantica](INDEXING_AND_ANALYSIS.md) e [contratti](INTERFACE_CONTRACTS.md).
 
 Il desktop sposta il lavoro nei worker e scarta risposte obsolete rispetto a query, directory e snapshot. Lingua e tema sono preferenze persistenti separate dall’indice. Storage v2 in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, v1 in `%LOCALAPPDATA%/LocalDocumentSearch`: nessuna migrazione automatica o pulizia incrociata. [Privacy e distribuzione](SECURITY_AND_PRIVACY.md).

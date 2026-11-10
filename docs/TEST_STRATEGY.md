@@ -51,6 +51,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T19 | CI della revisione finale, manifest/hash del pacchetto e risultati legati alla stessa revisione pulita | V2-08 |
 | T20 | Sintetici TXT/MD/PDF riproducibili: analyzer, campi, AND, frasi, Unicode e edge case confrontati con ground truth indipendente dal motore | V2-01 |
 | T21 | 12–30 file reali autorizzati, IT/EN e tre formati; provenienza/hash verificati, query con liste attese complete; download mancante → suite reale incompleta, non PASS | V2-01 |
+| T22 | `*suffisso` per campo e BOTH, AND/frasi, Unicode, limiti 256/257, ranking, filtri, snippet e versioni snapshot; regressioni T03–T09/T18 | V2-09 |
+| T23 | Suggerimenti per suffisso in ordine originale, limite/deduplica e snapshot; digitazione senza ricerca, selezione e risposte obsolete nel desktop IT/EN; regressioni T12/T13 | V2-09 |
 
 ## Gate finale
 

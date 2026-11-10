@@ -4,7 +4,7 @@ from heapq import nsmallest
 from threading import Condition
 
 from .contracts import (DocumentDetails, InvalidInput, SearchOrder, SearchRequest, SearchResponse,
-                        SearchResult, SearchSnippet, TextRange, SuggestRequest, SuggestResponse)
+                        SearchResult, SearchSnippet, TextRange, SuggestMode, SuggestRequest, SuggestResponse)
 from .errors import ResourceFailure, SnapshotUnavailable
 from .ports import SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
@@ -46,7 +46,7 @@ class SearchDocuments:
         try:
             with self.snapshots.acquire(request.snapshot_id) as snapshot:
                 try:
-                    query = QueryParser().parse(request.query, request.field, request.allow_prefixes)
+                    query = QueryParser().parse(request.query, request.field, request.allow_wildcards)
                     evaluator = QueryEvaluator()
                     if request.formats is None and request.folder is None and request.order is SearchOrder.PATH:
                         matches, total = evaluator.evaluate_page(query, snapshot, request.offset, request.limit)
@@ -125,9 +125,12 @@ class SuggestTerms:
                     tokens = analyzer.analyze(request.text)
                     if len(tokens) != 1:
                         raise InvalidInput("Richiesto un solo token per campo")
-                    prefix = tokens[0].term
-                    if len(prefix) >= 2:
-                        found.update(index.terms_with_prefix(prefix, request.limit))
+                    fragment = tokens[0].term
+                    if len(fragment) >= 2:
+                        if request.mode is SuggestMode.SUFFIX:
+                            found.update(nsmallest(request.limit, index.iter_terms_with_suffix(fragment)))
+                        else:
+                            found.update(index.terms_with_prefix(fragment, request.limit))
                 return SuggestResponse(snapshot.snapshot_id, tuple(sorted(found)[:request.limit]))
         except MemoryError as exc:
             raise ResourceFailure("Memoria insufficiente durante i suggerimenti") from exc
@@ -139,19 +142,19 @@ class GetDocument:
         self.runtime = runtime
 
     def submit(self, document_id: DocumentId, snapshot_id: str, query: str | None = None,
-               field: SearchField = SearchField.BOTH, allow_prefixes: bool = False):
+               field: SearchField = SearchField.BOTH, allow_wildcards: bool = False):
         if self.runtime is None:
             raise InvalidInput("Runtime asincrono non configurato")
-        return self.runtime.submit(self._execute, document_id, snapshot_id, query, field, allow_prefixes)
+        return self.runtime.submit(self._execute, document_id, snapshot_id, query, field, allow_wildcards)
 
     def execute(self, document_id: DocumentId, snapshot_id: str, query: str | None = None,
-                field: SearchField = SearchField.BOTH, allow_prefixes: bool = False) -> DocumentDetails:
+                field: SearchField = SearchField.BOTH, allow_wildcards: bool = False) -> DocumentDetails:
         if self.runtime is not None:
-            return self.runtime.run(self._execute, document_id, snapshot_id, query, field, allow_prefixes)
-        return self._execute(document_id, snapshot_id, query, field, allow_prefixes)
+            return self.runtime.run(self._execute, document_id, snapshot_id, query, field, allow_wildcards)
+        return self._execute(document_id, snapshot_id, query, field, allow_wildcards)
 
     def _execute(self, document_id: DocumentId, snapshot_id: str, query: str | None,
-                 field: SearchField, allow_prefixes: bool) -> DocumentDetails:
+                 field: SearchField, allow_wildcards: bool) -> DocumentDetails:
         try:
             with self.snapshots.acquire(snapshot_id) as snapshot:
                 document = snapshot.catalog.documents.get(document_id)
@@ -160,7 +163,7 @@ class GetDocument:
                 filename_ranges = content_ranges = ()
                 if query is not None:
                     try:
-                        parsed = QueryParser().parse(query, field, allow_prefixes)
+                        parsed = QueryParser().parse(query, field, allow_wildcards)
                         by_field = QueryEvaluator().matched_ids_by_field(parsed, snapshot)
                         metadata = document.descriptor.metadata
                         if document_id in by_field.get(SearchField.FILENAME, ()):

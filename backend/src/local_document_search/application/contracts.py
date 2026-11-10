@@ -18,13 +18,18 @@ class SearchOrder(str, Enum):
     RELEVANCE = "relevance"
 
 
+class SuggestMode(str, Enum):
+    PREFIX = "prefix"
+    SUFFIX = "suffix"
+
+
 @dataclass(frozen=True)
 class SearchRequest:
     query: str
     field: SearchField = SearchField.BOTH
     limit: int = 50
     offset: int = 0
-    allow_prefixes: bool = False
+    allow_wildcards: bool = False
     formats: frozenset[DocumentFormat] | None = None
     folder: str | None = None
     order: SearchOrder = SearchOrder.PATH
@@ -37,8 +42,8 @@ class SearchRequest:
             raise InvalidInput("limit deve essere un intero positivo")
         if type(self.offset) is not int or self.offset < 0:
             raise InvalidInput("offset deve essere un intero non negativo")
-        if type(self.allow_prefixes) is not bool:
-            raise InvalidInput("allow_prefixes deve essere booleano")
+        if type(self.allow_wildcards) is not bool:
+            raise InvalidInput("allow_wildcards deve essere booleano")
         if self.formats is not None:
             try:
                 formats = frozenset(self.formats)
@@ -93,6 +98,7 @@ class SuggestRequest:
     field: SearchField = SearchField.BOTH
     limit: int = 10
     snapshot_id: str | None = None
+    mode: SuggestMode = SuggestMode.PREFIX
 
     def __post_init__(self) -> None:
         if not isinstance(self.text, str) or not isinstance(self.field, SearchField):
@@ -101,6 +107,8 @@ class SuggestRequest:
             raise InvalidInput("limit deve essere tra 1 e 50")
         if self.snapshot_id is not None and (not isinstance(self.snapshot_id, str) or not self.snapshot_id.strip()):
             raise InvalidInput("snapshot_id non valido")
+        if not isinstance(self.mode, SuggestMode):
+            raise InvalidInput("Modalità suggerimenti non valida")
 
 
 @dataclass(frozen=True)

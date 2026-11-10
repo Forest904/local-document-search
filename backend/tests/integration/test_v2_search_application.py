@@ -88,9 +88,30 @@ def test_prefix_and_name_highlight(tmp_path):
     path.write_text("", encoding="utf-8")
     repo = InMemorySnapshotRepository()
     build(repo, tmp_path)
-    result = SearchDocuments(repo).execute(SearchRequest("alp*", allow_prefixes=True)).results[0]
+    result = SearchDocuments(repo).execute(SearchRequest("alp*", allow_wildcards=True)).results[0]
     assert result.filename[result.filename_highlights[0].start:result.filename_highlights[0].end] == "Alpha"
     assert result.snippet.text == ""
+
+
+def test_suffix_filters_ranking_and_page(tmp_path):
+    for name, content in {
+        "a/walking.txt": "walking",
+        "a/talking.md": "talking talking",
+        "b/walking.txt": "walking walking walking",
+    }.items():
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    repo = InMemorySnapshotRepository()
+    build(repo, tmp_path)
+    request = SearchRequest("*ing", SearchField.BOTH, allow_wildcards=True,
+                            order=SearchOrder.RELEVANCE, folder="a",
+                            formats={DocumentFormat.TXT, DocumentFormat.MARKDOWN}, limit=1, offset=1)
+    response = SearchDocuments(repo).execute(request)
+    assert response.total_matches == 2
+    assert [r.relative_path.value for r in response.results] == ["a/walking.txt"]
+    result = response.results[0]
+    assert result.filename[result.filename_highlights[0].start:result.filename_highlights[0].end] == "walking"
 
 
 def test_both_scores_only_complete_fields_and_stable_ties(tmp_path):
