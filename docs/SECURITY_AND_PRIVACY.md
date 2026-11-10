@@ -1,20 +1,20 @@
-# Privacy, dati e distribuzione v2
+# Privacy, dati e distribuzione
 
 Politica corrente; [stato e collaudo della release](README.md#stato-implementato).
 
 ## Dati locali
 
-Nessun upload, telemetria, account o servizio di rete. I reader non visitano URL nei documenti. Testo estratto e indici possono restare dopo la scomparsa dei sorgenti: informare l'utente prima dell'indicizzazione. Storage v2 per account separato dalla radice v1 e dalla directory indicizzata; protezioni standard dell’account Windows, senza cifratura applicativa aggiuntiva. Per backend/test non Windows iniettare uno storage esplicito esterno a sorgenti e repository; trattare i documenti come input non fidati e verificare file corrotti/risorse insufficienti. La decisione sul percorso e sul layout fisico è [V2-D04](adr/README.md#decisioni-aperte).
+Nessun upload, telemetria, account o servizio di rete. I reader non visitano URL nei documenti. Testo estratto e indici possono restare dopo la scomparsa dei sorgenti: informare l'utente prima dell'indicizzazione. Storage per account in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, separato dai dati precedenti e dalla directory indicizzata; protezioni standard dell’account Windows, senza cifratura applicativa aggiuntiva. Per backend/test non Windows iniettare uno storage esplicito esterno a sorgenti e repository; trattare i documenti come input non fidati e verificare file corrotti/risorse insufficienti. La decisione sul percorso e sul layout fisico è [V2-D04](adr/README.md#decisioni-aperte).
 
 Log condivisibili senza testo estratto, query personali o percorsi assoluti; report dei job con categorie e percorsi relativi. Fixture e corpus dei test sintetici; dati personali, snapshot, database e risultati locali fuori da Git. Niente hash dei sorgenti per il diff o controllo durante la ricerca.
 
-Pulizia esplicita: rimuove dati applicativi v2 secondo lo stato del job e protegge le letture attive; mai sorgenti o storage v1. Fallimento osservabile e riprovabile. Disinstallazione conserva per default indici e preferenze v2; il wizard offre scelta esplicita per eliminarli. Nessuna promessa di cancellazione forense.
+Pulizia esplicita: rimuove dati applicativi correnti secondo lo stato del job e protegge le letture attive; mai sorgenti o dati delle installazioni precedenti. Fallimento osservabile e riprovabile. Disinstallazione conserva per default indici e preferenze; il wizard offre scelta esplicita per eliminarli. Nessuna promessa di cancellazione forense.
 
 ## Distribuzione e diritti
 
 Installer Windows 11 x64 offline, per utente e senza elevazione; include Python, Qt, plugin e ogni dipendenza runtime necessaria. Aggiornamento tramite nuovo installer completo, nessun updater che chiama un servizio. Collaudo su account standard e sistema pulito, senza Python o tool di sviluppo. La prima release pubblica può essere non firmata; registrare gli avvisi realmente osservati e non presentarla come firmata.
 
-L'implementazione V2-07 usa Inno Setup 6.7.3. La disinstallazione conserva i dati v2 per default anche in modalità silenziosa. La cancellazione esplicita controlla il lock e rifiuta reparse point; il fallimento lascia un errore riprovabile. [Evidenze e limiti](V2_07_INSTALLER.md).
+L'implementazione V2-07 usa Inno Setup 6.7.3. La disinstallazione conserva i dati per default anche in modalità silenziosa. La cancellazione esplicita controlla il lock e rifiuta reparse point; il fallimento lascia un errore riprovabile. [Evidenze e limiti](V2_07_INSTALLER.md).
 
 **Termini del titolare:** Luca Foresti, Roma, Italia, lucapalocco@gmail.com. L'uso personale, di studio e interno è gratuito anche per imprese e professionisti; la vendita, l'integrazione in prodotti distribuiti e l'offerta delle funzioni come servizio a terzi richiedono autorizzazione scritta. La condivisione gratuita del pacchetto originale integro è consentita. Il testo italiano in `scripts/package/TERMS-IT.txt` è quello di riferimento; quello inglese è informativo. Il repository GitHub pubblico consente visualizzazione e fork nei limiti delle condizioni della piattaforma; non concede automaticamente una licenza open source di riuso del codice. [Spiegazione GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
 

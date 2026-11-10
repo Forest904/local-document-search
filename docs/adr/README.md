@@ -28,3 +28,5 @@ V2-D08: termini italiani approvati nella sostanza dal titolare Luca Foresti. V2-
 Nessuna decisione attualmente aperta. Registrare qui nuove scelte che cambiano requisiti, comportamento pubblico, contratti o dipendenze, e approvarle prima del codice dipendente. Aggiornare ADR, specifiche e scenari interessati; i dettagli interni ordinari non richiedono un ADR. [registro storico v1](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/OPEN_DECISIONS.md).
 
 Per un nuovo ADR usare ID/titolo, stato e data, contesto, decisione, alternative, conseguenze, dettagli aperti e riferimenti a requisiti/contratti/scenari. Gli ADR 0001–0009 mantengono i riferimenti storici v1: le regole correnti complete sono nelle specifiche indicate nell’[indice](../README.md#riferimenti).
+
+Revisione del 10 novembre 2026: [0012](0012-v2-lifecycle-storage.md) e [0013](0013-v2-distribution.md) adottano nome pubblico e percorsi senza etichetta generazionale, con reinstallazione pulita e nessuna migrazione dei dati precedenti.

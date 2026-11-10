@@ -1,8 +1,15 @@
 param([Parameter(Mandatory)][string]$InstallRoot, [Parameter(Mandatory)][string]$PreviousManifest)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($InstallRoot).TrimEnd('\')
-$expected = [IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Programs\LocalDocumentSearchV2')).TrimEnd('\')
+$expected = [IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Programs\LocalDocumentSearch')).TrimEnd('\')
 if (-not $root.Equals($expected, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected install path' }
+# Validate every ancestor before accessing or deleting descendants.
+$ancestor = $root
+while ($ancestor) {
+    $node = Get-Item -LiteralPath $ancestor -Force -ErrorAction SilentlyContinue
+    if ($node -and (($node.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) { throw 'Reparse point in path' }
+    $ancestor = Split-Path -Parent $ancestor
+}
 if (((Get-Item -LiteralPath $root -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse install root' }
 $old = Get-Content -LiteralPath $PreviousManifest -Raw | ConvertFrom-Json
 $new = Get-Content -LiteralPath (Join-Path $root 'BUILD-MANIFEST.json') -Raw | ConvertFrom-Json

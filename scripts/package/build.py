@@ -20,8 +20,8 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 from payload_audit import full_file_inventory, qt_file_inventory, trim_qt
-NAME = "LocalDocumentSearch-v2-06-prototype-windows-x64"
 INSTALLER_VERSION = "0.2.0"
+NAME = f"LocalDocumentSearch-{INSTALLER_VERSION}-windows-x64"
 INNO_VERSION = "6.7.3"
 INNO_SHA256 = "0a8757031b33777e4c9cbffee40f11a5062b36d25cbe144c1db73b6102b80ad7"
 

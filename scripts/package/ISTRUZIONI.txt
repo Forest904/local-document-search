@@ -21,8 +21,8 @@ cartella/riavvio; lingua e tema persistono. Ctrl+L ricerca, Ctrl+O cartella, F5 
 Sync rileva aggiunte/modifiche/rimozioni; nessun controllo continuo.
 Modifiche con dimensione e timestamp invariati possono non essere rilevate.
 
-Dati v2: %LOCALAPPDATA%/LocalDocumentSearchV2, separati dai dati v1.
-Elimina dati locali richiede conferma e non modifica documenti originali o v1.
+Dati locali: %LOCALAPPDATA%/LocalDocumentSearch/Data.
+Elimina dati locali richiede conferma e non modifica documenti originali o dati delle installazioni precedenti.
 Nessuna cifratura aggiuntiva. Una sola istanza accede allo storage.
 Errore o annullamento prima del commit conserva lo snapshot precedente.
 

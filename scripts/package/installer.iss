@@ -9,12 +9,12 @@
 #endif
 [Setup]
 AppId={#AppId}
-AppName=Local Document Search v2
+AppName=Local Document Search
 AppVersion={#AppVersion}
 AppPublisher=Local Document Search
 InfoBeforeFile={#SourcePath}\TERMS-IT.txt
-DefaultDirName={localappdata}\Programs\LocalDocumentSearchV2
-DefaultGroupName=Local Document Search v2
+DefaultDirName={localappdata}\Programs\LocalDocumentSearch
+DefaultGroupName=Local Document Search
 OutputDir={#OutputDir}
 OutputBaseFilename=LocalDocumentSearch-0.2.0-windows-x64-setup
 PrivilegesRequired=lowest
@@ -43,12 +43,14 @@ it.Downgrade=È già installata una versione più recente. Il downgrade è blocc
 en.Downgrade=A newer version is already installed. Downgrade is blocked.
 it.CloseForUninstall=Chiudere Local Document Search prima della disinstallazione.
 en.CloseForUninstall=Close Local Document Search before uninstalling.
-it.DeleteData=Eliminare indici e preferenze di Local Document Search v2? L'operazione non può essere annullata.
-en.DeleteData=Delete Local Document Search v2 indexes and preferences? This cannot be undone.
+it.DeleteData=Eliminare indici e preferenze di Local Document Search? L'operazione non può essere annullata.
+en.DeleteData=Delete Local Document Search indexes and preferences? This cannot be undone.
 it.CleanupFailed=La pulizia dei dati è fallita. Chiudere l'applicazione e riprovare.
 en.CleanupFailed=Data cleanup failed. Close the application and retry.
 it.UpgradeFailed=Impossibile eliminare i vecchi file applicativi. Riprovare l'installer.
 en.UpgradeFailed=Old application files could not be removed. Retry the installer.
+it.LegacyInstall=Disinstallare prima la precedente installazione di Local Document Search conservando indici e preferenze, poi eseguire nuovamente questo installer. Al primo avvio occorre scegliere la cartella e indicizzarla nuovamente.
+en.LegacyInstall=First uninstall the previous installation of Local Document Search, keeping indexes and preferences, then run this installer again. On first launch, select your folder and index it again.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: unchecked
@@ -59,8 +61,8 @@ Source: "{#SourcePath}\uninstall-data.ps1"; DestDir: "{app}"; Flags: ignoreversi
 Source: "{#SourcePath}\prune-upgrade.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\Local Document Search v2"; Filename: "{app}\LocalDocumentSearch.exe"
-Name: "{autodesktop}\Local Document Search v2"; Filename: "{app}\LocalDocumentSearch.exe"; Tasks: desktopicon
+Name: "{autoprograms}\Local Document Search"; Filename: "{app}\LocalDocumentSearch.exe"
+Name: "{autodesktop}\Local Document Search"; Filename: "{app}\LocalDocumentSearch.exe"; Tasks: desktopicon
 
 [Code]
 const RunningMutex = 'Local\LocalDocumentSearchV2Running';
@@ -86,9 +88,16 @@ begin
 end;
 
 function InitializeSetup(): Boolean;
-var Installed: String;
+var Installed, InstalledPath: String;
 begin
   Result := False;
+  if (RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#RegistryId}_is1', 'InstallLocation', InstalledPath) and
+      (CompareText(RemoveBackslashUnlessRoot(InstalledPath), ExpandConstant('{localappdata}\Programs\LocalDocumentSearchV2')) = 0)) or
+     FileExists(ExpandConstant('{localappdata}\Programs\LocalDocumentSearchV2\LocalDocumentSearch.exe')) then begin
+    Log(ExpandConstant('{cm:LegacyInstall}'));
+    if not WizardSilent then MsgBox(ExpandConstant('{cm:LegacyInstall}'), mbError, MB_OK);
+    Exit;
+  end;
   if CheckForMutexes(RunningMutex) then begin
     if not WizardSilent then MsgBox(ExpandConstant('{cm:CloseForInstall}'), mbError, MB_OK);
     Exit;

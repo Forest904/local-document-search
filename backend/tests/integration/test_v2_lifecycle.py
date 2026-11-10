@@ -471,3 +471,28 @@ with compose_v2_application(sys.argv[1], read_workers=1) as app:
         assert app.status.execute().active_snapshot_id == original
         assert app.search.execute(SearchRequest("alfa")).total_matches == 1
         assert app.search.execute(SearchRequest("beta")).total_matches == 0
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Default storage Windows")
+def test_neutral_default_storage_preserves_both_legacy_locations(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    markers = [tmp_path / "LocalDocumentSearch" / "control.sqlite3",
+               tmp_path / "LocalDocumentSearchV2" / "control-v2.sqlite3"]
+    for marker in markers:
+        marker.parent.mkdir()
+        marker.write_bytes(b"legacy data")
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "note.txt").write_text("alfa", encoding="utf-8")
+    with _compose_v2_application(read_workers=1) as app:
+        assert not app.initialize.execute().search_available
+        state = app.select_directory.execute(str(source))
+        app._lifecycle.jobs.wait(state.job.job_id)
+        assert app.search.execute(SearchRequest("alfa")).total_matches == 1
+    assert (tmp_path / "LocalDocumentSearch/Data/control-v2.sqlite3").is_file()
+    with _compose_v2_application(read_workers=1) as app:
+        state = app.initialize.execute()
+        assert state.search_available
+        app._lifecycle.jobs.wait(state.job.job_id)
+        app.clear_local_data.execute()
+    assert all(marker.read_bytes() == b"legacy data" for marker in markers)

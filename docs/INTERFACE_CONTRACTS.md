@@ -71,3 +71,7 @@ Lingua e tema persistono separatamente dagli snapshot: cambiarli non ricrea l?in
 Le decisioni di ranking e snippet sono nell'[ADR 0010](adr/0010-v2-retrieval.md). [Decisioni ancora aperte](adr/README.md#decisioni-aperte), [scenari](TEST_STRATEGY.md).
 
 Il desktop apre il file con directory e percorso del risultato corrente, senza richiedere GetDocument. Navigazione e filtri sono stato di sessione del controller; solo lingua/tema persistono. [UX](UX_WINDOWS.md).
+
+## Percorso desktop pubblico stabile
+
+La composizione desktop e il rilevamento della sessione usano `%LOCALAPPDATA%/LocalDocumentSearch/Data`. Le porte applicative, i DTO e lo schema SQLite non cambiano; storage esplicito per test/diagnostica resta supportato. Nessuna lettura o importazione automatica dei dati storici v1 o di `LocalDocumentSearchV2`; primo avvio senza sessione nel nuovo percorso.

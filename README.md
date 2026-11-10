@@ -17,7 +17,7 @@ In **Impostazioni** puoi scegliere campo di ricerca, formati, ordinamento e cart
 
 Il pacchetto non è firmato digitalmente; nella release trovi il checksum `.sha256`. Per aggiornare, chiudi l’app e avvia il nuovo installer. La disinstallazione conserva i dati salvo tua scelta esplicita.
 
-Testo estratto, indici e preferenze sono salvati in `%LOCALAPPDATA%/LocalDocumentSearchV2`, anche quando un originale non è più disponibile. Puoi eliminarli dalle Impostazioni senza cancellare i documenti. [Privacy e termini d’uso](docs/SECURITY_AND_PRIVACY.md).
+Testo estratto, indici e preferenze sono salvati in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, anche quando un originale non è più disponibile. Puoi eliminarli dalle Impostazioni senza cancellare i documenti. [Privacy e termini d’uso](docs/SECURITY_AND_PRIVACY.md).
 
 ## Avvio dal sorgente
 
@@ -40,3 +40,5 @@ Per la sola CLI, senza Qt, installa soltanto `./backend` e avvia `backend/.venv/
 [Documentazione del progetto](docs/README.md): requisiti, architettura, decisioni e verifiche. La [consegna Homework 3](docs/homework-3/README.md) resta una regressione indipendente del backend.
 
 L’uso personale, di studio e interno è gratuito, anche professionale. Vendita, integrazione in prodotti distribuiti e offerta come servizio richiedono autorizzazione scritta: [termini italiani](scripts/package/TERMS-IT.txt).
+
+Il nome pubblico resta **Local Document Search**, indipendentemente dalla generazione interna. Per passare dalla precedente installazione nella cartella `LocalDocumentSearchV2`, disinstallarla conservando i dati e installare il nuovo pacchetto. Al primo avvio scegliere nuovamente la cartella e indicizzarla: i dati precedenti restano conservati e non vengono importati.

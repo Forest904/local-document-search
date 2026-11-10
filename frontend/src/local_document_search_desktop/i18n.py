@@ -12,7 +12,7 @@ MESSAGES = {
     "cancel": ("Annulla sincronizzazione", "Cancel synchronization"),
     "clear": ("Elimina dati locali…", "Delete local data…"),
     "clearTitle": ("Eliminare i dati locali?", "Delete local data?"),
-    "clearBody": ("Verranno eliminati indice, cartella salvata, lingua e tema v2. I documenti originali e i dati v1 restano intatti.", "The v2 index, saved folder, language and theme will be deleted. Original documents and v1 data are preserved."),
+    "clearBody": ("Verranno eliminati indice, cartella salvata, lingua e tema. I documenti originali restano intatti.", "The index, saved folder, language and theme will be deleted. Original documents are preserved."),
     "delete": ("Elimina", "Delete"),
     "back": ("Indietro", "Back"),
     "continue": ("Continua", "Continue"),

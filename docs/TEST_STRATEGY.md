@@ -67,3 +67,10 @@ apertura singola da clic/Invio senza richiesta dei dettagli, file mancante,
 risposte obsolete, IT/EN, temi, asset e QML nel payload. Il rendering offscreen
 verifica caricamento e binding; la resa dei font Windows richiede il plugin
 nativo. Narrator e collaudo finale rimangono prove distinte.
+
+## Regressione nome pubblico e percorsi neutri
+
+- T12/T13: testi IT/EN senza etichette generazionali; onboarding anche con soli dati storici presenti, riapertura della nuova sessione.
+- T14/T16: primo avvio, riapertura e pulizia nel percorso `LocalDocumentSearch/Data`; dati storici v1 e `LocalDocumentSearchV2` intatti. Rifiutare reparse point nella radice dati e negli antenati; mantenere lock e confini di cancellazione.
+- T15: installer e collegamenti senza suffissi; blocco della vecchia installazione prima delle modifiche, anche silenzioso; disinstallazione conservativa e reinstallazione pulita; successivi aggiornamenti/reinstallazioni nel percorso neutro, downgrade bloccato.
+- Collaudo del pacchetto Windows distinto dai test sorgente: le evidenze della release pubblicata non coprono automaticamente questi cambiamenti.

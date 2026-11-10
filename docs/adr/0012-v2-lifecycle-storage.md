@@ -8,3 +8,7 @@
 - **Conseguenze:** primo avvio richiede nuova selezione; dati v1 rimangono intatti. Size e mtime invariati possono nascondere modifiche. Cancellazione durante commit è rifiutata, con esito osservabile.
 - **Relazione con v1:** estende [ADR 0004](0004-snapshot-sync.md) e [0008](0008-sqlite-snapshots.md); sostituisce per v2 l'assunzione di sorgenti statiche e l'assenza di cancel. Non impone la strategia SQLite completa di v1 alla v2.
 - **Verifica:** V2-04/V2-08, T09–T11 e T14 nella [strategia](../TEST_STRATEGY.md).
+
+## Revisione approvata ? 10 novembre 2026
+
+Il percorso corrente diventa `%LOCALAPPDATA%/LocalDocumentSearch/Data`; il percorso V2-D04 sopra descrive la release storica. Formato SQLite e identificatori interni non cambiano. Nessuna migrazione automatica: il primo avvio riparte dalla selezione della cartella. I dati nella radice storica v1 e in `LocalDocumentSearchV2` rimangono intatti e non vengono letti o rimossi. Backend e rilevamento sessione desktop condividono la risoluzione del percorso.

@@ -115,13 +115,21 @@ class PersistentApplication:
         self.close()
 
 
+def desktop_storage_directory():
+    """Percorso pubblico stabile, separato dagli storage storici."""
+    if os.name != "nt" or not os.environ.get("LOCALAPPDATA"):
+        raise StorageFailure("Directory applicativa esplicita richiesta")
+    directory = Path(os.environ["LOCALAPPDATA"]) / "LocalDocumentSearch" / "Data"
+    if any(node.is_symlink() or node.is_junction() for node in (directory, *directory.parents)):
+        raise StorageFailure("Collegamenti non consentiti nel percorso dei dati locali")
+    return directory
+
+
 def compose_persistent_application(storage=None, *, v2=False, read_workers=None):
     """Acquisisce lo storage prima di aprire database; initialize avvia il job."""
     if v2:
         if storage is None:
-            if os.name != "nt" or not os.environ.get("LOCALAPPDATA"):
-                raise StorageFailure("Directory applicativa esplicita richiesta")
-            storage = Path(os.environ["LOCALAPPDATA"]) / "LocalDocumentSearchV2"
+            storage = desktop_storage_directory()
         storage = storage_directory(storage)
         if ((storage / "control.sqlite3").exists() or (storage / "snapshots.sqlite3").exists()
                 or ((storage / "document-ids.sqlite3").exists()

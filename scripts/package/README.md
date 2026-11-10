@@ -18,7 +18,7 @@ Dalla root, PowerShell:
 
 `-Release` rifiuta modifiche tracciate e file non tracciati. Il venv `build/package-venv` è separato dallo sviluppo; il lock fissa strumenti e dipendenze, i package locali sono installati senza editable. `pyside6-deploy --no-install` usa la configurazione standalone versionata; Nuitka può scaricare lo strumento di analisi DLL nella cache utente.
 
-Output in `dist/`: `LocalDocumentSearch-0.2.0-windows-x64-setup.exe`, `.sha256`, `.manifest.json` e ZIP di prova `LocalDocumentSearch-v2-06-prototype-windows-x64.zip` con checksum. Log, configurazione risolta e report Nuitka in `build/package/`.
+Output in `dist/`: `LocalDocumentSearch-0.2.0-windows-x64-setup.exe`, `.sha256`, `.manifest.json` e ZIP di prova `LocalDocumentSearch-0.2.0-windows-x64.zip` con checksum. Log, configurazione risolta e report Nuitka in `build/package/`.
 
 La build pulisce solo `build/package`; per ricreare l’ambiente rimuovere manualmente il venv dedicato. Manifest e input tracciati rendono riproducibile la procedura, non garantiscono binari identici byte per byte.
 
@@ -62,3 +62,9 @@ Il primo rifiuta discrepanze; il secondo verifica l’installer e genera `dist/p
 Verifica del 9 novembre 2026: run `42702410786` verde Windows/Ubuntu, build/pubblicazione saltate perché il tag esisteva; run manuale `42702437611` verde con build/verifica, senza pubblicazione. Il precedente `42700577845` falliva per percorso Build Tools fisso della licenza Microsoft: risolto tramite `vswhere`. Il binario manuale non sostituisce quello 0.2.0 collaudato.
 
 Fonti della procedura: [pyside6-deploy](https://doc.qt.io/qtforpython-6/deployment/deployment-pyside6-deploy.html), [Nuitka](https://nuitka.net/user-documentation/user-manual.html), [Qt](https://doc.qt.io/qt-6/licensing.html).
+
+## Nome pubblico e reinstallazione
+
+Nome pubblico stabile: Local Document Search. Installazione in `%LOCALAPPDATA%/Programs/LocalDocumentSearch`, dati in `%LOCALAPPDATA%/LocalDocumentSearch/Data`. AppId e mutex rimangono invariati. Il numero tecnico di release resta nei metadati e nei nomi degli artefatti.
+
+L'installer rifiuta la precedente installazione in `Programs/LocalDocumentSearchV2`, anche in modalit? silenziosa (messaggio nel log): disinstallarla conservando i dati e poi reinstallare. Nessuna migrazione: onboarding e indicizzazione ripartono; `LocalDocumentSearchV2` e i dati storici nella radice `LocalDocumentSearch` restano intatti. Gli aggiornamenti successivi usano il percorso neutro. La pulizia esplicita del disinstallatore riguarda soltanto `LocalDocumentSearch/Data`, con controllo di lock e reparse point anche negli antenati.

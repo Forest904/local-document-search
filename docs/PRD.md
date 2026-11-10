@@ -47,3 +47,7 @@ Il target di scala non è un limite automatico ai file né una garanzia su qualu
 ## Condizione di rilascio
 
 La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [stato del progetto](README.md#stato-implementato), e i [gate di distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti). Approvazione del progetto, test del sorgente e collaudo del pacchetto sono evidenze differenti.
+
+## Nome pubblico stabile (10 novembre 2026)
+
+Il prodotto si presenta come Local Document Search senza suffissi generazionali; i numeri tecnici di release restano disponibili. V2-R14/R16 preservano sia i dati v1 sia quelli della precedente installazione in `LocalDocumentSearchV2`. Nuovi dati in `LocalDocumentSearch/Data`, installazione in `Programs/LocalDocumentSearch` sotto `%LOCALAPPDATA%`. Passaggio tramite disinstallazione conservativa e nuovo avvio, senza migrazione; V2-R15 mantiene gli aggiornamenti successivi nel percorso neutro.

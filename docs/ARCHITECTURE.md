@@ -38,7 +38,7 @@ Lo snapshot immutabile comprende manifest, catalogo, testo, due indici posiziona
 
 Ogni campo deve soddisfare l’intera query AND/frasi; BOTH unisce i risultati dei due campi. Prefissi espliciti, filtri e ranking non alterano questo vincolo. Snippet e dettagli portano lo `snapshot_id` e usano il testo acquisito, senza rileggere i sorgenti o promettere coordinate/layout PDF. [Semantica](INDEXING_AND_ANALYSIS.md) e [contratti](INTERFACE_CONTRACTS.md).
 
-Il desktop sposta il lavoro nei worker e scarta risposte obsolete rispetto a query, directory e snapshot. Lingua e tema sono preferenze persistenti separate dall’indice. Storage v2 in `%LOCALAPPDATA%/LocalDocumentSearchV2`, v1 in `%LOCALAPPDATA%/LocalDocumentSearch`: nessuna migrazione automatica o pulizia incrociata. [Privacy e distribuzione](SECURITY_AND_PRIVACY.md).
+Il desktop sposta il lavoro nei worker e scarta risposte obsolete rispetto a query, directory e snapshot. Lingua e tema sono preferenze persistenti separate dall’indice. Storage v2 in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, v1 in `%LOCALAPPDATA%/LocalDocumentSearch`: nessuna migrazione automatica o pulizia incrociata. [Privacy e distribuzione](SECURITY_AND_PRIVACY.md).
 
 ## Snapshot e sincronizzazione
 

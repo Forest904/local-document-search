@@ -629,7 +629,7 @@ def test_qml_all_pages_and_catalogs(controller, qt):
         qInstallMessageHandler(previous)
 
 
-def test_returning_session_detection_is_v2_only(tmp_path, monkeypatch):
+def test_returning_session_detection_ignores_legacy_locations(tmp_path, monkeypatch):
     from local_document_search_desktop.composition import has_local_session
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
     assert not has_local_session()
@@ -637,7 +637,11 @@ def test_returning_session_detection_is_v2_only(tmp_path, monkeypatch):
     old.mkdir()
     (old / "control.sqlite3").touch()
     assert not has_local_session()
-    new = tmp_path / "LocalDocumentSearchV2"
+    previous = tmp_path / "LocalDocumentSearchV2"
+    previous.mkdir()
+    (previous / "control-v2.sqlite3").touch()
+    assert not has_local_session()
+    new = old / "Data"
     new.mkdir()
     (new / "control-v2.sqlite3").touch()
     assert has_local_session()
@@ -717,7 +721,7 @@ raise SystemExit(entry.main())
     result = subprocess.run([sys.executable, str(script)], env=environment,
                             capture_output=True, text=True, timeout=15)
     assert result.returncode == 0, result.stderr
-    assert not (tmp_path / "profile" / "LocalDocumentSearchV2").exists()
+    assert not (tmp_path / "profile" / "LocalDocumentSearch" / "Data").exists()
 
 
 def test_settings_keyboard_focus_scrolls_into_view(controller, qt):

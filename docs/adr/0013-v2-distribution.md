@@ -9,3 +9,9 @@
 - **Scelte rinviate:** l'uso attuale di Inno Setup è dichiarato non commerciale dal titolare; rivalutare la licenza se cambia il contesto d'uso. La prova su account standard distinto passa a V2-08. La verifica documentata del titolare non equivale a un parere legale indipendente.
 - **Relazione con v1:** sostituisce per v2 lo ZIP come artefatto di rilascio dell'[ADR 0009](0009-desktop-runtime.md); non cambia il packaging storico v1.
 - **Verifica:** V2-07/V2-08, T01 e T14–T19 nella [strategia](../TEST_STRATEGY.md). [Privacy](../SECURITY_AND_PRIVACY.md).
+
+## Revisione approvata ? 10 novembre 2026
+
+Nome pubblico permanente **Local Document Search**: niente etichette generazionali in UI, installer, collegamenti o cartelle. Numeri tecnici di release e versioni interne restano. Installazione in `%LOCALAPPDATA%/Programs/LocalDocumentSearch`, ZIP `LocalDocumentSearch-<release>-windows-x64.zip`; AppId e mutex invariati.
+
+Transizione tramite disinstallazione manuale conservando i dati e reinstallazione: l'installer blocca prima delle modifiche la precedente installazione in `Programs/LocalDocumentSearchV2`, con istruzioni IT/EN e log in modalit? silenziosa. Nessun trasferimento automatico. I successivi aggiornamenti restano nello stesso percorso neutro. La pulizia riguarda solo `LocalDocumentSearch/Data`, verificando anche gli antenati contro symlink/junction. Le evidenze V2-07/V2-08 precedenti non attestano questo nuovo pacchetto.

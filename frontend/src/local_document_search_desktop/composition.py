@@ -5,7 +5,8 @@ import os
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
-from local_document_search.interfaces.composition import compose_v2_application
+from local_document_search.interfaces.composition import compose_v2_application, desktop_storage_directory
+from local_document_search.application.errors import StorageFailure
 
 
 def compose_desktop(storage=None):
@@ -23,4 +24,10 @@ def open_document(directory, relative_path):
 def has_local_session():
     """A v2 catalog is created only after the initial local-data notice."""
     local = os.environ.get("LOCALAPPDATA")
-    return bool(local and (Path(local) / "LocalDocumentSearchV2" / "control-v2.sqlite3").is_file())
+    if not local:
+        return False
+    try:
+        return (desktop_storage_directory() / "control-v2.sqlite3").is_file()
+    except StorageFailure:
+        # L'onboarding lascia alla composizione il normale errore visibile nella UI.
+        return False
