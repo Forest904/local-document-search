@@ -32,4 +32,4 @@ Le slide `id-02-source-discovery-basics.pptx` presentano inverted index con dict
 - Dieci query eseguite: **PASS**, oltre a due regressioni BOTH/clausole miste.
 - Repository pubblico fornito dall'utente: https://github.com/Forest904/local-document-search. Nessun push o invio al docente eseguito.
 
-Vedere [ROADMAP](../archive/v1/ROADMAP.md), [relazione compilata](REPORT.md) e [evidenze M3](../archive/v1/M3_VERIFICATION.md). Il [template](REPORT_TEMPLATE.md) resta riutilizzabile.
+Vedere [ROADMAP](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/ROADMAP.md), [relazione compilata](REPORT.md) e [evidenze M3](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/M3_VERIFICATION.md).

@@ -1,24 +1,30 @@
 # Decisioni architetturali
 
-**Accepted** indica una direzione concordata, non implementazione né collaudo. Gli ADR 0001–0009 documentano v1; restano consultabili insieme all'[archivio v1](../archive/v1/README.md). Gli ADR 0010–0014 fissano la direzione v2. Le scelte ancora aperte sono soltanto nel [registro corrente](../OPEN_DECISIONS.md).
+**Accepted** indica una decisione approvata, non una verifica eseguita. Lo [stato implementato](../README.md#stato-implementato) rimanda alle evidenze; gli ADR v1 restano validi dove non espressamente estesi o sostituiti.
 
-L'[ADR 0014](0014-v2-performance-budgets.md) fissa metodo e budget V2-D01
-approvati dopo la baseline misurata; il codice v1 non è dichiarato conforme.
-
-| ADR | Argomento | Relazione v2 |
+| ADR | Decisione | Relazione con v2 |
 |---|---|---|
-| [0001](0001-modular-monolith.md) | Monolite modulare e porte | Conservato |
-| [0002](0002-canonical-document.md) | Un file, testo canonico | Conservato |
-| [0003](0003-positional-index.md) | Due indici posizionali | Esteso da 0010 |
-| [0004](0004-snapshot-sync.md) | Snapshot e sync | Esteso da 0012 |
-| [0005](0005-ingestion-policy.md) | Reader e discovery | Conservato |
-| [0006](0006-application-interfaces.md) | Casi d'uso e porte | Esteso dai contratti v2 |
-| [0007](0007-analysis-and-readers.md) | Analyzer e query v1 | Esteso da 0010 |
-| [0008](0008-sqlite-snapshots.md) | Storage v1 | Strategia v2 aperta in 0012 |
-| [0009](0009-desktop-runtime.md) | Qt Widgets, ZIP v1 | UI sostituita da 0011; ZIP da 0013 |
-| [0010](0010-v2-retrieval.md) | Vocabolario ordinato e ricerca v2 | Direzione approvata, da implementare |
-| [0011](0011-v2-desktop.md) | Qt Quick e UX | Direzione approvata, da implementare |
-| [0012](0012-v2-lifecycle-storage.md) | Lifecycle e isolamento dati | Direzione approvata, da implementare |
-| [0013](0013-v2-distribution.md) | Installer e distribuzione | Direzione approvata, da implementare |
+| [0001](0001-modular-monolith.md) | Monolite modulare e porte | Conservata |
+| [0002](0002-canonical-document.md) | Un file, testo canonico | Conservata |
+| [0003](0003-positional-index.md) | Due indici posizionali | Estesa da 0010 |
+| [0004](0004-snapshot-sync.md) | Snapshot e sync | Estesa da 0012 |
+| [0005](0005-ingestion-policy.md) | Reader e discovery | Conservata |
+| [0006](0006-application-interfaces.md) | Casi d’uso e porte | Estesa dai contratti v2 |
+| [0007](0007-analysis-and-readers.md) | Analyzer e query | Estesa da 0010 |
+| [0008](0008-sqlite-snapshots.md) | Storage v1 | Strategia v2 in 0012 |
+| [0009](0009-desktop-runtime.md) | Qt Widgets e ZIP v1 | Sostituita per v2 da 0011/0013 |
+| [0010](0010-v2-retrieval.md) | Vocabolario, prefissi, ranking, snippet | V2-D02/D03/D05/D06 |
+| [0011](0011-v2-desktop.md) | Qt Quick e revisione Luma | Redesign approvato l’8 novembre 2026 |
+| [0012](0012-v2-lifecycle-storage.md) | Lifecycle e isolamento dati | V2-D04 |
+| [0013](0013-v2-distribution.md) | Installer e distribuzione | V2-D07/D08/D09 |
+| [0014](0014-v2-performance-budgets.md) | Metodo e budget prestazionali | V2-D01 |
 
-Nuove decisioni che cambiano requisiti, contratti o dipendenze aggiornano ADR, registro, specifiche e scenari. Dettagli interni ordinari non richiedono un ADR.
+V2-D10–D13 (fonti, permessi, manifest, cache, sintetici e ground truth) sono risolte nella [specifica del corpus](../TEST_DATASETS.md). Non richiedono un ADR per il solo layout dei dati.
+
+V2-D08: termini italiani approvati nella sostanza dal titolare Luca Foresti. V2-D09: audit del payload 0.2.0 approvato esplicitamente dal titolare l’8 novembre 2026 dopo inventario, sorgenti e prova di sostituzione Qt; [evidenze e limiti](../V2_07_INSTALLER.md). L’approvazione non è un parere legale indipendente.
+
+## Decisioni aperte
+
+Nessuna decisione attualmente aperta. Registrare qui nuove scelte che cambiano requisiti, comportamento pubblico, contratti o dipendenze, e approvarle prima del codice dipendente. Aggiornare ADR, specifiche e scenari interessati; i dettagli interni ordinari non richiedono un ADR. [registro storico v1](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/OPEN_DECISIONS.md).
+
+Per un nuovo ADR usare ID/titolo, stato e data, contesto, decisione, alternative, conseguenze, dettagli aperti e riferimenti a requisiti/contratti/scenari. Gli ADR 0001–0009 mantengono i riferimenti storici v1: le regole correnti complete sono nelle specifiche indicate nell’[indice](../README.md#riferimenti).

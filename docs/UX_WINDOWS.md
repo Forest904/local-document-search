@@ -1,73 +1,31 @@
-# Esperienza desktop Luma â€” Windows 11
+# Esperienza desktop Luma — Windows 11
 
-Direzione approvata l'8 novembre 2026: **Local Document Search** conserva il nome
-applicazione; **Luma** identifica il motore. Qt Quick/QML e backend Python
-in-process restano invariati. Sostituisce sidebar e anteprima dell'ADR 0011,
-senza cambiare ricerca backend o CLI Homework.
+**Local Document Search** è il nome dell’app; **Luma** quello del motore. Qt Quick/QML e backend in-process. La revisione approvata dell’8 novembre 2026 sostituisce sidebar e anteprima con apertura diretta: [ADR 0011](adr/0011-v2-desktop.md).
 
 ## Percorsi
 
-1. **Primo avvio:** informativa locale e Â«Accetta e scegli una cartellaÂ».
-   Il backend si inizializza dopo l'accettazione; il selettore nativo si apre
-   appena pronto. Annullarlo lascia disponibile la scelta cartella.
-2. **Preparazione:** la stessa pagina mostra cartella, fase, conteggi e barra
-   reale. Fasi senza percentuale indeterminate, nessuna ETA inventata.
-   Consigli IT/EN ogni otto secondi spiegano prefissi, frasi, filtri e apertura;
-   non prendono focus e non sono annunciati continuamente da Narrator.
-3. **Completamento:** la home appare soltanto quando lo snapshot Ã¨ ricercabile.
-   Fallimento e cancel senza snapshot lasciano retry, scelta cartella,
-   ricostruzione e recupero. Errori e diagnostiche restano consultabili.
-4. **Riapertura:** un catalogo v2 presente identifica una precedente
-   inizializzazione; avviare automaticamente il recupero, poi aprire la home
-   e sincronizzare in background. Sorgente assente: cercare sullo snapshot
-   disponibile e spiegare che l'indice puÃ² essere obsoleto.
-5. **Home:** marchio Luma, Â«Ritrova ciÃ² che cerchiÂ», barra, Cerca e Impostazioni.
-   Invio e il pulsante con lente dentro il campo eseguono la ricerca; digitare
-   produce soltanto suggerimenti sullo snapshot corrente. Selezionarne uno
-   completa la query e avvia la ricerca nella pagina risultati.
-   Il pulsante Impostazioni compare solo nella home.
-6. **Risultati:** barra in alto, conteggio con durata della ricerca in secondi,
-   lista e pagine da 20. Percorso,
-   formato, titolo ed estratto evidenziato provengono dallo snapshot.
-   Le frecce di pagina appaiono solo oltre 20 risultati, centrate con pagina
-   corrente e intervallo dei risultati in italiano o inglese. Clic o
-   Invio nella barra di ricerca vuota torna alla home senza avviare una ricerca.
-   Esc torna alla home dalla pagina risultati anche con una query presente.
-   Invio sul risultato apre il file nell'app Windows associata. Nessuna anteprima
-   interna nÃ© richiesta del testo completo per selezionare/aprire un risultato.
-7. **Impostazioni:** Aspetto e lingua, Ricerca, Cartella e indice. Campo, formati
-   e ordine sono qui; sync, rebuild e diagnostiche sono disponibili. Pulizia
-   con conferma esplicita. Il recupero resta nel backend.
-   Lingua e tema precedono la ricerca; campo e formati occupano due colonne.
-   Il filtro per sottocartella non e esposto nella UI. Reset e pulizia sono in fondo.
-   Lingua, tema e ordine usano toggle a due segmenti con alternative sempre
-   visibili e icone per lingua e tema; campo usa un menu a voci arrotondate.
-   I formati mantengono la selezione multipla. Tab sposta
-   il focus, Spazio alterna il toggle e le frecce sinistra/destra scelgono il segmento.
+1. **Primo avvio:** informativa e «Accetta e scegli una cartella». Il backend parte dopo l’accettazione, poi apre il selettore nativo; annullarlo lascia disponibile la scelta.
+2. **Preparazione:** cartella, fase, conteggi e progresso reale sulla stessa pagina; fasi senza percentuale indeterminate, nessuna ETA inventata. Consigli IT/EN ogni otto secondi, senza prendere focus o annuncio continuo a Narrator.
+3. **Completamento:** home solo con snapshot ricercabile. Errore/cancel senza snapshot lascia retry, scelta cartella, ricostruzione e diagnostiche; recupero del precedente disponibile nel backend.
+4. **Riapertura:** catalogo v2 esistente → recupero automatico, home e sync in background. Se il sorgente manca, ricerca sullo snapshot con avviso di possibile obsolescenza.
+5. **Home:** marchio statico senza slogan, barra con lente e Impostazioni. Invio/lente eseguono; digitare propone suggerimenti. Selezionarne uno completa la query e avvia la ricerca.
+6. **Risultati:** titolo, percorso, formato ed estratto evidenziato dallo snapshot. Clic/Invio sul risultato apre l’app Windows associata, senza richiedere dettagli o anteprima interna. Esc torna alla home; eseguire una barra vuota torna alla home senza cercare.
+7. **Impostazioni:** aspetto/lingua, ricerca, cartella/indice; sync, rebuild e diagnostiche. Campo e formati affiancati; reset e pulizia confermata in fondo. Sottocartella e recupero non sono esposti. Indietro preserva schermata/query; il pulsante Impostazioni compare solo in home.
 
-Filtri limitati alla sessione, azzerati al cambio directory/riavvio: entrambi i
-campi, TXT/MD/PDF e rilevanza. Almeno un formato selezionato.
-Home e risultati mostrano il riepilogo delle restrizioni e il reset. Cambiare
-opzioni aggiorna una ricerca giÃ  eseguita dalla prima pagina. Nessuna sintassi
-nuova come `type:pdf`. Il marchio e statico; Indietro dalle Impostazioni
-recupera schermata e query. `Ctrl+L` focalizza la ricerca, `Ctrl+O` sceglie una
-cartella, `F5` sincronizza. I comandi incompatibili con job/chiusura sono bloccati.
-Risposte obsolete ignorate; operazioni pesanti nei worker.
+## Ricerca e stato
 
-## Sistema visivo e accessibilitÃ 
+Risultati in pagine da **20**; frecce visibili solo con più pagine, centrate ai lati del riepilogo localizzato di pagina/intervallo. La durata misura invio→risposta pubblicata, attesa worker inclusa: tre decimali, virgola IT e punto EN. Nuova query azzera il tempo; risposte obsolete non lo pubblicano.
 
-Segoe UI, spazio libero, componenti riusabili, bordi sottili e angoli morbidi.
-Chiaro predefinito: avorio `#FAF9F6`, bianco, grafite `#252826`, verde
-`#315D50`, salvia `#DFEAE2`, lavanda `#E9E5F3`. Scuro: fondo `#191D1B`,
-superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle
-superfici e corrispondenze in grassetto, senza marcatori gialli pesanti.
+Campo, formati e ordine valgono per la sessione; reset al cambio cartella/riavvio a BOTH, TXT/MD/PDF e rilevanza. Almeno un formato selezionato. Home/risultati mostrano restrizioni e reset; cambiare opzioni aggiorna una ricerca eseguita dalla prima pagina. Nessuna sintassi `type:pdf`.
 
-Nella home compare il marchio con la nuova scritta grafica, senza slogan.
-IT/EN e tema persistono nel catalogo v2; la pulizia li azzera. Asset originali
-SVG/PNG e ICO locali, rigenerabili con `scripts/dev/generate_luma_assets.py`.
-Il naming non implica una verifica della disponibilitÃ  commerciale del marchio.
+Lingua IT/EN e tema chiaro/scuro persistono nel catalogo, separati dagli snapshot; la pulizia li azzera. Comandi incompatibili con job/chiusura bloccati, lavoro nei worker e risposte obsolete ignorate.
 
-Tastiera, etichette accessibili, focus visibile e finestra minima 900Ã—640 pixel
-logici sono obbligatori. Verificare contrasto, DPI, scorrimento e Narrator.
-I test automatici non sostituiscono Narrator o il collaudo su Windows pulito.
-[Verifiche Luma](LUMA_DESKTOP.md).
+## Sistema visivo e accessibilità
+
+Segoe UI, spazio libero, bordi sottili e angoli morbidi. Palette chiara: avorio `#FAF9F6`, bianco, grafite `#252826`, verde `#315D50`, salvia `#DFEAE2`, lavanda `#E9E5F3`. Scura: `#191D1B`, superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle superfici e match in grassetto, senza marcatori gialli pesanti.
+
+Toggle a due segmenti per lingua, tema e ordine; icone per lingua/tema, menu campo arrotondato e formati multiselezione. Tab muove il focus, Spazio alterna, frecce scelgono il segmento. **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync.
+
+Minimo **900×640 pixel logici**, focus visibile ed etichette accessibili. Verificare contrasto, DPI, scrolling e Narrator: test automatici/offscreen non sostituiscono Windows nativo o collaudo del pacchetto. Testi QML nel catalogo, eccetto marchio e TXT/MD/PDF; niente slogan negli asset traducibili.
+
+[Asset locali e provenienza](../frontend/src/local_document_search_desktop/assets/README.md), rigenerabili con `scripts/dev/generate_luma_assets.py`. Il naming non implica verifica di disponibilità commerciale. [Evidenze desktop](V2_08_ACCEPTANCE.md#evidenze-desktop-precedenti-al-candidato).

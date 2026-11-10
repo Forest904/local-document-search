@@ -1,45 +1,42 @@
 # Local Document Search
 
-Ricerca locale in file TXT, Markdown e PDF testuali, per nome e contenuto, con due indici invertiti posizionali proprietari.
+Local Document Search è un’app per Windows che trova documenti sul tuo computer cercando nel nome e nel contenuto di file TXT, Markdown e PDF testuali. Scegli una cartella, anche con sottocartelle, e cerca parole o frasi: i risultati mostrano un estratto evidenziato e si aprono nell’app associata al file.
 
-**Disponibile oggi dal sorgente:** CLI Homework e backend condiviso, desktop Qt Quick v2 con ricerca, anteprima e preferenze IT/EN e chiaro/scuro. V2-01–V2-05 sono chiuse localmente; V2-06 è implementata e [resta aperta per la verifica manuale completa di accessibilità](docs/V2_06_DESKTOP.md). La distribuzione pubblica richiede V2-07/V2-08. M9 v1 è [parzialmente accettata](docs/BASELINE.md).
+Funziona localmente e offline, senza account né invio dei documenti a servizi esterni. L’interfaccia Luma è disponibile in italiano e inglese, con tema chiaro o scuro.
 
-**Evoluzione organica:** v2 prosegue dal codice e dalle verifiche M0–M9 nello stesso repository; [mappa di continuità](docs/BASELINE.md#continuità-da-m0m9-a-v2).
+## Scarica e prova
 
-**Corpus funzionale v2:** [sintetici riproducibili e documenti Internet verificati](docs/TEST_DATASETS.md), costruiti a partire dai generatori Homework/M9 esistenti.
+Serve **Windows 11 x64**; non occorre installare Python.
 
-**Direzione v2:** prodotto Windows 11 x64 offline, UI Qt Quick, ricerca con rilevanza e anteprime evidenziate, prestazioni misurate e installer completo. [Requisiti](docs/PRD.md) → [roadmap](docs/ROADMAP.md). Il percorso principale di lettura richiede indicativamente 15–20 minuti; i dettagli sono nell'[indice tecnico](docs/README.md).
+1. Apri la [release 0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0) e scarica `LocalDocumentSearch-0.2.0-windows-x64-setup.exe` dalla sezione **Assets**.
+2. Esegui l’installer e avvia **Local Document Search** dal menu Start.
+3. Premi **Accetta e scegli una cartella**, seleziona i documenti e attendi la prima indicizzazione.
+4. Scrivi una query e premi **Invio**. Per esempio: `bilancio`, `"relazione annuale"` oppure `progett*`. Clicca un risultato per aprire il file.
 
-## Avvio attuale
+In **Impostazioni** puoi scegliere campo di ricerca, formati, ordinamento e cartella. Ai successivi avvii l’app recupera l’indice e sincronizza in background; **F5** aggiorna manualmente. Non c’è monitoraggio continuo delle modifiche. I PDF scansionati senza testo richiederebbero OCR, che non è supportato.
 
-Da Windows/VS Code: **Terminal → Run Task → Local Document Search: avvia / riavvia**. Il task prepara l'ambiente Python e avvia il desktop attuale; [prerequisiti e comportamento](scripts/dev/README.md).
+Il pacchetto non è firmato digitalmente; nella release trovi il checksum `.sha256`. Per aggiornare, chiudi l’app e avvia il nuovo installer. La disinstallazione conserva i dati salvo tua scelta esplicita.
 
-Oppure, dalla radice con Python >=3.12 e un ambiente virtuale attivo:
+Testo estratto, indici e preferenze sono salvati in `%LOCALAPPDATA%/LocalDocumentSearchV2`, anche quando un originale non è più disponibile. Puoi eliminarli dalle Impostazioni senza cancellare i documenti. [Privacy e termini d’uso](docs/SECURITY_AND_PRIVACY.md).
+
+## Avvio dal sorgente
+
+Con Git e **Python 3.12 o successivo, x64**, da PowerShell:
 
 ```powershell
-python -m pip install -e "./backend[dev]" -e "./frontend[dev]"
-local-document-search-desktop
+git clone https://github.com/Forest904/local-document-search.git
+cd local-document-search
+python -m venv backend/.venv
+backend/.venv/Scripts/python.exe -m pip install -e ./backend -e ./frontend
+backend/.venv/Scripts/local-document-search-desktop.exe
 ```
 
-Per la sola CLI, senza Qt:
+L’installazione delle dipendenze richiede rete o una cache pip completa. In VS Code puoi anche usare il task **Local Document Search: avvia / riavvia**, che prepara l’ambiente automaticamente: [guida allo sviluppo](scripts/dev/README.md).
 
-```powershell
-python -m pip install -e "./backend[dev]"
-local-document-search "C:/percorso/documenti"
-```
+Per la sola CLI, senza Qt, installa soltanto `./backend` e avvia `backend/.venv/Scripts/local-document-search.exe "C:/percorso/documenti"`. [Sintassi e test backend](backend/README.md) · [uso e test desktop](frontend/README.md).
 
-Esempi: `nome report`, `contenuto "roma tre"`, `entrambi machine "deep learning"`. AND e frasi devono corrispondere interamente nello stesso campo. La CLI ricostruisce l'indice in memoria a ogni sessione, stampa tutti i risultati per percorso ed esce con EOF o Ctrl+C.
+## Per approfondire
 
-Uso e test: [backend](backend/README.md), [desktop](frontend/README.md). Lo [script di packaging attuale](scripts/package/README.md) genera un prototipo ZIP Qt Quick; l'installer è V2-07.
+[Documentazione del progetto](docs/README.md): requisiti, architettura, decisioni e verifiche. La [consegna Homework 3](docs/homework-3/README.md) resta una regressione indipendente del backend.
 
-## Progetto e dati
-
-Backend e CLI sono in `backend/`, desktop in `frontend/`, automazione in `scripts/`, esperimenti sintetici in `experiments/`. [Ownership e confini](docs/REPOSITORY_LAYOUT.md).
-
-Il desktop conserva testo estratto, indici e preferenze v2 in `%LOCALAPPDATA%/LocalDocumentSearchV2`, anche se un sorgente diventa assente. Nessun cloud; corpus personali, snapshot e testo estratto restano fuori da Git. [Privacy](docs/SECURITY_AND_PRIVACY.md).
-
-La [consegna Homework 3](docs/homework-3/README.md) rimane una baseline di regressione. [Documentazione v1 archiviata](docs/archive/v1/README.md); [decisioni architetturali](docs/adr/README.md).
-
-## Distribuzione e diritti
-
-La distribuzione pubblica v2 non è ancora disponibile. I [termini italiani](scripts/package/TERMS-IT.txt) consentono l'uso personale, di studio e interno gratuito, anche per imprese e professionisti. Vendita, integrazione in prodotti distribuiti e offerta delle funzioni come servizio a terzi richiedono autorizzazione scritta. La verifica degli obblighi delle dipendenze sul payload finale resta un gate di rilascio. [Politica e gate](docs/SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
+L’uso personale, di studio e interno è gratuito, anche professionale. Vendita, integrazione in prodotti distribuiti e offerta come servizio richiedono autorizzazione scritta: [termini italiani](scripts/package/TERMS-IT.txt).

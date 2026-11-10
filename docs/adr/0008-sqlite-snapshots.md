@@ -6,9 +6,9 @@
 - **Alternatives considered:** JSON con pointer swap, segmenti incrementali, streaming e migrazioni di indici.
 - **Consequences:** maggiore spazio e picco RAM, ma protocollo semplice; ResourceFailure e crash testati. Riuso logico degli invariati, non condivisione fisica di segmenti.
 - **Validation:** M5 transazioni/recovery, M6 lifecycle/rebuild, M7 letture concorrenti e lock, M9 misure.
-- **Related:** dettaglio normativo in [Snapshot](../archive/v1/SNAPSHOTS_AND_SYNC.md), [Privacy](../archive/v1/SECURITY_AND_PRIVACY.md).
+- **Related:** dettaglio normativo in [Snapshot](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/SNAPSHOTS_AND_SYNC.md), [Privacy](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/SECURITY_AND_PRIVACY.md).
 
-- **M6 clarification (2026-11-06):** catalogo di controllo SQLite v1 separato per settings, selezione e registro dei database posseduti. Rebuild fisico/logico su database candidato distinto; selezione transazionale dopo validazione/commit. Adozione dello storage M5 senza migrazione; schema incompatibile privo di settings richiede selezione della sorgente. ClearLocalData mantiene solo il contenitore di controllo vuoto riutilizzabile. [Dettagli](../archive/v1/SNAPSHOTS_AND_SYNC.md#8-realizzazione-m6).
+- **M6 clarification (2026-11-06):** catalogo di controllo SQLite v1 separato per settings, selezione e registro dei database posseduti. Rebuild fisico/logico su database candidato distinto; selezione transazionale dopo validazione/commit. Adozione dello storage M5 senza migrazione; schema incompatibile privo di settings richiede selezione della sorgente. ClearLocalData mantiene solo il contenitore di controllo vuoto riutilizzabile. [Dettagli](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/SNAPSHOTS_AND_SYNC.md#8-realizzazione-m6).
 
 - **ID (2026-11-07, approvato):** l'allocatore SQLite separato conserva il progressivo
   oltre snapshot, retention, rebuild, cambio directory e riavvio. Le prenotazioni sono durevoli

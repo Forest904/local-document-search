@@ -1,12 +1,10 @@
 # Strategia di verifica v2
 
-Una specifica approvata non equivale a codice funzionante. Conservare test v1 e CLI Homework come regressione; estenderli con il [corpus ibrido funzionale](TEST_DATASETS.md), usando report legati a revisione e artefatto. [Evidenze storiche](archive/v1/README.md), [lacune M9](BASELINE.md). I casi qui sono scenari da eseguire nelle milestone, non risultati già ottenuti.
+Una specifica approvata non equivale a codice funzionante. Conservare test v1 e CLI Homework come regressione; estenderli con il [corpus ibrido funzionale](TEST_DATASETS.md), usando report legati a revisione e artefatto. [Evidenze storiche](archive/v1/README.md), [lacune M9](V2_08_ACCEPTANCE.md#matrice-dei-gate). I casi qui sono scenari da eseguire nelle milestone, non risultati già ottenuti.
 
 ## Validazione funzionale V2-01
 
-T20 è automatizzato in `backend/tests/integration/test_v2_corpus.py`: verifica generazione ripetuta, hash dei sintetici e liste complete. T21 è verificato localmente con i 12 reali completi e le 36 query della ground truth, ricontrollate sui testi estratti prima del confronto col motore. La suite reale resta opt-in. Un file reale mancante, alterato o una ground truth assente non è un PASS. [Evidenze e limiti della chiusura V2-01](ROADMAP.md#v2-01--corpus-ibrido-e-validazione-funzionale).
-
-La suite ordinaria usa i sintetici deterministici offline. La suite reale è opt-in e richiede tutti i documenti del manifest verificati tramite hash; se uno è stato saltato o non disponibile, segnala corpus incompleto e non passa. Confronta le liste complete di percorsi attesi per query e campo, comprese frasi e casi senza match. La ground truth viene preparata dopo acquisizione e associata alla versione dei documenti; [provenienza, metodo e limiti](TEST_DATASETS.md). Nessun tempo misurato in questo corpus costituisce un obiettivo di prestazione.
+T20/T21 sono in `backend/tests/integration/test_v2_corpus.py`: sintetici riproducibili nella suite offline, reali opt-in con manifest completo e hash corretti. Confrontare liste complete di percorsi, non conteggi; corpus/ground truth assenti o alterati non sono PASS. [Metodo, provenienza e risultati](TEST_DATASETS.md). Questo corpus non definisce obiettivi di prestazione.
 
 ## Metodo e criteri
 
@@ -23,8 +21,8 @@ non valgono come PASS. I budget T08 sono approvati in V2-D01:
 massimo query p95 ≤100 ms, avvio fino alla ricerca ≤15 s, build ≤300 s,
 sync incrementale 100/100/100 ≤60 s, no-change ≤1 s e picco working set
 ≤2560 MiB. Si applica il massimo dei tre cicli e, per le query, il massimo
-dei p95 di tutti i casi. [Metodo ed evidenze](V2_02_BENCHMARK.md); la prova
-sul pacchetto finale resta V2-08.
+dei p95 di tutti i casi. [Metodo ed evidenze](PERFORMANCE.md#v2-02); la prova
+sul pacchetto finale è documentata in V2-08.
 
 Unit test per dominio, contratti per reader/storage, integrazione per sync/concorrenza, E2E per CLI e desktop, collaudo sul pacchetto installato. La suite deve raccogliere test effettivi. Benchmark separati per lookup, intersezione, ranking, serializzazione, caricamento e UI; corpus, seed, hardware, OS, cache, revisioni e distribuzioni delle durate registrati. I budget V2-02 sono fissati sopra prima delle ottimizzazioni. Il target è 10.000 file e 300 MB di testo estratto; includere anche corpus piccolo e casi avversi. Non confrontare tempi M9 con condizioni diverse.
 
@@ -38,7 +36,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T04 | Vocabolari ordinati coerenti dopo build, update, restart e recovery; confronto strutture e costi documentato | V2-03, V2-04 |
 | T05 | Prefisso esplicito e suggerimenti corretti per campo/versione; digitazione non avvia query; limiti approvati. Backend V2-03 coperto da `test_v2_retrieval.py`; integrazione digitazione UI in V2-06 | V2-03, V2-05, V2-06 |
 | T06 | Filtri e ranking su soli match, totale/pagina coerenti; ordine deterministico e alternativa per percorso. Backend: `test_v2_search_application.py` | V2-05 |
-| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; backend: `test_v2_search_application.py`. Estratti e apertura diretta UI sotto carico restano V2-06/V2-08 | V2-05, V2-06, V2-08 |
+| T07 | Snippet e highlight Unicode/frasi nella versione del risultato; backend: `test_v2_search_application.py`. Estratti e apertura diretta UI sotto carico: V2-06/V2-08 | V2-05, V2-06, V2-08 |
 | T08 | Budget approvati su 10.000/300 MB per p95 query, avvio, build, sync, RAM; metodologia e limiti registrati | V2-02, V2-03, V2-04, V2-08 |
 | T09 | Add/modify/remove, no-change, A→B→A, rebuild, fault commit, recovery; mai snapshot parziale o directory errata | V2-04, V2-08 |
 | T10 | Cancel durante estrazione/build conserva N e produce CANCELLED; cancel al commit rifiutato; pulizia durante job rifiutata | V2-04, V2-06, V2-08 |
@@ -56,16 +54,9 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 
 ## Gate finale
 
-V2-06 copre T05/T07/T10/T12/T13 con test controller/QML, preferenze v2 e
-probe Windows small/target. Il prototipo ZIP è stato estratto fuori dal
-repository e ha completato informativa, selezione, indicizzazione, ricerca
-e anteprima su corpus sintetico small. [Esiti e limiti](V2_06_DESKTOP.md):
-Narrator e tabulazione manuale completa sono stati verificati sul candidato
-Luma nel collaudo V2-08; il prototipo ZIP resta una prova separata.
+Collegare ogni risultato a revisione, artefatto, ambiente e comandi. Il pacchetto finale deve superare gli scenari applicabili, incluse le lacune M9-G01–G07: test sorgente, mock e ZIP v1 non sostituiscono Windows pulito/account standard distinto. [Matrice e limiti della release 0.2.0](V2_08_ACCEPTANCE.md#matrice-dei-gate).
 
-Le regressioni backend V2-04 in `backend/tests/integration/test_v2_lifecycle.py` coprono riapertura, versioni, isolamento v1, cancel, metadati e recovery esplicito. Il runner V2-02 usa la composizione v2 per le misure di storage. T08 è verificata localmente su tre cicli target `PASS` entro i budget approvati; le prove sul sorgente non chiudono il collaudo del pacchetto V2-08.
-
-Le [lacune M9-G01…G07](BASELINE.md) sono state verificate sul pacchetto v2 finale, come registrato nella [matrice V2-08](V2_08_ACCEPTANCE.md#matrice-dei-gate). Test del sorgente, mock e collaudo dello ZIP v1 non sostituiscono questa prova. Il limite prestazionale osservato resta documentato. Durante la sola chiusura documentale non si rieseguono suite o benchmark applicativi.
+Le regressioni lifecycle sono in `backend/tests/integration/test_v2_lifecycle.py`; controller/QML e probe verificano il desktop. Zero test raccolti non è una suite verde. Annotare skip, errori, scostamenti prestazionali e prove non eseguite.
 
 ## Regressioni Luma
 

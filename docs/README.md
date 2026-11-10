@@ -1,30 +1,30 @@
-# Documentazione
+# Documentazione e stato del progetto
 
-**V1 archiviata; v2 in corso.** V2-01–V2-05 sono chiuse localmente e il desktop V2-06 è implementato con [verifiche ancora aperte](V2_06_DESKTOP.md). Lo stato reale, il debito M9 e la continuità M0–M9 sono nella [baseline](BASELINE.md). Un ADR accettato non prova una verifica eseguita.
+Per installare e provare l’app parti dal [README](../README.md).
 
-## Percorso principale
+## Stato implementato
 
-[README del progetto](../README.md) → [PRD](PRD.md) → [Roadmap](ROADMAP.md): obiettivo di lettura complessivo 15–20 minuti. Per usare il software attuale seguire i README operativi, non le specifiche v2.
+La release **0.2.0**, pubblicata il 9 novembre 2026, deriva dal candidato pulito `3b78203e6cfbb3be1b01d8bed82728c45b56ab00`: backend condiviso, CLI volatile senza Qt, ricerca con prefissi/ranking/filtri, SQLite v2 con cancel/recovery e desktop Luma Qt Quick con IT/EN e temi. Il desktop apre i file direttamente e mostra pagine da 20. [Codice e ownership](ARCHITECTURE.md).
 
-## Riferimenti tecnici
+V2-01–V2-08 sono concluse; nessuna ulteriore milestone è definita. Le evidenze riguardano revisioni e artefatti identificati, non automaticamente modifiche successive: [corpus V2-01](TEST_DATASETS.md#verifica-v2-01), [backend V2-02–05](PERFORMANCE.md), [audit installer V2-07](V2_07_INSTALLER.md), [accettazione finale e desktop V2-06/V2-08](V2_08_ACCEPTANCE.md). La matrice distingue suite, benchmark compilato e conferme manuali dell’utente; conserva anche lo scostamento p95 di un run interrotto.
 
-| Documento | Fonte autorevole per |
+## Riferimenti
+
+| Ti serve capire… | Documento |
 |---|---|
-| [Architettura](ARCHITECTURE.md) | Componenti, dipendenze e flussi |
-| [Layout](REPOSITORY_LAYOUT.md) | Ownership e collocazione del codice |
-| [Dominio](DOMAIN_MODEL.md) | Entità e invarianti |
-| [Analisi e ricerca](INDEXING_AND_ANALYSIS.md) | Reader, analyzer, matching e vocabolario |
-| [Snapshot e sync](SNAPSHOTS_AND_SYNC.md) | Consistenza, lifecycle e persistenza |
-| [Contratti](INTERFACE_CONTRACTS.md) | Operazioni, dati scambiati ed errori |
-| [UX](UX_WINDOWS.md) | Flussi desktop e accessibilità |
-| [Privacy e distribuzione](SECURITY_AND_PRIVACY.md) | Dati, installer e diritti |
-| [Verifiche](TEST_STRATEGY.md) | Scenari di accettazione e metodo di misura |
-| [Corpus di test](TEST_DATASETS.md) | Sintetici, fonti Internet, manifest e ground truth funzionale |
-| [Decisioni aperte](OPEN_DECISIONS.md) | Scelte da approvare prima del codice pertinente |
-| [ADR](adr/README.md) | Decisioni approvate e loro motivazioni |
+| Cosa deve fare il prodotto | [PRD](PRD.md) |
+| Dove intervenire e come persistono i dati | [Architettura, dominio e snapshot](ARCHITECTURE.md) |
+| Come chiamare il backend | [Contratti applicativi e porte](INTERFACE_CONTRACTS.md) |
+| Come vengono letti e cercati i documenti | [Reader, analyzer e ricerca](INDEXING_AND_ANALYSIS.md) |
+| Come si comporta il desktop | [UX Windows](UX_WINDOWS.md) |
+| Quali dati conserva e come distribuirlo | [Privacy e diritti](SECURITY_AND_PRIVACY.md), [packaging](../scripts/package/README.md) |
+| Perché sono state fatte certe scelte | [Decisioni approvate e aperte](adr/README.md) |
+| Come verificare una modifica | [Strategia e scenari](TEST_STRATEGY.md), [corpus funzionale](TEST_DATASETS.md), [comandi esperimenti](../experiments/README.md) |
 
-## Come mantenere i documenti
+Requisiti e scenari mantengono ID stabili; misure ed esiti appartengono ai report. Le specifiche correnti sono autonome: l’[archivio v1](archive/v1/README.md) rimanda ai documenti storici a revisione Git fissa e riassume M9; non integra implicitamente le regole attuali.
 
-Il PRD identifica i requisiti; la roadmap assegna le milestone; la strategia di test identifica gli scenari. I riferimenti incrociati sostituiscono le copie. Stato implementato, approvato per v2 e da decidere devono essere espliciti. Evidenze, conteggi e misure appartengono ai report, non ai documenti normativi.
+## Continuità e limiti storici
 
-[Archivio v1](archive/v1/README.md): specifiche e verifiche storiche, conservate senza reinterpretarne i risultati. [Homework 3](homework-3/README.md): materiale del corso, mantenuto al percorso originale. Gli ADR v1 rimangono consultabili e segnalano le sostituzioni limitate alla v2.
+La v2 riusa modello/analyzer/indici M0–M2, CLI/reader M3–M4 e snapshot/sync/job M5–M7; sostituisce Widgets M8 con Qt Quick e ZIP M9 con installer. Lo storage separato evita migrazioni implicite. Il corpus funzionale estende i generatori Homework/M9 e resta distinto dai benchmark.
+
+M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse sul pacchetto v2, come registra la [matrice finale](V2_08_ACCEPTANCE.md#matrice-dei-gate), senza cambiare gli esiti v1. Misure storiche non sono automaticamente confrontabili; fault simulati non provano resistenza a ogni OOM o perdita di alimentazione. Il materiale [Homework 3](homework-3/README.md) conserva la regressione del corso e non prova l’invio amministrativo al docente.

@@ -1,16 +1,16 @@
 # PRD — Local Document Search v2
 
-**Stato: approvato per v2 il 7 novembre 2026; V2-01–V2-08 completate sul candidato 0.2.0 il 9 novembre 2026.** Verifiche, ambiente e limiti del pacchetto finale sono nel [registro V2-08](V2_08_ACCEPTANCE.md); il prodotto iniziale è descritto nella [baseline](BASELINE.md). Questo documento resta la fonte dei requisiti; le scelte tecniche sono nel [registro decisioni](OPEN_DECISIONS.md). La chiusura della milestone non equivale alla pubblicazione della release.
+Approvato il 7 novembre 2026. [Stato implementato e release](README.md#stato-implementato), [decisioni tecniche](adr/README.md).
 
 ## Prodotto e utenti
 
-V1 soddisfa l'Homework e offre un desktop per interagirvi. V2 evolve lo stesso prodotto, gli stessi package e il backend già implementato: aggiunge capacità di ricerca, rinnova la presentazione e completa la distribuzione. La [mappa M0–M9 → v2](BASELINE.md#continuità-da-m0m9-a-v2) mostra cosa viene riutilizzato; V2-01 parte dai generatori e dalle verifiche già presenti per costruire il corpus ibrido funzionale. V2 deve permettere a utenti Windows non tecnici di installare e usare un prodotto completo senza Python preinstallato, servizi remoti o configurazione di sviluppo. L'uso personale, di studio e interno è gratuito, anche per imprese e professionisti; vendita, integrazione in prodotti distribuiti e offerta come servizio a terzi richiedono autorizzazione scritta.
+Ricerca locale per utenti Windows non tecnici: installare offline senza Python → scegliere una cartella → indicizzare → cercare → leggere estratti → aprire il file. Agli avvii successivi recuperare l’indice e sincronizzare in background. Attese, errori e recupero devono essere comprensibili senza conoscenze tecniche.
 
-Il percorso principale è: installare offline → scegliere una cartella → indicizzare → cercare → leggere gli estratti → aprire il file. Le aperture successive recuperano l'indice e sincronizzano in background. La UI espone attese, errori e recupero senza richiedere conoscenze tecniche.
+La v2 evolve il backend esistente, preservando CLI Homework e regressioni. Uso personale, di studio e interno gratuito, anche professionale; [termini e distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti).
 
 ## Requisiti e accettazione
 
-Gli ID sono stabili. I riferimenti Txx sono scenari della [strategia di test](TEST_STRATEGY.md); le milestone sono nella [roadmap](ROADMAP.md).
+Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_STRATEGY.md); V2-xx le milestone concluse, con evidenze nella [stato del progetto](README.md#stato-implementato).
 
 | ID | Requisito approvato | Accettazione | Milestone / scenario |
 |---|---|---|---|
@@ -40,10 +40,10 @@ Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory atti
 
 Il diff resta basato su path, size e mtime_ns. Modifiche che preservano dimensione e timestamp possono non essere rilevate, anche con i nuovi controlli in ingestione. I risultati possono diventare obsoleti fino al sync. PDF multicolonna e tabelle possono produrre testo imperfetto; le frasi operano sul testo canonico unico.
 
-Il [corpus funzionale](TEST_DATASETS.md) non è un benchmark; fonti concrete e dettagli di acquisizione restano gate V2-01.
+Il [corpus funzionale](TEST_DATASETS.md) resta distinto dal benchmark prestazionale.
 
-Il target di scala non è un limite automatico ai file né una garanzia su qualunque PDF o hardware. Soglie e profilo supportato devono essere approvati in V2-02; risorse esaurite devono produrre errori gestibili quando intercettabili. Non si promette recupero da ogni OOM o perdita fisica di alimentazione.
+Il target di scala non è un limite automatico ai file né una garanzia su qualunque PDF o hardware. Soglie e profilo supportato sono fissati nell’[ADR 0014](adr/0014-v2-performance-budgets.md); risorse esaurite devono produrre errori gestibili quando intercettabili. Non si promette recupero da ogni OOM o perdita fisica di alimentazione.
 
 ## Condizione di rilascio
 
-La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [baseline](BASELINE.md), e i [gate di distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti). Approvazione del progetto, test del sorgente e collaudo del pacchetto sono evidenze differenti. La sola riscrittura documentale non soddisfa nessuna milestone di implementazione.
+La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [stato del progetto](README.md#stato-implementato), e i [gate di distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti). Approvazione del progetto, test del sorgente e collaudo del pacchetto sono evidenze differenti.

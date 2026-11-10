@@ -1,36 +1,32 @@
-# Backend attuale — CLI e runtime persistente v1
+# Backend e CLI
 
-**Stato:** API e comandi implementati in v1; le estensioni v2 sono [progettate](../docs/PRD.md), non disponibili qui.
+Python >=3.12; motore di ricerca condiviso con il desktop, senza dipendenze Qt. Dipendenze runtime e versioni sono nel [pyproject.toml](pyproject.toml).
 
-Python >=3.12; dipendenze runtime pypdf 7.0.0 e markdown-it-py 4.2.0. Motore proprietario con indici posizionali filename/content, build completo su snapshot in memoria e sessione di ricerca console. [Evidenze M4](../docs/archive/v1/M4_VERIFICATION.md).
+## Installazione e test
 
-## Installazione e verifica
-
-Da `backend/`, PowerShell:
+Da `backend/`, con un ambiente virtuale attivo:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
 python -m pip check
 python -m pytest
 ```
 
-Per riprodurre anche le versioni transitive dell'ambiente di sviluppo usare `python -m pip install -r requirements-dev.txt`. Su Linux attivare `.venv` con `source .venv/bin/activate`; gli altri comandi restano uguali. GitHub Actions crea una virtualenv isolata e usa esplicitamente il suo interprete per installazione, `pip check` e test su Windows/Linux, Python 3.12. La CI della baseline `de93bab` è verde su entrambi i sistemi; la revisione finale richiede nuova verifica.
+Per bloccare anche le dipendenze transitive usare `python -m pip install -r requirements-dev.txt`. La [CI](../.github/workflows/backend.yml) verifica Windows e Linux.
+
+### Organizzazione dei test
+
+`tests/unit/` copre dominio, DTO, analyzer/parser, matching, snapshot e confini degli import; `tests/integration/` copre composizione, reader/storage, sync, concorrenza, fault e CLI come processo reale. Fixture sintetiche in directory temporanee pytest: `test_multiformat.py` genera PDF testuali, immagini, pagine miste e password con pypdf, senza binari versionati. Test di link/nomi distinti dichiarano skip motivati dove non supportati; corpus reale opt-in e completo. [Strategia](../docs/TEST_STRATEGY.md), [corpus](../docs/TEST_DATASETS.md); nessun documento personale.
 
 ## Sessione console
 
 ```powershell
-local-document-search "C:\percorso\documenti"
-# Alternativa equivalente:
-python -m local_document_search.interfaces.cli "C:\percorso\documenti"
+local-document-search "C:/percorso/documenti"
+# Alternativa:
+python -m local_document_search.interfaces.cli "C:/percorso/documenti"
 ```
 
-Directory relativa o assoluta; scansione ricorsiva di TXT, Markdown e PDF, suffissi case-insensitive, nessun link/junction/reparse point attraversato. Radici link o con componenti link sono rifiutate. TXT/Markdown: decodifica UTF-8 rigorosa con BOM ammesso; errore di scansione, lettura o encoding interrompe il build senza pubblicare un indice parziale.
-
-Markdown: testo da token CommonMark con tabelle, link/alt e codice inline; esclusi blocchi di codice, front matter iniziale chiuso e token HTML grezzi. PDF: testo in ordine di pagina, nessun OCR; senza testo non-whitespace viene escluso, mentre corruzione o password necessaria fanno fallire il build. TXT/MD vuoti restano ricercabili per nome. Nessun accesso agli URL dei documenti.
-
-Esempi:
+La CLI indicizza ricorsivamente TXT, Markdown e PDF testuali, poi accetta query:
 
 ```text
 nome Report2026
@@ -40,76 +36,33 @@ entrambi machine "deep learning"
 "nome"
 ```
 
-I prefissi minuscoli non quotati selezionano il campo; senza prefisso vale BOTH. AND e frasi devono essere soddisfatti interamente nello stesso campo. `"nome"` cerca il termine letterale. Errori di query non terminano la sessione; non esistono comandi riservati `exit`/`quit`.
+I prefissi minuscoli non quotati selezionano il campo; senza prefisso vale BOTH. `"nome"` cerca il termine letterale. AND e frasi devono corrispondere interamente nello stesso campo. Gli errori di query non chiudono la sessione; `exit` e `quit` non sono comandi riservati.
 
-La console stampa conteggi, tempo del build e tutti i risultati ordinati per percorso relativo, con campi corrispondenti. Il servizio usa pagine da 50; la CLI le scorre automaticamente. Uscita con EOF (Windows: Ctrl+Z poi Invio; Unix: Ctrl+D) o Ctrl+C.
+L’indice viene ricostruito in memoria a ogni avvio. Durante la ricerca i sorgenti non vengono riletti; la CLI stampa tutti i risultati per percorso, scorrendo le pagine da 50. Esci con EOF (Windows: Ctrl+Z, Invio; Unix: Ctrl+D) o Ctrl+C. Codici: `0` EOF/help, `1` errore operativo, `2` argomenti invalidi, `130` Ctrl+C.
 
-Codici: `0` EOF/help, `1` errore operativo (anche directory assente), `2` argomenti invalidi, `130` Ctrl+C.
+Reader, encoding, esclusioni ed errori seguono la [specifica di analisi](../docs/INDEXING_AND_ANALYSIS.md). Un errore di build non pubblica un indice parziale. Per le dieci query Homework e le due regressioni, dalla root: `python experiments/run_homework3.py`. [Relazione](../docs/homework-3/REPORT.md).
 
-## Confini e limiti
+## API persistente
 
-- Domain: analyzer, parser, builder e matching puri, snapshot immutabili.
-- Application: `BuildIndex`, `BuildResult`, `SearchDocuments`, DTO e porte.
-- Infrastructure: discovery, reader TXT/Markdown/PDF, `InMemorySnapshotRepository` e `SqliteSnapshotRepository`.
-- Interfaces: CLI e `compose_cli`; `compose_application` conserva il cablaggio esplicito M1.
-
-Ogni sessione usa una directory e un writer sincrono. La CLI non persiste l’indice e non rilegge i file durante le query; i risultati riflettono il build iniziale. Settings, diff e job asincroni sono disponibili nella composizione persistente separata; il desktop Qt Quick v2 usa `compose_v2_application`. SQLite usa la standard library; PySide6 non viene installato col solo backend.
-
-Per le dieci query e le misure, dalla radice eseguire `backend/.venv/Scripts/python experiments/run_homework3.py` (Linux: `.venv/bin/python`). [Relazione](../docs/homework-3/REPORT.md).
-
-
-## Backend persistente: accesso diretto v1
-
-Il testo estratto viene conservato localmente anche se il sorgente viene eliminato: scegliere uno storage privato dell’account, esterno al repository e alla directory indicizzata. Nessuna cifratura applicativa aggiuntiva. La CLI Homework resta volatile; l’uso persistente è esplicito nel backend:
+`compose_v2_application(storage)` è la composizione usata dal desktop; `compose_persistent_application(storage)` conserva quella v1. [Contratti e DTO](../docs/INTERFACE_CONTRACTS.md), [storage e retention](../docs/ARCHITECTURE.md#snapshot-e-sincronizzazione).
 
 ```python
 from local_document_search.application.contracts import SearchRequest
-from local_document_search.application.search import GetDocument, SearchDocuments
-from local_document_search.application.synchronization import BuildIndex
-from local_document_search.infrastructure.filesystem import TextFileDiscovery, resolve_directory
-from local_document_search.infrastructure.readers.text import TextReader
-from local_document_search.infrastructure.sqlite_snapshot_storage import SqliteSnapshotRepository
+from local_document_search.interfaces.composition import compose_v2_application
 
-root = resolve_directory("C:/documenti")
-# Default Windows: %LOCALAPPDATA%/LocalDocumentSearch.
-# Su altri sistemi passare una directory applicativa esplicita come primo argomento.
-with SqliteSnapshotRepository(source_directory=root) as snapshots:
-    if snapshots.load_active() is None:
-        BuildIndex(TextFileDiscovery(), TextReader(), snapshots).execute(root)
-    elif snapshots.load_active().root_directory != root:
-        raise ValueError("Usare soltanto la directory dello snapshot attivo")
-    result = SearchDocuments(snapshots).execute(SearchRequest("roma"))
-    if result.results:
-        details = GetDocument(snapshots).execute(result.results[0].document_id, result.snapshot_id)
+def main():
+    with compose_v2_application() as app:
+        state = app.initialize.execute()
+        if state.active_directory is None:
+            app.select_directory.execute("C:/Documenti")
+        app.synchronize.execute()
+        response = app.search.submit(SearchRequest("machine learning")).result()
+        print(response.total_matches)
+
+if __name__ == "__main__":
+    main()
 ```
 
-L’esempio costruisce solo TXT; i reader multiformato esistenti possono essere iniettati nello stesso `BuildIndex`. Non esegue sync o controllo dei cambiamenti. La riapertura del repository non richiede i sorgenti; `resolve_directory` nell’esempio serve alla scelta iniziale della radice.
+Salvare l’esempio in un file: la protezione `__main__` serve ai processi reader su Windows. L’attesa bloccante è adatta a script; la UI usa polling e Future pronte. Per test e sistemi non Windows passare uno storage esplicito esterno a sorgenti e repository. Il lock precede l’apertura dei database; una seconda sessione riceve `StorageFailure`. Il context manager attende job e letture prima di chiudere.
 
-Un solo proprietario della sessione e un writer, senza uso concorrente fra thread/processi. `acquire()` protegge le versioni dalle pulizie; `load_active()` restituisce il valore immutabile senza prenotare la retention. Restano attivo e precedente della directory corrente, oltre alle letture in corso. `clear()` elimina solo le righe possedute, non l’intero storage applicativo né i documenti originali; non garantisce cancellazione forense. Il repository diretto resta un adapter di basso livello. Settings, rebuild, ClearLocalData, lock e worker sono disponibili nella composizione persistente seguente. [Verifica M5](../docs/archive/v1/M5_VERIFICATION.md).
-
-## Sessione persistente v1
-
-```python
-from local_document_search.interfaces.composition import compose_persistent_application
-from local_document_search.application.contracts import SearchRequest
-
-with compose_persistent_application() as app:  # LOCALAPPDATA su Windows
-    state = app.initialize.execute()          # ripristino + avvio sync asincrono
-    if state.active_directory is None:
-        state = app.select_directory.execute("C:/Documenti")
-    report = app.synchronize.execute()        # attende il job attivo, o avvia un controllo
-    response = app.search.submit(SearchRequest("machine learning")).result()
-    job = app.request_synchronization.execute()
-    status = app.job_status.execute(job.job_id)
-    # app.clear_local_data.execute()          # rifiutato se un job è ancora attivo
-```
-
-Questo esempio attende esplicitamente per uso da script. La UI usa polling dei job e
-Future senza chiamare result finché non sono pronte. Ricerca e dettagli conservano anche execute
-bloccante; submit usa un worker separato dall'indicizzazione.
-
-Nei test e sui sistemi non Windows passare una directory storage esplicita esterna ai sorgenti
-e al repository. Il lock OS viene acquisito prima dei database; una seconda sessione sullo stesso
-storage riceve StorageFailure. Il context manager attende job e letture prima di rilasciare le risorse.
-Gli errori dei job asincroni sono esposti da job_status e dallo stato applicativo; synchronize li solleva.
-CLI Homework invariata, nessun Qt o dipendenza aggiunta. [Verifica M7](../docs/archive/v1/M7_VERIFICATION.md).
+Testo estratto e indici persistono anche se il sorgente scompare; non c’è cifratura applicativa aggiuntiva. [Privacy](../docs/SECURITY_AND_PRIVACY.md).

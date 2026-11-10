@@ -1,53 +1,26 @@
-# Desktop Qt Quick v2
+# Desktop Luma
 
-PySide6/Qt Quick con QML e backend v2 nello stesso processo. Il comando
-`local-document-search-desktop` conserva l'avvio; la CLI Homework resta nel
-pacchetto backend senza dipendenze Qt.
+PySide6/Qt Quick, QML e backend v2 nello stesso processo. [Installazione e avvio](../README.md#avvio-dal-sorgente).
 
-## Avvio e uso
+## Uso
 
-Da root con Python 3.12 x64:
+Al primo avvio premi **Accetta e scegli una cartella**. La home appare quando l’indice è ricercabile; agli avvii successivi il catalogo viene recuperato e sincronizzato in background.
 
-```powershell
-python -m pip install -e "./backend[dev]" -e "./frontend[dev]"
-local-document-search-desktop
-```
+Invio o la lente eseguono la query; `termine*` cerca prefissi espliciti. Digitare propone suggerimenti: selezionarne uno completa la query e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il file nell’app Windows associata.
 
-Il task VS Code **Local Document Search: avvia / riavvia** usa l'ambiente
-`backend/.venv` e lo stesso comando. Al primo avvio leggere l'informativa e scegliere **Accetta e scegli una cartella**.
-La stessa pagina mostra progresso reale e consigli. La home **Luma** si apre
-quando l'indice è disponibile. Le aperture successive recuperano automaticamente
-il catalogo v2 e sincronizzano in background mantenendo la ricerca disponibile.
+**Impostazioni**, accessibile dalla home, contiene campo, formati, ordine, cartella, sync, rebuild, diagnostiche, pulizia, lingua e tema. Filtri solo di sessione, azzerati al cambio cartella/riavvio; lingua e tema persistono. Il filtro sottocartella, il recupero del precedente e i dettagli completi restano API backend, senza controlli dedicati nella UI.
 
-Premere **Invio** o **Cerca**. `termine*` cerca prefissi espliciti; i suggerimenti
-non avviano ricerche. I risultati mostrano percorso, formato ed estratto: clic
-sul titolo o Invio apre direttamente il file nell'app Windows associata.
+Scorciatoie: **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync, **Esc** dai risultati alla home. Finestra minima 900×640 pixel logici. [Specifica UX](../docs/UX_WINDOWS.md).
 
-**Impostazioni** contiene filtri, ordinamento, cartella, sync, rebuild, recupero,
-diagnostiche, pulizia, lingua e tema. I filtri valgono solo nella sessione e
-si azzerano al cambio cartella; un riepilogo segnala le restrizioni attive.
-Italiano/inglese e tema chiaro/scuro persistono. La pulizia richiede conferma
-e non tocca sorgenti o dati v1.
+## Sviluppo e verifiche
 
-**Scorciatoie:** Ctrl+L ricerca, Ctrl+O selezione cartella, F5 sync, Tab controlli,
-Invio ricerca/apertura risultato. Finestra minima 900×640 pixel logici.
-
-Componenti QML separati in `qml/`, asset originali in `assets/`, rigenerazione
-con `python scripts/dev/generate_luma_assets.py` dalla root.
-
-## Verifiche
+Dalla root, con l’ambiente del README:
 
 ```powershell
-cd frontend
-../backend/.venv/Scripts/python.exe -m pytest
+backend/.venv/Scripts/python.exe -m pip install -e "./backend[dev]" -e "./frontend[dev]"
+backend/.venv/Scripts/python.exe -m pytest frontend/tests
 ```
 
-I test Qt usano `QT_QPA_PLATFORM=offscreen` per default; impostare
-`QT_QPA_PLATFORM=windows` per controlli nativi. Il probe
-`experiments/run_v2_desktop.py` usa un corpus sintetico esistente, storage
-temporaneo e report/catture fuori Git. Le prove del prototipo standalone sono
-distinte dal futuro installer V2-07 e dall'accettazione V2-08.
+I test usano `QT_QPA_PLATFORM=offscreen` per default; `windows` abilita il plugin nativo. Il probe `experiments/run_v2_desktop.py` usa corpus sintetico e storage temporaneo; catture e report restano fuori Git. Il rendering offscreen non prova font Windows, Narrator o avvio del pacchetto installato. [Evidenze desktop](../docs/V2_08_ACCEPTANCE.md#evidenze-desktop-precedenti-al-candidato).
 
-[Rapporto V2-06](../docs/V2_06_DESKTOP.md) · [UX](../docs/UX_WINDOWS.md)
-
-[Redesign Luma e verifiche](../docs/LUMA_DESKTOP.md)
+QML in `src/local_document_search_desktop/qml/`; [asset e provenienza](src/local_document_search_desktop/assets/README.md), rigenerabili con `python scripts/dev/generate_luma_assets.py`.
