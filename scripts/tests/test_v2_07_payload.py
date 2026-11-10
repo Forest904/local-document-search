@@ -88,3 +88,21 @@ def test_full_inventory_requires_corresponding_qt_source(tmp_path):
     (tmp_path / "sources/qtbase.tar.xz").write_bytes(b"synthetic")
     items = payload_audit.full_file_inventory(tmp_path, sources)
     assert next(x for x in items if x["file"] == "qt6core.dll")["source"] == "sources/qtbase.tar.xz"
+
+
+def test_local_qt_pdf_view_is_attributed_to_qt_source(tmp_path):
+    view = tmp_path / "local_document_search_desktop/qml/LocalPdfMultiPageView.qml"
+    view.parent.mkdir(parents=True)
+    view.write_text("// synthetic Qt view", encoding="utf-8")
+    (tmp_path / "THIRD_PARTY_NOTICES.txt").write_text("Qt PDF", encoding="utf-8")
+    (tmp_path / "TERMS-IT.txt").write_text("Project", encoding="utf-8")
+    (tmp_path / "licenses/upstream").mkdir(parents=True)
+    (tmp_path / "licenses/upstream/LGPL-3.0.txt").write_text("LGPL", encoding="utf-8")
+    source = tmp_path / "sources/qtwebengine.tar.xz"
+    source.parent.mkdir()
+    source.write_bytes(b"synthetic")
+    sources = {"qtwebengine": {"file": "sources/qtwebengine.tar.xz", "url": "https://example.test/source"}}
+    record = next(item for item in payload_audit.full_file_inventory(tmp_path, sources)
+                  if item["file"] == "local_document_search_desktop/qml/LocalPdfMultiPageView.qml")
+    assert record["component"] == "qtwebengine"
+    assert record["source"] == "sources/qtwebengine.tar.xz"

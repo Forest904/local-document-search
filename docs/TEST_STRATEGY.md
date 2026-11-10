@@ -56,7 +56,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T24 | Parole isolate e query AND: bigrammi, Jaccard, Levenshtein e spareggi; campi/BOTH, Unicode, codici esclusi, proposte parziali, frasi/wildcard escluse; build, sync e versioni snapshot, nessuna espansione della ricerca originale | V2-10 |
 | T25 | Desktop IT/EN: proposta dopo ricerche con e senza risultati, accettazione esplicita e tastiera, query/filtri/snapshot obsoleti scartati, errori della correzione separati dai risultati; misure separate di latenza, build, riapertura e RAM | V2-10 |
 | T26 | PDF sintetici con pagine vuote e immagini: mappa nel testo canonico, destinazioni per termini/AND/frasi/wildcard e campi, round-trip SQLite, sync, recovery e rebuild schema 3; regressioni CLI | V2-11 |
-| T27 | Viewer PDF interno: caricamento e salto effettivo, ritorno ai risultati, IT/EN, tema, tastiera, errori Qt e file cambiato/assente; packaging e collaudo offline separati dai test sorgente | V2-11 |
+| T27 | Viewer PDF interno: salto effettivo, ricerca manuale con query della risposta e disabilitazione senza testo, pan/bounce/zoom e pinch, azioni file/cartella, ritorno ai risultati, IT/EN, tema, tastiera, errori Qt e file cambiato/assente; packaging e collaudo offline separati dai test sorgente | V2-11 |
 
 ## Gate finale
 

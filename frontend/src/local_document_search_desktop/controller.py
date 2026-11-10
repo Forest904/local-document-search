@@ -15,7 +15,7 @@ from local_document_search.domain.documents import DocumentFormat
 
 from .i18n import catalog, translate
 from .models import ResultsModel, python_cursor, result_rows
-from .viewer import PdfViewerState
+from .viewer import PdfTextProbe, PdfViewerState
 
 
 PAGE_SIZE = 20
@@ -42,6 +42,9 @@ class DesktopController(QObject):
         self.query = ""
         self.screen = "home"
         self.viewer = PdfViewerState()
+        self.viewer_probe = PdfTextProbe(self)
+        self.viewer_probe.changed.connect(self.changed)
+        self.response_query = ""
         self.results_scroll = 0.0
         self.results_index = -1
         self.return_screen = "home"
@@ -106,7 +109,8 @@ class DesktopController(QObject):
                                               for item in self.spelling.replacements) if self.spelling else "",
                 "selectedPath": self.selected.relative_path.value if self.selected else "",
                 "viewerSource": self.viewer.source, "viewerPage": self.viewer.page,
-                "viewerName": self.viewer.name,
+                "viewerName": self.viewer.name, "viewerQuery": self.viewer.query,
+                "viewerTextStatus": self.viewer_probe.status,
                 "resultsScroll": self.results_scroll, "resultsIndex": self.results_index,
                 "total": self.response.total_matches if self.response else 0,
                 "hasResponse": self.response is not None, "offset": self.offset,
@@ -136,6 +140,7 @@ class DesktopController(QObject):
     def navigate(self, screen):
         if screen == "back" and self.screen == "viewer":
             self.screen = "results"
+            self.viewer_probe.cancel()
             self.viewer.clear()
             self.changed.emit()
             return
@@ -218,11 +223,13 @@ class DesktopController(QObject):
     def invalidate(self, *, keep_viewer=False):
         if self.screen == "viewer" and not keep_viewer:
             self.screen = "results"
+            self.viewer_probe.cancel()
             self.viewer.clear()
         self.generation += 1
         self.suggest_generation += 1
         self.spelling_generation += 1
         self.response = self.selected = None
+        self.response_query = ""
         self.results_scroll = 0.0
         self.results_index = -1
         self.search_duration = None
@@ -322,6 +329,7 @@ class DesktopController(QObject):
                 self.search_page(0)
                 return
             self.response, self.offset = response, offset
+            self.response_query = request.query
             self.search_duration = max(0.0, time.perf_counter() - started)
             self.model.replace(rows)
             self.message_key = ""
@@ -502,7 +510,8 @@ class DesktopController(QObject):
             try:
                 if self.selected.format is DocumentFormat.PDF:
                     self.viewer.open(self.state.active_directory, self.selected.relative_path,
-                                     self.selected.filename, self.selected.pdf_target_page)
+                                     self.selected.filename, self.selected.pdf_target_page, self.response_query)
+                    self.viewer_probe.start(self.viewer.path)
                     self.screen = "viewer"
                     self.changed.emit()
                 else:
@@ -515,6 +524,15 @@ class DesktopController(QObject):
         if self.screen == "viewer" and self.viewer.relative_path and self.state:
             try:
                 self.opener(self.state.active_directory, self.viewer.relative_path)
+            except Exception as exc:
+                self.error(exc)
+
+    @Slot()
+    def openViewerFolder(self):
+        if self.screen == "viewer" and self.viewer.relative_path and self.state:
+            try:
+                from .composition import open_document_folder
+                open_document_folder(self.state.active_directory, self.viewer.relative_path)
             except Exception as exc:
                 self.error(exc)
 
@@ -543,6 +561,7 @@ class DesktopController(QObject):
         self.queued_control = None
         self.debounce.stop()
         self.invalidate()
+        self.viewer_probe.close()
 
     def tick(self):
         if self.control_future and self.control_future[0].done():

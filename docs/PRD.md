@@ -37,7 +37,7 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 
 ## Limiti e non-obiettivi
 
-**Estensione V2-11:** il desktop apre i PDF in un viewer interno alla pagina fisica del primo match nel testo indicizzato; i risultati che corrispondono solo nel nome partono dalla prima pagina. La navigazione usa una mappa delle pagine salvata nello snapshot. Non sono promessi scorrimento alla parola, evidenziazione sul PDF o corrispondenza con un sorgente modificato dopo l'indicizzazione. [Decisione](adr/0017-v2-pdf-page-navigation.md).
+**Estensione V2-11:** il desktop apre i PDF in un viewer interno alla pagina fisica del primo match nel testo indicizzato; i risultati che corrispondono solo nel nome partono dalla prima pagina. La navigazione usa una mappa delle pagine salvata nello snapshot. La ricerca manuale nel PDF usa il testo presente nel file aperto e non altera lo snapshot. Non sono promessi scorrimento o evidenziazione automatica alla parola della query Luma, né corrispondenza con un sorgente modificato dopo l'indicizzazione. [Decisione](adr/0017-v2-pdf-page-navigation.md).
 
 Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Il viewer V2-11 rende le pagine PDF; non promette coordinate della query né conservazione del layout originale nel testo estratto.
 

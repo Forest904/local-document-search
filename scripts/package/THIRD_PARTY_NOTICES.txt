@@ -35,6 +35,10 @@ Qt PDF 6.140.0 usa PDFium. Il sorgente qtwebengine 6.140.0, che comprende
 Qt PDF e PDFium, e incluso in sources/; la pagina Qt-third-party.html
 identifica PDFium come componente terzo con licenza BSD. L'archivio e stato
 verificato anche contro l'hash SHA-1 pubblicato dal mirror Qt.
+Il file local_document_search_desktop/qml/LocalPdfMultiPageView.qml e un
+adattamento di QtQuick/Pdf/PdfMultiPageView.qml distribuito con Qt PDF 6.140.0.
+Conserva copyright e licenza nell'intestazione; le modifiche sono indicate
+nello stesso file. Il sorgente originale e incluso nell'archivio qtwebengine.
 
 Nuitka 4.1.1 compila l'applicazione; avvisi originali in licenses/Nuitka.
 Le versioni degli strumenti di build non implicano che tutti i relativi
@@ -44,6 +48,6 @@ Copyright Microsoft Corporation. Elenco redistribuibili fornito dai Build
 Tools in licenses/Microsoft-Visual-Studio-2022-Redist.txt.
 Il programma richiede Windows 11 x64.
 
-Non sono state modificate le librerie Qt. Nessuna pubblicazione esterna e
+Non sono state modificate le librerie binarie Qt. Nessuna pubblicazione esterna e
 stata effettuata; questo archivio non e una dichiarazione di conformita
 per una futura release pubblica.

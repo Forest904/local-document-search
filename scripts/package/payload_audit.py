@@ -8,7 +8,7 @@ import subprocess
 
 QML_IMPORTS = ("QtQuick", "QtQuick.Controls.Basic", "QtQuick.Layouts", "QtQuick.Dialogs", "QtQuick.Pdf")
 PYSIDE_MODULES = {"QtCore.pyd", "QtGui.pyd", "QtNetwork.pyd", "QtOpenGL.pyd",
-                  "QtQml.pyd", "QtQuick.pyd", "QtQuickControls2.pyd", "QtWidgets.pyd"}
+                  "QtQml.pyd", "QtQuick.pyd", "QtQuickControls2.pyd", "QtWidgets.pyd", "QtPdf.pyd"}
 GPL_MODULES = ("qt6graphs", "qt63d", "qt6quicktimeline", "qt6virtualkeyboard", "qt6qmlcompiler")
 GPL_QML_DIRS = {"Graphs", "Scene2D", "Scene3D", "Timeline", "VirtualKeyboard"}
 QML_PATTERN = re.compile(r"^\s*(?:depends|import|default import)\s+(Qt[A-Za-z0-9_.]+)", re.MULTILINE)
@@ -220,6 +220,11 @@ def full_file_inventory(folder, qt_sources):
             component = "legal-notice"
             version, license_id = "0.2.0", "Various; see file"
             notice, provenance, source = name, "Build inputs and installed package metadata", name
+        elif name == "local_document_search_desktop/qml/LocalPdfMultiPageView.qml":
+            component, version, license_id = "qtwebengine", "6.140.0", "LGPL-3.0"
+            notice = "THIRD_PARTY_NOTICES.txt"
+            provenance = "Local adaptation of QtQuick/Pdf/PdfMultiPageView.qml from PySide6_Pdf 6.12.0.140"
+            source = qt_sources["qtwebengine"]["file"]
         elif name == "LocalDocumentSearch.exe" or name.startswith(("local_document_search_desktop/", "diagnostics/")) or name in {
                 "ISTRUZIONI.txt", "QT_REPLACEMENT.txt", "TERMS-IT.txt", "TERMS-EN.txt",
                 "THIRD_PARTY_NOTICES.txt", "compilation-report.xml"}:

@@ -21,6 +21,14 @@ def open_document(directory, relative_path):
         raise OSError("Impossibile aprire il file con l'applicazione predefinita.")
 
 
+def open_document_folder(directory, relative_path):
+    path = Path(directory) / relative_path.value
+    if not path.parent.is_dir():
+        raise FileNotFoundError("Cartella del documento non disponibile.")
+    if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(path.parent))):
+        raise OSError("Impossibile aprire la cartella del documento.")
+
+
 def has_local_session():
     """A v2 catalog is created only after the initial local-data notice."""
     local = os.environ.get("LOCALAPPDATA")

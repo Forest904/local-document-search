@@ -60,7 +60,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: root.v.screen === "results" || root.v.screen === "viewer"
+        enabled: root.v.screen === "results" || root.v.screen === "viewer" && !(content.item && content.item.searchOpen)
         onActivated: desktop.navigate(root.v.screen === "viewer" ? "back" : "home")
     }
     Shortcut {

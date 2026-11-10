@@ -14,6 +14,8 @@ Pulizia esplicita: rimuove dati applicativi correnti secondo lo stato del job e 
 
 Il viewer V2-11 usa Qt PDF, che incorpora PDFium. Payload, avvisi e archivi sorgente pertinenti richiedono un audit aggiornato prima della distribuzione; le evidenze della release 0.2.0 non coprono il nuovo componente.
 
+«Trova nel PDF» analizza localmente il file aperto tramite Qt PDF, senza inviare query o testo alla rete. Il componente QML Qt PDF adattato nel frontend conserva l'intestazione LGPL/GPL originale ed è elencato negli avvisi del pacchetto; l'archivio del sorgente originale accompagna il payload.
+
 Installer Windows 11 x64 offline, per utente e senza elevazione; include Python, Qt, plugin e ogni dipendenza runtime necessaria. Aggiornamento tramite nuovo installer completo, nessun updater che chiama un servizio. Collaudo su account standard e sistema pulito, senza Python o tool di sviluppo. La prima release pubblica può essere non firmata; registrare gli avvisi realmente osservati e non presentarla come firmata.
 
 L'implementazione V2-07 usa Inno Setup 6.7.3. La disinstallazione conserva i dati per default anche in modalità silenziosa. La cancellazione esplicita controlla il lock e rifiuta reparse point; il fallimento lascia un errore riprovabile. [Evidenze e limiti](V2_07_INSTALLER.md).

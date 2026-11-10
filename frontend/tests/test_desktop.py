@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject, QUrl, Qt, QTimer
 from PySide6.QtGui import QTextDocument
 from PySide6.QtTest import QTest
 from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 from local_document_search.application.contracts import (
     ApplicationState, CancelOutcome, DocumentDetails, JobDiagnostic, JobPhase, JobRef,
@@ -25,8 +26,9 @@ from local_document_search.domain.documents import (
     DocumentId, DocumentFormat, RelativePath, DocumentMetadata, FileFingerprint,
 )
 from local_document_search.domain.queries import SearchField
-from local_document_search_desktop.composition import compose_desktop, open_document
+from local_document_search_desktop.composition import compose_desktop, open_document, open_document_folder
 from local_document_search_desktop.controller import DesktopController
+from local_document_search_desktop.viewer import _has_searchable_text
 from local_document_search_desktop.main import create_engine
 from local_document_search_desktop.models import highlighted, python_cursor
 from conftest import until
@@ -161,6 +163,148 @@ def test_pdf_viewer_navigates_to_result_page(controller, qt, tmp_path):
             c.navigate("back")
             QTest.qWait(30)
         engine.deleteLater()
+
+
+def _text_pdf(path, page_texts):
+    writer = PdfWriter()
+    for value in page_texts:
+        page = writer.add_blank_page(width=300, height=400)
+        stream = DecodedStreamObject()
+        stream.set_data(f"BT /F1 14 Tf 40 300 Td ({value}) Tj ET".encode("ascii"))
+        page[NameObject("/Contents")] = writer._add_object(stream)
+        font = DictionaryObject({NameObject("/Type"): NameObject("/Font"),
+                                 NameObject("/Subtype"): NameObject("/Type1"),
+                                 NameObject("/BaseFont"): NameObject("/Helvetica")})
+        page[NameObject("/Resources")] = DictionaryObject({NameObject("/Font"):
+            DictionaryObject({NameObject("/F1"): writer._add_object(font)})})
+    writer.write(path)
+
+
+def test_pdf_find_uses_selected_search_query_and_text_probe(controller, qt, tmp_path):
+    c, s = controller
+    _text_pdf(tmp_path / "sample.pdf", ["needle one", "other page", "needle two"])
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.CONTENT}), pdf_target_page=1)
+        search(c, s, text="needle", items=(item,), total=1)
+        c.query = "changed editor"
+        c.openResult(0)
+        until(lambda: c.view["viewerTextStatus"] == "available")
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer is not None and viewer.property("currentPage") == 1)
+        assert viewer.property("searchString") == ""
+        assert viewer.property("viewportContentWidth") <= viewer.property("viewportWidth") + 2
+        assert viewer.property("viewportLeft") - 12 <= viewer.property("viewportContentX") <= viewer.property("viewportRight") + 12
+        zoom = viewer.property("renderScale")
+        button = window.findChild(QObject, "pdfZoomIn")
+        assert button.property("width") == 32 and button.property("height") == 32
+        button.click()
+        until(lambda: viewer.property("renderScale") > zoom)
+        window.findChild(QObject, "pdfFitWidth").click()
+        until(lambda: abs(viewer.property("renderScale") - zoom) < 0.01)
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        field = window.findChild(QObject, "pdfFindField")
+        until(lambda: field is not None and field.property("visible"))
+        assert field.property("text") == "needle"
+        assert viewer.property("searchString") == ""
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: viewer.property("searchCount") == 2)
+        until(lambda: viewer.property("currentPage") == 0)
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: viewer.property("currentPage") == 2)
+        QTest.keyClick(window, Qt.Key_Return, Qt.ShiftModifier)
+        until(lambda: viewer.property("currentPage") == 0)
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not field.property("visible"))
+        assert c.view["screen"] == "viewer" and viewer.property("searchString") == ""
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        until(lambda: field.property("visible"))
+        field.setProperty("text", "absent")
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: viewer.property("searchString") == "absent")
+        until(lambda: viewer.property("searchCount") == 0)
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not field.property("visible"))
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        until(lambda: field.property("visible"))
+        assert field.property("text") == "absent"
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not field.property("visible"))
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: c.view["screen"] == "results")
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
+
+
+def test_pdf_find_disabled_for_image_only_pdf(controller, qt, tmp_path):
+    c, s = controller
+    writer = PdfWriter()
+    writer.add_blank_page(width=300, height=400)
+    writer.write(tmp_path / "sample.pdf")
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.FILENAME}), pdf_target_page=0)
+        search(c, s, items=(item,), total=1)
+        c.openResult(0)
+        until(lambda: c.view["viewerTextStatus"] == "unavailable")
+        assert not window.findChild(QObject, "pdfFindButton").property("enabled")
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
+
+
+def test_pdf_viewer_folder_action_uses_original_directory(controller, qt, tmp_path, monkeypatch):
+    c, s = controller
+    source = tmp_path / "nested"
+    source.mkdir()
+    writer = PdfWriter()
+    writer.add_blank_page(width=300, height=400)
+    writer.write(source / "sample.pdf")
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    opened = []
+    monkeypatch.setattr("local_document_search_desktop.composition.QDesktopServices.openUrl",
+                        lambda url: opened.append(url.toLocalFile()) or True)
+    engine = create_engine(c)
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("nested/sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.FILENAME}), pdf_target_page=0)
+        search(c, s, items=(item,), total=1)
+        c.openResult(0)
+        c.openViewerFolder()
+        assert list(map(Path, opened)) == [source]
+        c.openViewerExternally()
+        # The default opener is injectable; the folder action is separate.
+        assert list(map(Path, opened)) == [source]
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
+
+
+def test_open_document_folder_missing_file(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        open_document_folder(str(tmp_path), RelativePath("missing/missing.pdf"))
+
+
+def test_pdf_text_probe_scans_past_empty_pages(tmp_path):
+    mixed = tmp_path / "mixed.pdf"
+    _text_pdf(mixed, ["", "", "needle"])
+    assert _has_searchable_text(mixed)
+    image_only = tmp_path / "image-only.pdf"
+    _text_pdf(image_only, ["", ""])
+    assert not _has_searchable_text(image_only)
 
 
 def test_snapshot_change_keeps_open_pdf_but_drops_old_selection(controller):

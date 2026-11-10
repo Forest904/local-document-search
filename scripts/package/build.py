@@ -47,7 +47,8 @@ def safe_clean(path):
 def validate_payload(folder):
     required = ["LocalDocumentSearch.exe", "python312.dll", "PySide6/QtCore.pyd",
                 "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
-                "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
+                "PySide6/QtQuickControls2.pyd", "PySide6/QtPdf.pyd",
+                "local_document_search_desktop/qml/Main.qml",
                 "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                 "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
                 "TERMS-IT.txt", "TERMS-EN.txt", "diagnostics/run_v2_benchmark.py",
@@ -289,6 +290,12 @@ def build(*, release=False):
     if len(candidates) != 1:
         raise RuntimeError(f"Output standalone inatteso: {candidates}; consultare deploy.log")
     folder = candidates[0]
+    # Nuitka non include sempre il binding Python QtPdf importato nel worker.
+    import importlib.util
+    pdf_binding = importlib.util.find_spec("PySide6.QtPdf")
+    if pdf_binding is None or not pdf_binding.origin:
+        raise RuntimeError("Binding PySide6.QtPdf non disponibile nell'ambiente bloccato")
+    shutil.copy2(pdf_binding.origin, folder / "PySide6/QtPdf.pyd")
     for resource in ("qml", "assets"):
         shutil.copytree(workspace / "local_document_search_desktop" / resource,
                         folder / "local_document_search_desktop" / resource, dirs_exist_ok=True)
