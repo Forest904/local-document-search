@@ -3,6 +3,12 @@ Local Document Search 0.2.0 — Luma — Windows 11 x64
 Installare con il wizard offline oppure estrarre l'intera cartella dallo ZIP
 ed aprire LocalDocumentSearch.exe. DLL e plugin adiacenti sono necessari.
 Non occorre Python. Avviare come utente normale.
+Il wizard propone una cartella applicativa e ne permette la scelta alla prima
+installazione su un disco locale fisso. Gli aggiornamenti conservano la cartella
+registrata. Per spostare l'app, disinstallarla conservando i dati e reinstallarla.
+Il riepilogo mostra la destinazione e lo spazio. Se l'app è aperta, chiuderla e
+scegliere Riprova. Al termine l'avvio è preselezionato e può essere disattivato;
+in modalità silenziosa non avviene. La scelta della cartella non sposta i dati.
 
 Al primo avvio leggere l'informativa e scegliere Accetta e scegli una cartella.
 Luma mostra avanzamento e consigli fino a quando la ricerca è disponibile.

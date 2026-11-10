@@ -30,3 +30,5 @@ Nessuna decisione attualmente aperta. Registrare qui nuove scelte che cambiano r
 Per un nuovo ADR usare ID/titolo, stato e data, contesto, decisione, alternative, conseguenze, dettagli aperti e riferimenti a requisiti/contratti/scenari. Gli ADR 0001–0009 mantengono i riferimenti storici v1: le regole correnti complete sono nelle specifiche indicate nell’[indice](../README.md#riferimenti).
 
 Revisione del 10 novembre 2026: [0012](0012-v2-lifecycle-storage.md) e [0013](0013-v2-distribution.md) adottano nome pubblico e percorsi senza etichetta generazionale, con reinstallazione pulita e nessuna migrazione dei dati precedenti.
+
+Revisione successiva di [0013](0013-v2-distribution.md#revisione-approvata--percorso-e-wizard): percorso applicativo selezionabile alla prima installazione, mantenuto negli upgrade, riepilogo, retry con app aperta e avvio finale. Il collaudo del nuovo installer resta distinto dalle evidenze della release 0.2.0.

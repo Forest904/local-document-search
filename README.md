@@ -42,3 +42,5 @@ Per la sola CLI, senza Qt, installa soltanto `./backend` e avvia `backend/.venv/
 L’uso personale, di studio e interno è gratuito, anche professionale. Vendita, integrazione in prodotti distribuiti e offerta come servizio richiedono autorizzazione scritta: [termini italiani](scripts/package/TERMS-IT.txt).
 
 Il nome pubblico resta **Local Document Search**, indipendentemente dalla generazione interna. Per passare dalla precedente installazione nella cartella `LocalDocumentSearchV2`, disinstallarla conservando i dati e installare il nuovo pacchetto. Al primo avvio scegliere nuovamente la cartella e indicizzarla: i dati precedenti restano conservati e non vengono importati.
+
+Nel codice successivo alla release 0.2.0, il wizard permette di scegliere la cartella applicativa alla prima installazione, mostra un riepilogo, consente di riprovare dopo aver chiuso l'app e propone l'avvio finale. Un aggiornamento mantiene la cartella registrata; per cambiarla occorre disinstallare conservando i dati e reinstallare. Indici e preferenze restano nel percorso indicato sopra. Queste modifiche non sono ancora una nuova release pubblicata.

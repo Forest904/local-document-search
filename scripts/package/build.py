@@ -220,7 +220,11 @@ def installer_compiler():
 def build_installer(folder, manifest):
     compiler = installer_compiler()
     target_dir = ROOT / "dist"
+    required_bytes = sum(path.stat().st_size for path in folder.rglob("*") if path.is_file())
+    required_bytes += sum((HERE / name).stat().st_size for name in
+                          ("uninstall-data.ps1", "prune-upgrade.ps1"))
     args = [compiler, f"/DPayloadDir={folder}", f"/DOutputDir={target_dir}",
+            f"/DRequiredBytes={required_bytes}",
             HERE / "installer.iss"]
     run(args)
     target = target_dir / f"LocalDocumentSearch-{INSTALLER_VERSION}-windows-x64-setup.exe"

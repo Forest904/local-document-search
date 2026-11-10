@@ -28,7 +28,7 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 | V2-R12 | Desktop Qt Quick/QML minimale e professionale | Ingresso guidato, home Luma, lista ad apertura diretta e Impostazioni separate; Invio esegue, rilevanza predefinita; UI utilizzabile sotto carico | V2-06 / T12 |
 | V2-R13 | Italiano/inglese, temi e accessibilità | Preferenze persistenti, tastiera completa, focus e contrasto, DPI e Narrator sui flussi principali | V2-06 / T13 |
 | V2-R14 | Storage v2 separato, nessuna migrazione automatica | Nuova selezione cartella; v1 non letta, modificata o rimossa dalla gestione dati v2 | V2-04, V2-07 / T14 |
-| V2-R15 | Installer offline per utente con wizard | Nessuna elevazione; Python, Qt, plugin e runtime necessari inclusi; aggiornamento da installer completo | V2-07, V2-08 / T15 |
+| V2-R15 | Installer offline per utente con wizard | Nessuna elevazione; Python, Qt, plugin e runtime necessari inclusi; prima installazione in cartella locale fissa selezionabile, aggiornamento completo nella cartella registrata; riepilogo, retry con app aperta e avvio finale opzionale | V2-07, V2-08 / T15 |
 | V2-R16 | Disinstallazione e pulizia controllate | Dati conservati salvo scelta esplicita; sorgenti e dati v1 intatti; errore riprovabile | V2-07, V2-08 / T16 |
 | V2-R17 | Privacy e distribuzione verificabili | Nessuna telemetria/upload; termini e inventario dipendenze verificati; avvisi della release non firmata documentati | V2-07, V2-08 / T17 |
 | V2-R18 | Preservare CLI Homework e backend condiviso | Sintassi, ordine per percorso, output e codici esistenti; nessuna dipendenza Qt della CLI | V2-03, V2-05, V2-08 / T18 |
@@ -50,4 +50,4 @@ La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [stato
 
 ## Nome pubblico stabile (10 novembre 2026)
 
-Il prodotto si presenta come Local Document Search senza suffissi generazionali; i numeri tecnici di release restano disponibili. V2-R14/R16 preservano sia i dati v1 sia quelli della precedente installazione in `LocalDocumentSearchV2`. Nuovi dati in `LocalDocumentSearch/Data`, installazione in `Programs/LocalDocumentSearch` sotto `%LOCALAPPDATA%`. Passaggio tramite disinstallazione conservativa e nuovo avvio, senza migrazione; V2-R15 mantiene gli aggiornamenti successivi nel percorso neutro.
+Il prodotto si presenta come Local Document Search senza suffissi generazionali; i numeri tecnici di release restano disponibili. V2-R14/R16 preservano sia i dati v1 sia quelli della precedente installazione in `LocalDocumentSearchV2`. Nuovi dati in `LocalDocumentSearch/Data`; installazione predefinita in `Programs/LocalDocumentSearch` sotto `%LOCALAPPDATA%`, con scelta di una diversa cartella locale fissa solo alla prima installazione. Passaggio dalla precedente installazione tramite disinstallazione conservativa e nuovo avvio, senza migrazione; V2-R15 mantiene gli aggiornamenti successivi nel percorso registrato.

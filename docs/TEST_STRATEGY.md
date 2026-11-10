@@ -44,7 +44,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T12 | UI Luma usabile durante build, ricerca e apertura diretta; query/filtri/directory obsolete non sovrascrivono stato corrente | V2-06, V2-08 |
 | T13 | Italiano/inglese, temi persistenti, tastiera, focus, contrasto, DPI e Narrator su flussi principali | V2-06, V2-08 |
 | T14 | Prima selezione v2 e upgrade v2 senza leggere, alterare o cancellare dati v1 | V2-04, V2-07 |
-| T15 | Wizard IT/EN install/update/uninstall completo senza rete o elevazione, runtime Qt/Python inclusi, reinstallazione consentita, downgrade bloccato e avvio riuscito | V2-07, V2-08 |
+| T15 | Wizard IT/EN install/update/uninstall completo senza rete o elevazione; scelta di cartella nuova o vuota su disco locale fisso alla prima installazione, percorso registrato negli upgrade, riepilogo aggiornato, retry con app aperta, avvio finale opzionale; runtime Qt/Python inclusi, reinstallazione consentita e downgrade bloccato | V2-07, V2-08 |
 | T16 | Disinstallazione conserva dati per default anche in modalità silenziosa; cancellazione solo esplicita con lock, rifiuto durante job, sorgenti/v1 intatti | V2-07, V2-08 |
 | T17 | Nessuna connessione richiesta; termini IT/EN mostrati nel wizard senza casella; inventario dei file runtime con fonte, licenza, avviso e sorgenti Qt verificati; DLL Qt ricostruita e sostituita in una copia dell'installazione; avvisi release non firmata registrati | V2-07, V2-08 |
 | T18 | Runner Homework e CLI: sintassi, ordine, codici e installazione backend senza Qt invariati | V2-03, V2-05, V2-08 |
@@ -72,5 +72,6 @@ nativo. Narrator e collaudo finale rimangono prove distinte.
 
 - T12/T13: testi IT/EN senza etichette generazionali; onboarding anche con soli dati storici presenti, riapertura della nuova sessione.
 - T14/T16: primo avvio, riapertura e pulizia nel percorso `LocalDocumentSearch/Data`; dati storici v1 e `LocalDocumentSearchV2` intatti. Rifiutare reparse point nella radice dati e negli antenati; mantenere lock e confini di cancellazione.
-- T15: installer e collegamenti senza suffissi; blocco della vecchia installazione prima delle modifiche, anche silenzioso; disinstallazione conservativa e reinstallazione pulita; successivi aggiornamenti/reinstallazioni nel percorso neutro, downgrade bloccato.
+- T15: installer e collegamenti senza suffissi; blocco della vecchia installazione prima delle modifiche, anche silenzioso; disinstallazione conservativa e reinstallazione pulita; successivi aggiornamenti/reinstallazioni nel percorso registrato, downgrade bloccato.
+- Revisione T15: provare percorso predefinito e personalizzato con spazi/Unicode, rifiuto di rete/rimovibili/junction/radice/dati, permessi e spazio; `/DIR` divergente in upgrade anche silenzioso; riepilogo IT/EN e navigazione indietro/avanti; retry ripetuto e controllo prima della copia; avvio finale selezionato/deselezionato e mai in silenzioso. In T14/T16 verificare che installazione e disinstallazione da cartella personalizzata lascino intatti dati storici e sorgenti; in T17 assenza di download; in T18 CLI invariata.
 - Collaudo del pacchetto Windows distinto dai test sorgente: le evidenze della release pubblicata non coprono automaticamente questi cambiamenti.

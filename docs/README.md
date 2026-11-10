@@ -34,3 +34,13 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 Nome pubblico stabile senza etichetta generazionale, nuovi percorsi di installazione e dati, transizione tramite reinstallazione pulita: [ADR 0013](adr/0013-v2-distribution.md#revisione-approvata--10-novembre-2026). Queste modifiche non costituiscono una nuova release pubblicata; il collaudo del nuovo pacchetto Windows resta distinto dalle evidenze storiche V2-07/V2-08.
 
 Verifiche locali del 10 novembre 2026 per il nome pubblico: suite backend e script **418 passed, 6 skipped**; dopo gli ultimi controlli aggiunti, suite desktop con compilazione sintetica/pulizia **54 passed**, suite dedicata packaging **6 passed** (esecuzioni sovrapposte, conteggi non sommabili). Coperti isolamento dei dati storici, primo avvio/riapertura/pulizia, junction negli antenati e confini della pulizia upgrade. Inno Setup compila lo script con payload sintetico; questo non ? un pacchetto applicativo distribuibile. Non eseguiti build completa n? collaudo install/update/uninstall su Windows pulito; blocco della vecchia installazione e nomi dei collegamenti richiedono ancora quel collaudo. Nessuna nuova release pubblicata.
+
+La successiva revisione dell'installer aggiunge destinazione selezionabile alla prima installazione, riepilogo, retry con app aperta e avvio finale opzionale: [ADR 0013](adr/0013-v2-distribution.md#revisione-approvata--percorso-e-wizard). Queste modifiche non appartengono alla release pubblicata 0.2.0. I test dello script e il collaudo del pacchetto completo vanno registrati separatamente; il secondo resta pendente finché non viene provato su un account standard isolato.
+
+Verifica locale della revisione: **44 test degli script**, **50 desktop** e **385 backend con 6 skip** verdi. Il test installer usa AppId e payload sintetici isolati e copre prima installazione Unicode, reinstallazione e rifiuto di `/DIR` divergente. La build completa locale ha prodotto un installer, ma non costituisce collaudo del pacchetto su sistema pulito né nuova release pubblicata.
+
+## Backlog installer
+
+Proposte future, non approvate né implementate: firma digitale con timestamp; riepilogo della versione installata e di quella nuova; riparazione esplicita; messaggi diagnostici e accesso ai log; recupero da aggiornamento interrotto.
+
+Richiedono una revisione dei requisiti: posizione configurabile degli indici, modalità portable, installazione per tutti gli utenti e aggiornamenti online. L'updater online resta escluso dal PRD attuale.
