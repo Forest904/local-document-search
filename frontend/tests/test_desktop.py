@@ -9,8 +9,8 @@ import ast
 import tomllib
 
 import pytest
-from PySide6.QtCore import QObject, QUrl, Qt, QTimer
-from PySide6.QtGui import QTextDocument
+from PySide6.QtCore import QObject, QPoint, QPointF, QUrl, Qt, QTimer
+from PySide6.QtGui import QColor, QTextDocument
 from PySide6.QtTest import QTest
 from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
@@ -204,8 +204,10 @@ def test_pdf_find_uses_selected_search_query_and_text_probe(controller, qt, tmp_
         assert button.property("width") == 32 and button.property("height") == 32
         button.click()
         until(lambda: viewer.property("renderScale") > zoom)
-        window.findChild(QObject, "pdfFitWidth").click()
-        until(lambda: abs(viewer.property("renderScale") - zoom) < 0.01)
+        zoom_choice = window.findChild(QObject, "pdfZoomChoice")
+        zoom_choice.setProperty("currentIndex", 3)
+        zoom_choice.activated.emit(3)
+        until(lambda: viewer.property("renderScale") > zoom * 2)
         QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
         field = window.findChild(QObject, "pdfFindField")
         until(lambda: field is not None and field.property("visible"))
@@ -232,10 +234,13 @@ def test_pdf_find_uses_selected_search_query_and_text_probe(controller, qt, tmp_
         QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
         until(lambda: field.property("visible"))
         assert field.property("text") == "absent"
+        window.findChild(QObject, "pdfHighlightAll").forceActiveFocus()
         QTest.keyClick(window, Qt.Key_Escape)
         until(lambda: not field.property("visible"))
+        assert c.view["screen"] == "viewer"
         QTest.keyClick(window, Qt.Key_Escape)
         until(lambda: c.view["screen"] == "results")
+        until(lambda: window.findChild(QObject, "pdfFindBar") is None)
     finally:
         if c.screen == "viewer":
             c.navigate("back")
@@ -305,6 +310,152 @@ def test_pdf_text_probe_scans_past_empty_pages(tmp_path):
     image_only = tmp_path / "image-only.pdf"
     _text_pdf(image_only, ["", ""])
     assert not _has_searchable_text(image_only)
+
+
+def test_pdf_toolbar_page_zoom_rotation_and_highlights(controller, qt, tmp_path):
+    c, s = controller
+    _text_pdf(tmp_path / "sample.pdf", ["needle one", "needle two", "needle three"])
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.CONTENT}), pdf_target_page=1)
+        search(c, s, text="needle", items=(item,), total=1)
+        c.openResult(0)
+        until(lambda: c.view["viewerTextStatus"] == "available")
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer is not None and viewer.property("currentPage") == 1)
+        assert viewer.property("renderScale") == 1
+        window.setWidth(900)
+        until(lambda: window.findChild(QObject, "pdfToolbar").property("width") == window.width())
+        assert window.findChild(QObject, "pdfToolbar").property("width") == window.width()
+        folder = window.findChild(QObject, "openPdfFolder")
+        assert folder.mapToScene(QPointF(folder.width(), 0)).x() <= window.width()
+        table = window.findChild(QObject, "pdfTableView")
+        assert table.property("topMargin") == 50
+        assert window.findChild(QObject, "pdfPreviousPage").property("enabled")
+        window.findChild(QObject, "pdfNextPage").click()
+        until(lambda: viewer.property("currentPage") == 2)
+        number = window.findChild(QObject, "pdfPageNumber")
+        assert number.property("text") == "3"
+        number.setProperty("text", "99")
+        number.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Return)
+        assert number.property("invalid") and viewer.property("currentPage") == 2
+        number.setProperty("text", "1")
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: viewer.property("currentPage") == 0)
+        assert not number.property("invalid")
+        window.findChild(QObject, "pdfRotate").click()
+        until(lambda: viewer.property("pageRotation") == 90)
+        choice = window.findChild(QObject, "pdfZoomChoice")
+        choice.setProperty("currentIndex", 2)
+        choice.activated.emit(2)
+        until(lambda: viewer.property("renderScale") > 1)
+        assert window.findChild(QObject, "pdfViewerPage").property("zoomMode") == "page"
+        for index, percent in enumerate((50, 75, 100, 125, 150, 200, 300, 400), start=4):
+            choice.setProperty("currentIndex", index)
+            choice.activated.emit(index)
+            until(lambda: abs(viewer.property("renderScale") - percent / 100) < 0.001)
+            assert choice.property("displayText") == f"{percent}%"
+        choice.setProperty("currentIndex", 1)
+        choice.activated.emit(1)
+        until(lambda: abs(viewer.property("renderScale") - 1) < 0.001)
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        field = window.findChild(QObject, "pdfFindField")
+        until(lambda: field is not None and field.property("visible"))
+        assert table.property("bottomMargin") == 52
+        find_bar = window.findChild(QObject, "pdfFindBar")
+        assert find_bar.property("height") == 52
+        assert window.height() - 100 <= find_bar.mapToScene(QPointF(0, 0)).y() + 52 <= window.height()
+        assert find_bar.property("z") > window.findChild(QObject, "pdfToolbar").property("z")
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: viewer.property("searchCount") == 3)
+        assert not viewer.property("highlightAll")
+        highlight = window.findChild(QObject, "pdfHighlightAll")
+        highlight.click()
+        assert viewer.property("highlightAll")
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
+
+
+def test_pdf_mixed_page_widths_keep_narrow_page_centered(controller, qt, tmp_path):
+    c, s = controller
+    writer = PdfWriter()
+    writer.add_blank_page(width=1800, height=600)
+    writer.add_blank_page(width=300, height=600)
+    writer.write(tmp_path / "sample.pdf")
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.FILENAME}), pdf_target_page=1)
+        search(c, s, items=(item,), total=1)
+        c.openResult(0)
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer is not None and viewer.property("currentPage") == 1)
+        until(lambda: abs(viewer.property("viewportContentX") -
+                          (viewer.property("viewportContentWidth") - viewer.property("viewportWidth")) / 2) < 2)
+        assert viewer.property("currentPageWidth") < viewer.property("viewportWidth")
+        window.findChild(QObject, "pdfPreviousPage").click()
+        until(lambda: viewer.property("currentPage") == 0)
+        window.findChild(QObject, "pdfZoomIn").click()
+        until(lambda: viewer.property("currentPageWidth") > viewer.property("viewportWidth"))
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
+
+
+def test_pdf_overlay_stays_above_scrolling_and_zoom_popup_uses_theme(controller, qt, tmp_path):
+    c, s = controller
+    writer = PdfWriter()
+    for _ in range(16):
+        writer.add_blank_page(width=400, height=700)
+    writer.write(tmp_path / "sample.pdf")
+    s.state = ApplicationState(str(tmp_path), "N", True)
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        item = SearchResult(DocumentId(1), "sample.pdf", RelativePath("sample.pdf"),
+                            DocumentFormat.PDF, frozenset({SearchField.FILENAME}), pdf_target_page=0)
+        search(c, s, items=(item,), total=1)
+        c.openResult(0)
+        viewer = window.findChild(QObject, "pdfViewer")
+        until(lambda: viewer is not None and viewer.property("currentPage") == 0)
+        toolbar = window.findChild(QObject, "pdfToolbar")
+        table = window.findChild(QObject, "pdfTableView")
+        assert toolbar.property("z") > viewer.property("z")
+        assert toolbar.property("y") == 0
+        table.setProperty("contentY", 1000)
+        until(lambda: table.property("contentY") > 500)
+        assert toolbar.property("y") == 0 and toolbar.property("visible")
+        assert window.findChild(QObject, "pdfZoomIn").property("visible")
+        choice = window.findChild(QObject, "pdfZoomChoice")
+        for language, mode, surface in (("it", "light", "#ffffff"), ("en", "dark", "#242a26")):
+            c.savePreferences(language, mode)
+            until(lambda: c.view["theme"] == mode)
+            center = choice.mapToScene(QPointF(choice.width() / 2, choice.height() / 2))
+            QTest.mouseClick(window, Qt.LeftButton, pos=QPoint(round(center.x()), round(center.y())))
+            popup = window.findChild(QObject, "pdfZoomPopup")
+            until(lambda: popup.property("visible"))
+            assert popup.property("background").property("color") == QColor(surface)
+            QTest.keyClick(window, Qt.Key_Escape)
+        c.savePreferences("it", "light")
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        # Image-only PDFs keep find disabled, including the keyboard shortcut.
+        assert not window.findChild(QObject, "pdfFindBar").property("visible")
+    finally:
+        if c.screen == "viewer":
+            c.navigate("back")
+        engine.deleteLater()
 
 
 def test_snapshot_change_keeps_open_pdf_but_drops_old_selection(controller):

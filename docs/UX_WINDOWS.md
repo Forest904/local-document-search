@@ -2,6 +2,10 @@
 
 V2-11: selezionare un risultato PDF apre una pagina interna con il documento alla pagina del primo match, numero di pagina, zoom, adattamento alla larghezza, apertura nell'app predefinita e apertura della cartella originale. Controlli compatti a icona con tooltip e nome accessibile; pinch e trascinamento hanno escursione moderata. Ctrl+F apre «Trova nel PDF» con la query della risposta precompilata; Invio avvia la ricerca letterale nel PDF, Invio/Shift+Invio e le icone passano fra le occorrenze. Se il file non ha testo ricercabile, il comando è disabilitato. Escape chiude prima la ricerca, poi torna ai risultati. TXT e MD conservano l'apertura esterna. Il viewer non evidenzia automaticamente la parola della query Luma; [specifica](V2_11_PDF_PAGE_NAVIGATION.md).
 
+Il reader occupa la larghezza della finestra: una barra fissa in alto contiene pagina precedente/successiva, campo pagina, zoom e azioni; la barra «Trova» appare in basso. Lo zoom iniziale automatico adatta la larghezza senza superare il 100%; il menu offre dimensione reale, pagina intera, larghezza e preset 50%, 75%, 100%, 125%, 150%, 200%, 300% e 400%. La pagina resta centrata se entra nel viewport; con zoom maggiore il pan raggiunge i bordi. «Evidenzia tutte» è disattivato all'apertura della ricerca e controlla solo le occorrenze manuali. La rotazione interessa la vista corrente.
+
+Le barre del viewer PDF sono opache e sovrapposte al documento. Le pagine scorrono dietro i controlli, con margini di contenuto che lasciano raggiungibili inizio e fine; menu dello zoom e controlli usano colori espliciti nei temi chiaro e scuro.
+
 **Local Document Search** è il nome dell’app; **Luma** quello del motore. Qt Quick/QML e backend in-process. La revisione approvata dell’8 novembre 2026 sostituisce sidebar e anteprima con apertura diretta: [ADR 0011](adr/0011-v2-desktop.md).
 
 ## Percorsi

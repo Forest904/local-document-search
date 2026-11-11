@@ -39,6 +39,8 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 
 **Estensione V2-11:** il desktop apre i PDF in un viewer interno alla pagina fisica del primo match nel testo indicizzato; i risultati che corrispondono solo nel nome partono dalla prima pagina. La navigazione usa una mappa delle pagine salvata nello snapshot. La ricerca manuale nel PDF usa il testo presente nel file aperto e non altera lo snapshot. Non sono promessi scorrimento o evidenziazione automatica alla parola della query Luma, né corrispondenza con un sorgente modificato dopo l'indicizzazione. [Decisione](adr/0017-v2-pdf-page-navigation.md).
 
+Il viewer presenta una barra fissa con navigazione per pagina, zoom automatico, dimensione reale, adattamento alla pagina o larghezza e percentuali predefinite dal 50% al 400%, rotazione visiva e azioni sul file. La barra di ricerca inferiore compare su Ctrl+F; l'utente può scegliere se evidenziare tutte le occorrenze manuali. Pagine che entrano nel viewport restano centrate senza scorrimento laterale.
+
 Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Il viewer V2-11 rende le pagine PDF; non promette coordinate della query né conservazione del layout originale nel testo estratto.
 
 Il diff resta basato su path, size e mtime_ns. Modifiche che preservano dimensione e timestamp possono non essere rilevate, anche con i nuovi controlli in ingestione. I risultati possono diventare obsoleti fino al sync. PDF multicolonna e tabelle possono produrre testo imperfetto; le frasi operano sul testo canonico unico.

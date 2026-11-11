@@ -55,7 +55,8 @@ def payload(tmp_path):
                       for subdir in ("qml", "assets") for path in (resources / subdir).rglob("*") if path.is_file()]
     for name in ["LocalDocumentSearch.exe", "python312.dll", "PySide6/QtCore.pyd",
                  "PySide6/QtGui.pyd", "PySide6/QtQml.pyd", "PySide6/QtQuick.pyd",
-                 "PySide6/QtQuickControls2.pyd", "local_document_search_desktop/qml/Main.qml",
+                 "PySide6/QtQuickControls2.pyd", "PySide6/QtPdf.pyd",
+                 "local_document_search_desktop/qml/Main.qml",
                  "PySide6/qt-plugins/platforms/qwindows.dll", "ISTRUZIONI.txt",
                  "BUILD-MANIFEST.json", "THIRD_PARTY_NOTICES.txt", "licenses/Python.txt",
                  "TERMS-IT.txt", "TERMS-EN.txt", "diagnostics/run_v2_benchmark.py",

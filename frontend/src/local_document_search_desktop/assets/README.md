@@ -21,6 +21,6 @@ Il generatore usa QtSvg e QImage offline. I PNG `logo-*` derivano dagli SVG;
 i PNG `luma-desktop-*` e l'ICO derivano dall'icona fornita dall'utente. Le icone
 dei controlli usano gli SVG appropriati al tema.
 
-Le icone `zoom-in`, `zoom-out`, `fit` ed `external` del viewer sono SVG
+Le icone `zoom-in`, `zoom-out`, `fit`, `rotate` ed `external` del viewer sono SVG
 originali mantenuti a mano: non sono prodotti dal generatore. Le icone
 `back`, `search`, `next`, `close` e `folder` sono riutilizzate nel viewer.

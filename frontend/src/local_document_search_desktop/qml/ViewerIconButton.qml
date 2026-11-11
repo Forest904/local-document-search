@@ -28,7 +28,18 @@ Button {
         rotation: control.rotated ? 180 : 0
         opacity: control.enabled ? 1 : 0.5
     }
-    ToolTip.visible: hovered
-    ToolTip.text: label
-    ToolTip.delay: 450
+    ToolTip {
+        visible: control.hovered
+        text: control.label
+        delay: 450
+        background: Rectangle {
+            color: control.theme.surface
+            radius: 6
+            border.color: control.theme.line
+        }
+        contentItem: Text {
+            text: control.label
+            color: control.theme.ink
+        }
+    }
 }

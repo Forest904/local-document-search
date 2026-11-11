@@ -97,6 +97,7 @@ Item {
         \sa PdfPageNavigator::currentPage
     */
     property alias currentPage: pageNavigator.currentPage
+    onCurrentPageChanged: Qt.callLater(tableView.limitOvershoot)
 
     /*!
         \qmlproperty bool PdfMultiPageView::backEnabled
@@ -303,9 +304,30 @@ Item {
     function zoomBy(factor) {
         renderScale = Math.max(0.25, Math.min(5, renderScale * factor))
     }
+    property bool highlightAll: false
+    readonly property real currentPageWidth: document?.status === PdfDocument.Ready && currentPage >= 0
+                                            ? (tableView.rot90 ? document.pagePointSize(currentPage).height
+                                                               : document.pagePointSize(currentPage).width) * renderScale : 0
+    function scaleAutomatic(pageIndex) {
+        if (document?.status !== PdfDocument.Ready || width <= 0 || height <= 0) return
+        renderScale = Math.min(1, widthScale(pageIndex))
+    }
+    function widthScale(pageIndex) {
+        if (document?.status !== PdfDocument.Ready || document.pageCount <= 0) return 1
+        const size = document.pagePointSize(Math.max(0, pageIndex === undefined ? currentPage : pageIndex))
+        return Math.max(0.01, (width - 12) / (tableView.rot90 ? size.height : size.width))
+    }
+    function pageScale(pageIndex) {
+        if (document?.status !== PdfDocument.Ready || document.pageCount <= 0) return 1
+        const size = document.pagePointSize(Math.max(0, pageIndex === undefined ? currentPage : pageIndex))
+        const pageWidth = tableView.rot90 ? size.height : size.width
+        const pageHeight = tableView.rot90 ? size.width : size.height
+        return Math.max(0.01, Math.min((width - 12) / pageWidth, (height - 12) / pageHeight))
+    }
     property bool firstSearchPending: false
     readonly property int searchCount: searchModel.count
     readonly property int searchIndex: searchModel.currentResult
+    readonly property bool searchRunning: searchModel.status === PdfSearchModel.Searching
     readonly property real viewportWidth: tableView.width
     readonly property real viewportContentWidth: tableView.contentWidth
     readonly property real viewportContentX: tableView.contentX
@@ -326,9 +348,14 @@ Item {
     }
 
     id: root
+    property real topOverlayInset: 0
+    property real bottomOverlayInset: 0
     PdfStyle { id: style }
     TableView {
         id: tableView
+        objectName: "pdfTableView"
+        topMargin: root.topOverlayInset
+        bottomMargin: root.bottomOverlayInset
         property bool debug: false
         property real minScale: 0.25
         property real maxScale: 5
@@ -340,14 +367,20 @@ Item {
         function limitOvershoot() {
             if (limitingBounds) return
             limitingBounds = true
-            const right = Math.max(originX, originX + contentWidth - width)
+            const pageWidth = root.currentPageWidth
+            const center = originX + (pageHolderWidth - width) / 2
+            const edge = originX + (pageHolderWidth - pageWidth) / 2
+            const left = pageWidth <= width ? center : edge
+            const right = pageWidth <= width ? center : edge + pageWidth - width
             const bottom = Math.max(originY, originY + contentHeight - height)
-            contentX = Math.max(originX - 12, Math.min(right + 12, contentX))
+            contentX = pageWidth <= width ? center : Math.max(left, Math.min(right, contentX))
             contentY = Math.max(originY - 24, Math.min(bottom + 24, contentY))
             limitingBounds = false
         }
-        onContentXChanged: if (moving) Qt.callLater(limitOvershoot)
+        flickableDirection: root.currentPageWidth <= width ? Flickable.VerticalFlick : Flickable.AutoFlickDirection
+        onContentXChanged: limitOvershoot()
         onContentYChanged: if (moving) Qt.callLater(limitOvershoot)
+        onPageHolderWidthChanged: Qt.callLater(limitOvershoot)
         property point jumpLocationMargin: Qt.point(10, 10)  // px away from viewport edges
         anchors.fill: parent
         anchors.leftMargin: 2
@@ -355,9 +388,9 @@ Item {
         rowSpacing: 6
         property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
-        onRot90Changed: forceLayout()
+        onRot90Changed: { forceLayout(); Qt.callLater(limitOvershoot) }
         onHeightChanged: forceLayout()
-        onWidthChanged: forceLayout()
+        onWidthChanged: { forceLayout(); Qt.callLater(limitOvershoot) }
         property size firstPagePointSize: root.document?.status === PdfDocument.Ready ? root.document.pagePointSize(0) : Qt.size(1, 1)
         property real pageHolderWidth: Math.max(tableView.width - vscroll.width, ((rot90 ? root.document?.maxPageHeight : root.document?.maxPageWidth) ?? 0) * root.renderScale)
         columnWidthProvider: function(col) { return root.document ? pageHolderWidth : 0 }
@@ -429,7 +462,7 @@ Item {
                             id: searchHighlights
                             function update() {
                                 // paths could be a binding, but we need to be able to "kick" it sometimes
-                                paths = searchModel.boundingPolygonsOnPage(pageHolder.index)
+                                paths = root.highlightAll ? searchModel.boundingPolygonsOnPage(pageHolder.index) : []
                             }
                         }
                     }
@@ -438,6 +471,10 @@ Item {
                         // whenever the highlights on the _current_ page change, they actually need to change on _all_ pages
                         // (usually because the search string has changed)
                         function onCurrentPageBoundingPolygonsChanged() { searchHighlights.update() }
+                    }
+                    Connections {
+                        target: root
+                        function onHighlightAllChanged() { searchHighlights.update() }
                     }
                     ShapePath {
                         strokeWidth: -1
@@ -587,7 +624,7 @@ Item {
                 pageNavigator.update(cell.y, currentLocation, root.renderScale)
             }
         }
-        ScrollBar.horizontal: ScrollBar { }
+        ScrollBar.horizontal: ScrollBar { visible: root.currentPageWidth > tableView.width }
     }
     onRenderScaleChanged: {
         // if pageNavigator.jumped changes the scale, don't turn around and update the stack again;

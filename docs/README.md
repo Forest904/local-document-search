@@ -51,7 +51,7 @@ Verifiche locali: backend **406 passed, 6 skipped**, desktop **59 passed** e run
 
 ### V2-11 — Navigazione PDF alla pagina del match
 
-Implementazione sul sorgente locale in verifica: mappa delle pagine nello snapshot desktop schema 3, destinazione nel risultato e viewer interno Qt Quick PDF. La rifinitura aggiunge ricerca manuale nel PDF, controlli compatti, zoom/pan moderati e apertura della cartella. Gli indici desktop precedenti richiedono rebuild esplicito. Suite backend **410 passed, 6 skipped**, desktop/script **111 passed, 1 test installer escluso** perché l'app è aperta nella sessione Windows; runner Homework verde. Il benchmark target a tre cicli precedente supera i budget di avvio, no-change e query p95: gate prestazionale aperto. La [specifica e le evidenze](V2_11_PDF_PAGE_NAVIGATION.md) distinguono test sorgente, benchmark e collaudo del pacchetto; nessuna nuova release pubblicata.
+Implementazione sul sorgente locale in verifica: mappa delle pagine nello snapshot desktop schema 3, destinazione nel risultato e viewer interno Qt Quick PDF. La rifinitura aggiunge ricerca manuale nel PDF, barre sovrapposte, navigazione pagina, zoom/pan contenuti con preset 50–400%, rotazione e apertura della cartella. Gli indici desktop precedenti richiedono rebuild esplicito. Suite backend **410 passed, 6 skipped**, desktop/script **114 passed, 1 test installer escluso** perché l'app è aperta nella sessione Windows; runner Homework verde. Il benchmark target a tre cicli precedente supera i budget di avvio, no-change e query p95: gate prestazionale aperto. La [specifica e le evidenze](V2_11_PDF_PAGE_NAVIGATION.md) distinguono test sorgente, benchmark e collaudo del pacchetto; nessuna nuova release pubblicata.
 
 ## Backlog installer
 

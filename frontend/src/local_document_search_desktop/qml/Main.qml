@@ -60,8 +60,13 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: root.v.screen === "results" || root.v.screen === "viewer" && !(content.item && content.item.searchOpen)
-        onActivated: desktop.navigate(root.v.screen === "viewer" ? "back" : "home")
+        enabled: root.v.screen === "results" || root.v.screen === "viewer"
+        onActivated: {
+            if (root.v.screen === "viewer" && content.item && content.item.searchOpen)
+                content.item.closeFind();
+            else
+                desktop.navigate(root.v.screen === "viewer" ? "back" : "home");
+        }
     }
     Shortcut {
         sequence: "Ctrl+O"
@@ -75,9 +80,10 @@ ApplicationWindow {
     }
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
+        anchors.margins: root.v.screen === "viewer" ? 0 : 24
         spacing: 16
         RowLayout {
+            visible: root.v.screen !== "viewer"
             Layout.fillWidth: true
             Brand {
                 theme: design
@@ -108,7 +114,7 @@ ApplicationWindow {
             id: content
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.maximumWidth: root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880
+            Layout.maximumWidth: root.v.screen === "viewer" ? 99999 : root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880
             Layout.alignment: Qt.AlignHCenter
             sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "viewer" ? viewer : root.v.screen === "results" ? results : home
             onLoaded: Qt.callLater(function () {

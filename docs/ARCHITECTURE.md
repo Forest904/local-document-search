@@ -30,6 +30,8 @@ Le astrazioni rappresentano confini reali: niente `shared/` generico o porta per
 
 V2-11 associa ai PDF indicizzati una mappa immutabile degli intervalli delle pagine sul testo canonico unico, persistita nella versione del documento dello snapshot desktop schema 3. La ricerca traduce il primo intervallo corrispondente in pagina senza aprire il sorgente. Il viewer è responsabilità del frontend: render, ricerca manuale Qt PDF e verifica del testo ricercabile non importano la logica di ricerca del backend; [ADR 0017](adr/0017-v2-pdf-page-navigation.md).
 
+Il layout del reader e la geometria di pan/zoom sono confinati nei componenti QML del viewer; lo stato della ricerca manuale e della rotazione è per apertura e non viene persistito nello snapshot.
+
 Un file è un documento identificato da directory e percorso relativo: case e Unicode preservati, separatori serializzati come `/`, ordine lessicografico indipendente dalla locale. Niente deduplicazione per contenuto o hard link; basename uguali in cartelle diverse restano distinti. La radice assoluta è risolta dall’infrastruttura; alias non riconosciuti richiedono nuova selezione. Rename equivale a rimozione e aggiunta.
 
 Il catalogo lega `DocumentId`, formato, nome, fingerprint (`size_bytes`, `mtime_ns`) e testo estratto, non copie dei binari originali. `DocumentId` è opaco per i chiamanti: preservato su invariati/modificati, mai riciclato nella vita dell’indice. L’allocatore persistente prenota prima del candidato, sopravvive a rollback, retention, rebuild, cambio directory e restart; può lasciare buchi. Solo una pulizia riuscita avvia una nuova vita; la CLI usa un contatore per sessione. Dati preesistenti privi di allocatore richiedono pulizia esplicita prima di nuovi job.
