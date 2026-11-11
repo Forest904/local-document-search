@@ -4,7 +4,7 @@ Per installare e provare l’app parti dal [README](../README.md).
 
 ## Stato corrente — candidato 0.2.2
 
-La [0.2.1 pubblicata](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è la versione scaricabile. L'11 novembre 2026 l'utente ha confermato che l'installer scaricato da GitHub funziona correttamente sul PC di test; non ha comunicato hash, misure o risultati per singolo scenario. Il lavoro successivo prepara la **0.2.2 locale** con guida F1/Aiuto, layout da 480×360 pixel logici, audit di accessibilità e documentazione coerente. [Matrice di accettazione 0.2.2](V2_14_ACCEPTANCE.md). Nessuna prova della 0.2.1 attesta automaticamente il nuovo artefatto.
+La [0.2.1 pubblicata](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è la versione scaricabile. L'11 novembre 2026 l'utente ha confermato che l'installer scaricato da GitHub funziona correttamente sul PC di test; non ha comunicato hash, misure o risultati per singolo scenario. Il lavoro successivo prepara la **0.2.2 locale** con guida F1/Aiuto, layout da 480×360 pixel logici, audit di accessibilità e documentazione coerente. Build release pulita e verifica dell'installer superate; il benchmark compilato completa tre cicli ma **non supera T08** per no-change e query p95. DPI/Narrator nativi e collaudo del nuovo installer su account isolato restano pendenti. [Matrice di accettazione 0.2.2](V2_14_ACCEPTANCE.md). Nessuna prova della 0.2.1 attesta automaticamente il nuovo artefatto.
 
 I paragrafi datati che seguono documentano la sequenza delle verifiche storiche: espressioni come «da pubblicare» e gate aperti si riferiscono al candidato di quella fase, non revocano la pubblicazione 0.2.1 né anticipano l'accettazione 0.2.2.
 
