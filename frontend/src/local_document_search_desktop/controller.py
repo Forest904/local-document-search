@@ -22,6 +22,36 @@ from .text_reader import TextReaderBridge
 PAGE_SIZE = 20
 
 
+def extract_format_filters(query):
+    """Consume standalone format tokens outside quoted phrases."""
+    tokens = []
+    token = []
+    quoted = False
+    started_quoted = False
+    for char in query:
+        if char.isspace() and not quoted:
+            if token:
+                tokens.append(("".join(token), started_quoted))
+                token = []
+                started_quoted = False
+        else:
+            if char == '"':
+                quoted = not quoted
+                started_quoted = True
+            token.append(char)
+    if token:
+        tokens.append(("".join(token), started_quoted))
+    formats = set()
+    remaining = []
+    for value, has_quote in tokens:
+        extension = value.lower()
+        if not has_quote and extension in (".txt", ".md", ".pdf"):
+            formats.add(DocumentFormat(extension[1:]))
+        else:
+            remaining.append(value)
+    return " ".join(remaining), frozenset(formats)
+
+
 class DesktopController(QObject):
     changed = Signal()
     preferencesChanged = Signal()
@@ -307,6 +337,20 @@ class DesktopController(QObject):
     def search(self):
         if not self.view["searchable"] or not self.query.strip():
             return
+        query, formats = extract_format_filters(self.query)
+        if formats:
+            self.formats = formats
+            if query != self.query:
+                self.editQuery(query, len(query))
+                self.debounce.stop()
+                self.queryReplacement.emit(query, len(query.encode("utf-16-le")) // 2)
+            else:
+                self.invalidate()
+            if not query:
+                self.screen = "home"
+                self.changed.emit()
+                QTimer.singleShot(0, lambda: self.queryReplacement.emit("", 0))
+                return
         self.screen = "results"
         self.search_page(0)
 

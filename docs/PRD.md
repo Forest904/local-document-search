@@ -35,6 +35,7 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 | V2-R19 | Corpus ibrido riproducibile per validazione funzionale | Sintetici TXT/MD/PDF deterministici; circa 12–30 documenti Internet indicizzabili con permessi espliciti, italiano/inglese e almeno un file reale per formato; ground truth completa e versionata; suite reale opt-in valida solo con corpus completo | V2-01 / T20, T21 |
 | V2-R20 | Aprire i PDF alla pagina del primo match | Mappa delle pagine persistita con lo snapshot; viewer interno naviga alla pagina del primo match nel contenuto, o alla prima se il match è solo nel nome; ritorno ai risultati ed errori gestibili | V2-11 / T26, T27 |
 | V2-R24 | Leggere TXT/MD nel viewer interno | Sorgente in sola lettura, salto esatto al primo match quando il file corrisponde allo snapshot, ricerca manuale indipendente, limiti ed errori gestibili; CLI invariata | V2-12 / T28, T29 |
+| V2-R25 | Filtri formato rapidi nel desktop | `.txt`, `.md` e `.pdf` isolati nella barra sostituiscono i formati di sessione all'invio; filtro solo senza ricerca; riepilogo con reset a icona accessibile e Impostazioni dalla home | Dopo V2-12 / T30 |
 
 ## Limiti e non-obiettivi
 

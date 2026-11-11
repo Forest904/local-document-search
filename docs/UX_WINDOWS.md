@@ -26,6 +26,8 @@ Risultati in pagine da **20**; frecce visibili solo con più pagine, centrate ai
 
 Campo, formati e ordine valgono per la sessione; reset al cambio cartella/riavvio a BOTH, TXT/MD/PDF e rilevanza. Almeno un formato selezionato. Home/risultati mostrano restrizioni e reset; cambiare opzioni aggiorna una ricerca eseguita dalla prima pagina. Nessuna sintassi `type:pdf`.
 
+Nel desktop, `.txt`, `.md` e `.pdf` isolati da spazi e fuori dalle virgolette applicano un filtro formato quando si avvia la ricerca. Più estensioni selezionano più formati; sostituiscono la selezione precedente e spariscono dalla barra. Una sola estensione prepara il filtro nella home, senza cercare. `relazione.pdf`, `".pdf"` ed estensioni ignote restano testo. Il riepilogo mostra un'icona × per il reset completo delle opzioni, con tooltip e nome accessibile; Impostazioni resta nella home.
+
 Lingua IT/EN e tema chiaro/scuro persistono nel catalogo, separati dagli snapshot; la pulizia li azzera. Comandi incompatibili con job/chiusura bloccati, lavoro nei worker e risposte obsolete ignorate.
 
 Dopo ogni ricerca di parole esatte, il riquadro «Intendevi…?» mostra una query proposta quando esistono correzioni plausibili, anche con risultati. Elenca le sostituzioni; il pulsante «Cerca con le correzioni», raggiungibile da tastiera e nominato per Narrator, sostituisce la query e cerca dalla prima pagina. La proposta sparisce se cambiano query, filtri, directory o snapshot. La digitazione continua a mostrare i suggerimenti di completamento separati.

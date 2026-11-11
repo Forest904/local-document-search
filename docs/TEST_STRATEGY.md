@@ -59,6 +59,7 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T27 | Viewer PDF interno: salto effettivo, barra fissa e ricerca inferiore, campo pagina, zoom automatico/dimensione reale/pagina/larghezza e preset 50–400%, rotazione, evidenziazione opzionale, centratura di pagine miste e limiti del pan, ricerca manuale e disabilitazione senza testo, azioni file/cartella, ritorno ai risultati, IT/EN, tema, tastiera, errori Qt e file cambiato/assente; packaging e collaudo offline separati dai test sorgente | V2-11 |
 | T28 | TXT/MD: prima destinazione per parola, frase, AND, wildcard e campi; proiezione Markdown su markup/entità/tabelle/duplicati, BOM/newline/Unicode, file cambiato, errori e limiti; nessuna lettura sorgente durante query | V2-12 |
 | T29 | Reader Qt: caricamento incrementale, numeri di riga e a capo, ricerca manuale letterale/ciclica, focus/Escape, temi e accessibilità; regressioni PDF/CLI e collaudo offline distinti dai test sorgente | V2-12 |
+| T30 | Desktop: estensioni isolate applicano formati senza ricerca intermedia, frasi/nomi file restano query, filtro solo prepara la home; riepilogo con reset accessibile, risultati obsoleti scartati e CLI invariata | Dopo V2-12 |
 
 ## Gate finale
 

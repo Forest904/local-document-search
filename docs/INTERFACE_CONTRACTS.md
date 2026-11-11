@@ -79,6 +79,8 @@ Le decisioni di ranking e snippet sono nell'[ADR 0010](adr/0010-v2-retrieval.md)
 
 Il desktop apre il file con directory e percorso del risultato corrente, senza richiedere GetDocument. Navigazione e filtri sono stato di sessione del controller; solo lingua/tema persistono. [UX](UX_WINDOWS.md).
 
+Il controller desktop interpreta le estensioni isolate `.txt`, `.md` e `.pdf` all'invio e passa i formati risultanti attraverso `SearchRequest.formats`. Il testo consumato viene tolto dalla query prima di ricerca, correzione e apertura del viewer; un filtro senza termini non invia `SearchRequest`. Il contratto backend e la CLI non interpretano questa scorciatoia.
+
 ## Percorso desktop pubblico stabile
 
 La composizione desktop e il rilevamento della sessione usano `%LOCALAPPDATA%/LocalDocumentSearch/Data`. Le porte applicative, i DTO e lo schema SQLite non cambiano; storage esplicito per test/diagnostica resta supportato. Nessuna lettura o importazione automatica dei dati storici v1 o di `LocalDocumentSearchV2`; primo avvio senza sessione nel nuovo percorso.

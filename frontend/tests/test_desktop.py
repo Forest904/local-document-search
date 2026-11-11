@@ -28,7 +28,7 @@ from local_document_search.domain.documents import (
 )
 from local_document_search.domain.queries import SearchField
 from local_document_search_desktop.composition import compose_desktop, open_document, open_document_folder
-from local_document_search_desktop.controller import DesktopController
+from local_document_search_desktop.controller import DesktopController, extract_format_filters
 from local_document_search_desktop.viewer import _has_searchable_text
 from local_document_search_desktop.text_reader import display_text, find_literal, qt_offset
 from local_document_search_desktop.main import create_engine
@@ -658,6 +658,88 @@ def test_filters_pagination_and_snapshot_restart(controller):
     s.search.calls[-1][1].set_result(SearchResponse("N2", (), 0))
     until(lambda: c.response is not None)
     assert not c.view["canNext"] and not c.view["canPrevious"]
+
+
+@pytest.mark.parametrize(("source", "query", "formats"), [
+    ("contratto .PDF", "contratto", {DocumentFormat.PDF}),
+    (".txt alpha .MD .txt", "alpha", {DocumentFormat.TXT, DocumentFormat.MARKDOWN}),
+    ("alpha .pdf beta", "alpha beta", {DocumentFormat.PDF}),
+    ('".pdf" relazione.pdf .doc', '".pdf" relazione.pdf .doc', set()),
+    ('"testo .pdf" .txt', '"testo .pdf"', {DocumentFormat.TXT}),
+])
+def test_format_filter_tokens(source, query, formats):
+    assert extract_format_filters(source) == (query, frozenset(formats))
+
+
+def test_query_format_filter_uses_existing_search_options(controller):
+    c, s = controller
+    start(c)
+    c.setOptions("content", ["txt"], "work", "path")
+    c.editQuery("contratto .PDF", len("contratto .PDF"))
+    c.search()
+    until(lambda: len(s.search.calls) == 1)
+    request = s.search.calls[0][0][0]
+    assert request.query == c.query == "contratto"
+    assert request.formats == {DocumentFormat.PDF}
+    assert request.field == SearchField.CONTENT and request.folder == "work"
+    assert request.order.value == "path"
+    assert c.view["screen"] == "results" and "PDF" in c.view["optionsSummary"]
+    c.resetOptions()
+    assert c.query == "contratto" and c.formats == frozenset(DocumentFormat)
+
+
+def test_format_only_prepares_filter_without_search(controller):
+    c, s = controller
+    start(c)
+    c.editQuery(".pdf", 4)
+    c.search()
+    assert c.query == "" and c.screen == "home"
+    assert c.formats == {DocumentFormat.PDF} and not s.search.calls
+
+
+def test_format_filter_discards_old_search_response(controller):
+    c, s = controller
+    start(c)
+    c.editQuery("alpha", 5)
+    c.search()
+    until(lambda: len(s.search.calls) == 1)
+    c.editQuery("beta .md", 8)
+    c.search()
+    s.search.calls[0][1].set_result(SearchResponse("N", (), 7))
+    until(lambda: len(s.search.calls) == 2)
+    assert c.response is None
+    assert s.search.calls[1][0][0].query == "beta"
+    assert s.search.calls[1][0][0].formats == {DocumentFormat.MARKDOWN}
+
+
+def test_filter_summary_icon_is_accessible_and_resets(controller, qt):
+    c, _ = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.setOptions("both", ["pdf"], "", "relevance")
+        icon = window.findChild(QObject, "clearFilters")
+        assert icon is not None and icon.property("visible")
+        from PySide6.QtGui import QAccessible
+        assert QAccessible.queryAccessibleInterface(icon).text(QAccessible.Name) == c.labels["resetFilters"]
+        assert window.findChild(QObject, "settingsNavigation") is not None
+        point = icon.mapToScene(icon.boundingRect().center())
+        QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier,
+                         QPoint(round(point.x()), round(point.y())))
+        assert not c.view["restricted"]
+        c.setOptions("both", ["md"], "", "relevance")
+        icon.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Space)
+        assert not c.view["restricted"]
+        c.editQuery("alpha .pdf", 10)
+        c.search()
+        until(lambda: c.screen == "results")
+        assert window.findChild(QObject, "clearFilters") is not None
+        assert not window.findChild(QObject, "settingsNavigation").property("visible")
+    finally:
+        window.hide()
+        engine.deleteLater()
 
 
 def test_results_show_elapsed_time_in_both_languages(controller, qt):
@@ -1346,6 +1428,20 @@ def test_suggestion_selection_starts_search(controller, qt):
     until(lambda: bool(s.search.calls))
     assert c.query == "alpha" and c.view["screen"] == "results"
     assert s.search.calls[-1][0][0].query == "alpha"
+
+
+def test_suggestion_selection_applies_format_token(controller):
+    c, s = controller
+    start(c)
+    c.editQuery("al .pdf", 2)
+    c.suggest()
+    until(lambda: bool(s.suggest.calls))
+    s.suggest.calls[-1][1].set_result(SuggestResponse("N", ("alpha",)))
+    until(lambda: c.terms == ["alpha"])
+    c.acceptSuggestionAndSearch(0)
+    until(lambda: bool(s.search.calls))
+    assert c.query == s.search.calls[-1][0][0].query == "alpha"
+    assert s.search.calls[-1][0][0].formats == {DocumentFormat.PDF}
 
 
 def test_search_icon_click_runs_from_home_and_results(controller, qt):

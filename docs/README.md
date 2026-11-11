@@ -59,6 +59,10 @@ Implementazione sul sorgente locale: reader Qt Quick in sola lettura, salto al p
 
 ## Backlog installer
 
+### Filtri formato rapidi nel desktop — 11 novembre 2026
+
+Implementati nel sorgente locale i token `.txt`, `.md` e `.pdf` nella barra desktop: selezionano i formati di sessione all'invio, vengono rimossi dalla query e, da soli, preparano il filtro nella home. Il riepilogo usa un'icona accessibile per il reset e non offre Impostazioni. [Decisione](adr/0019-desktop-format-query-filters.md), [comportamento](UX_WINDOWS.md). Verifiche: frontend **83 passed**, backend **433 passed, 6 skipped**, runner Homework 3 verde. Una prima esecuzione frontend in parallelo alla suite backend ha avuto un timeout nel test di paginazione; il test isolato e la suite frontend ripetuta in sequenza sono verdi. Verifica visiva su Windows nativo e collaudo dell'installer non eseguiti; nessuna nuova release pubblicata.
+
 Proposte future, non approvate né implementate: firma digitale con timestamp; riepilogo della versione installata e di quella nuova; riparazione esplicita; messaggi diagnostici e accesso ai log; recupero da aggiornamento interrotto.
 
 Richiedono una revisione dei requisiti: posizione configurabile degli indici, modalità portable, installazione per tutti gli utenti e aggiornamenti online. L'updater online resta escluso dal PRD attuale.

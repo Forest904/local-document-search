@@ -12,6 +12,8 @@ TXT e Markdown mostrano il sorgente in sola lettura, con numeri di riga, salto a
 
 **Impostazioni**, accessibile dalla home, contiene campo, formati, ordine, cartella, sync, rebuild, diagnostiche, pulizia, lingua e tema. Filtri solo di sessione, azzerati al cambio cartella/riavvio; lingua e tema persistono. Il filtro sottocartella, il recupero del precedente e i dettagli completi restano API backend, senza controlli dedicati nella UI.
 
+Nella barra di ricerca, `.txt`, `.md` e `.pdf` isolati da spazi applicano i rispettivi filtri formato all'invio; più estensioni selezionano più formati. Per esempio `contratto .pdf` cerca `contratto` nei PDF. Una sola estensione prepara il filtro senza cercare. Il riepilogo dei filtri offre un'icona × per ripristinare le opzioni.
+
 Scorciatoie: **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync, **Esc** dai risultati alla home. Finestra minima 900×640 pixel logici. [Specifica UX](../docs/UX_WINDOWS.md).
 
 ## Sviluppo e verifiche
