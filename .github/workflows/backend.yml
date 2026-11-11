@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python: .venv/bin/python
           - os: windows-latest
             python: .venv/Scripts/python.exe
