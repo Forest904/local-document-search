@@ -218,7 +218,7 @@ def full_file_inventory(folder, qt_sources):
             source = name
         elif name.startswith("licenses/"):
             component = "legal-notice"
-            version, license_id = "0.2.0", "Various; see file"
+            version, license_id = "0.2.1", "Various; see file"
             notice, provenance, source = name, "Build inputs and installed package metadata", name
         elif name == "local_document_search_desktop/qml/LocalPdfMultiPageView.qml":
             component, version, license_id = "qtwebengine", "6.140.0", "LGPL-3.0"
@@ -228,7 +228,7 @@ def full_file_inventory(folder, qt_sources):
         elif name == "LocalDocumentSearch.exe" or name.startswith(("local_document_search_desktop/", "diagnostics/")) or name in {
                 "ISTRUZIONI.txt", "QT_REPLACEMENT.txt", "TERMS-IT.txt", "TERMS-EN.txt",
                 "THIRD_PARTY_NOTICES.txt", "compilation-report.xml"}:
-            component, version, license_id = "local-document-search", "0.2.0", "Project terms; Nuitka runtime exception for EXE"
+            component, version, license_id = "local-document-search", "0.2.1", "Project terms; Nuitka runtime exception for EXE"
             notice, provenance, source = "TERMS-IT.txt", "Project sources and Nuitka 4.1.1 build", "backend/src; frontend/src; scripts/package; experiments"
         if component is None:
             raise RuntimeError(f"File runtime privo di attribuzione: {name}")

@@ -15,7 +15,7 @@ Serve **Windows 11 x64**; non occorre installare Python.
 
 In **Impostazioni** puoi scegliere campo di ricerca, formati, ordinamento e cartella. Ai successivi avvii l’app recupera l’indice e sincronizza in background; **F5** aggiorna manualmente. Non c’è monitoraggio continuo delle modifiche. I PDF scansionati senza testo richiederebbero OCR, che non è supportato.
 
-Il pacchetto non è firmato digitalmente; nella release trovi il checksum `.sha256`. Per aggiornare, chiudi l’app e avvia il nuovo installer. La disinstallazione conserva i dati salvo tua scelta esplicita.
+Il pacchetto non è firmato digitalmente; nella release trovi il checksum `.sha256`. Per aggiornare un'installazione nella cartella `LocalDocumentSearch`, chiudi l’app e avvia il nuovo installer. La disinstallazione conserva i dati salvo tua scelta esplicita.
 
 Testo estratto, indici e preferenze sono salvati in `%LOCALAPPDATA%/LocalDocumentSearch/Data`, anche quando un originale non è più disponibile. Puoi eliminarli dalle Impostazioni senza cancellare i documenti. [Privacy e termini d’uso](docs/SECURITY_AND_PRIVACY.md).
 
@@ -43,4 +43,4 @@ L’uso personale, di studio e interno è gratuito, anche professionale. Vendita
 
 Il nome pubblico resta **Local Document Search**, indipendentemente dalla generazione interna. Per passare dalla precedente installazione nella cartella `LocalDocumentSearchV2`, disinstallarla conservando i dati e installare il nuovo pacchetto. Al primo avvio scegliere nuovamente la cartella e indicizzarla: i dati precedenti restano conservati e non vengono importati.
 
-Nel codice successivo alla release 0.2.0, il wizard permette di scegliere la cartella applicativa alla prima installazione, mostra un riepilogo, consente di riprovare dopo aver chiuso l'app e propone l'avvio finale. Un aggiornamento mantiene la cartella registrata; per cambiarla occorre disinstallare conservando i dati e reinstallare. Indici e preferenze restano nel percorso indicato sopra. Queste modifiche non sono ancora una nuova release pubblicata.
+Nel candidato 0.2.1, il wizard permette di scegliere la cartella applicativa alla prima installazione, mostra un riepilogo, consente di riprovare dopo aver chiuso l'app e propone l'avvio finale. Un aggiornamento mantiene la cartella registrata; per cambiarla occorre disinstallare conservando i dati e reinstallare. Gli indici desktop con schema precedente richiedono una ricostruzione esplicita. La release pubblica rimane 0.2.0 fino alla chiusura delle verifiche del candidato.

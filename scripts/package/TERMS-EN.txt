@@ -1,4 +1,4 @@
-Local Document Search 0.2.0 Terms of Use
+Local Document Search 0.2.1 Terms of Use
 Rights holder: Luca Foresti, Rome, Italy — lucapalocco@gmail.com
 
 1. The rights holder grants a free, non-exclusive, worldwide, indefinite license to install and use the program for personal purposes, study, or as an internal tool. Internal use is permitted for businesses and professionals, including work that contributes to paid assignments.

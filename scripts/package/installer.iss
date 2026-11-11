@@ -1,4 +1,4 @@
-#define AppVersion "0.2.0"
+#define AppVersion "0.2.1"
 #define AppId "{{C6B25744-98A8-4B23-B4CF-3E45CA29944E}"
 #define RegistryId "{C6B25744-98A8-4B23-B4CF-3E45CA29944E}"
 #ifndef PayloadDir
@@ -19,7 +19,7 @@ InfoBeforeFile={#SourcePath}\TERMS-IT.txt
 DefaultDirName={localappdata}\Programs\LocalDocumentSearch
 DefaultGroupName=Local Document Search
 OutputDir={#OutputDir}
-OutputBaseFilename=LocalDocumentSearch-0.2.0-windows-x64-setup
+OutputBaseFilename=LocalDocumentSearch-0.2.1-windows-x64-setup
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible

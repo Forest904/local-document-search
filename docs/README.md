@@ -31,6 +31,8 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 
 ## Modifiche successive alla release 0.2.0
 
+Il candidato **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo sia dal sorgente sia tramite installer; revisione e hash di quel pacchetto non sono attestati qui. Build pulita, benchmark sul compilato e collaudo del candidato finale restano verifiche distinte prima della pubblicazione.
+
 ### V2-09 — ricerca per suffisso
 
 Milestone implementata e verificata sul sorgente locale: `*suffisso` e suggerimenti dinamici usano un vocabolario rovesciato immutabile per campo. L'API Python rinomina `allow_prefixes` in `allow_wildcards` senza alias; il desktop abilita entrambe le forme. Suite backend **394 passed, 6 skipped**, frontend/script **100 passed**, runner Homework verde; benchmark sintetico target su tre cicli **PASS** e probe Qt offscreen **PASS**. [ADR 0015](adr/0015-v2-suffix-wildcards.md), [report e limiti](V2_09_SUFFIX_SEARCH.md). Verifiche su working tree modificato, non su installer o nuova release; i risultati della release 0.2.0 e i benchmark V2-02 restano evidenze storiche separate.

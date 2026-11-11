@@ -120,13 +120,9 @@ jobs:
           $manifest = Join-Path 'dist/public' "$name.manifest.json"
           $digest = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
           $notes = Join-Path $env:RUNNER_TEMP 'release-notes.md'
-          @"
-          Local Document Search $version per Windows 11 x64. Installer offline per utente, senza Python preinstallato.
-
-          Commit di build: $env:GITHUB_SHA. SHA-256 installer: $digest. Verificare il file .sha256 dopo il download.
-
-          Per aggiornare, chiudere l'app e avviare il nuovo installer. La disinstallazione conserva i dati per impostazione predefinita; la cancellazione richiede una scelta esplicita. Pacchetto non firmato digitalmente.
-          "@ | Set-Content -LiteralPath $notes -Encoding utf8
+          $body = Get-Content -LiteralPath 'scripts/package/RELEASE_NOTES_0.2.1.md' -Raw -Encoding utf8
+          if (-not $body.StartsWith("Local Document Search $version ")) { throw 'Note di release non coerenti con la versione' }
+          "$body`nCommit di build: $env:GITHUB_SHA. SHA-256 installer: $digest." | Set-Content -LiteralPath $notes -Encoding utf8
           try {
             gh release create $tag $installer $checksum $manifest --draft --target $env:GITHUB_SHA --title "Local Document Search $version" --notes-file $notes
             if ($LASTEXITCODE -ne 0) { throw 'Creazione draft o upload falliti' }

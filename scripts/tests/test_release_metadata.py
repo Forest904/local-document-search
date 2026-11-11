@@ -25,10 +25,10 @@ def test_version_gate_rejects_inconsistent_frontend(tmp_path):
         target = tmp_path / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, target)
-    assert release_metadata.release_version(tmp_path) == "0.2.0"
+    assert release_metadata.release_version(tmp_path) == "0.2.1"
     frontend = tmp_path / "frontend/pyproject.toml"
     frontend.write_text(frontend.read_text(encoding="utf-8").replace(
-        'version = "0.2.0"', 'version = "0.2.1"', 1), encoding="utf-8")
+        'version = "0.2.1"', 'version = "0.2.0"', 1), encoding="utf-8")
     with pytest.raises(ValueError, match="Versione incoerente"):
         release_metadata.release_version(tmp_path)
 
