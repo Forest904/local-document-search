@@ -94,47 +94,33 @@ Item {
         Rectangle {
             objectName: "textToolbar"
             Layout.fillWidth: true
-            Layout.preferredHeight: 50
+            Layout.preferredHeight: 94
             color: page.theme.surface
             border.color: page.theme.line
-            RowLayout {
+            ColumnLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
-                spacing: 8
-                ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: page.requestLeave("back") }
-                Label { text: reader.filename; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true; Accessible.name: text }
-                Label { text: reader.dirty ? "●" : reader.editing ? desktop.labels.textEdit : desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: text }
-                Button { text: reader.editing ? desktop.labels.textReading : desktop.labels.textEdit; enabled: reader.ready && !reader.saving; onClicked: reader.editing ? reader.stopEditing() : reader.startEditing() }
-                Button { text: desktop.labels.textSave; enabled: reader.ready && reader.dirty && !reader.saving; onClicked: reader.save() }
-                Button { text: desktop.labels.textCopyDraft; visible: reader.errorKey === "TextViewConflict"; onClicked: reader.copyDraft() }
-                Button { text: desktop.labels.textReload; visible: reader.errorKey === "TextViewConflict"; onClicked: reloadDialog.open() }
-                ViewerIconButton { objectName: "textFindButton"; theme: page.theme; label: desktop.labels.textFind; iconName: "search"; enabled: reader.ready; onClicked: page.openFind() }
-                Button {
-                    objectName: "textWrapButton"
-                    text: desktop.labels.textWrap
-                    checkable: true
-                    checked: page.wrap
-                    Accessible.name: text
-                    activeFocusOnTab: true
-                    implicitHeight: 32
-                    background: Rectangle {
-                        radius: 8
-                        color: page.wrap ? page.theme.sage : page.theme.surface
-                        border.color: parent.activeFocus ? page.theme.accent : page.theme.line
-                        border.width: parent.activeFocus ? 2 : 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: page.theme.ink
-                        font.pixelSize: 13
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onClicked: { page.wrap = checked; Qt.callLater(page.refreshGutter) }
+                spacing: 4
+                RowLayout {
+                    Layout.fillWidth: true
+                    ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: page.requestLeave("back") }
+                    Label { text: reader.filename; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true; Accessible.name: text }
+                    Label { text: reader.dirty ? "●" : reader.editing ? desktop.labels.textEdit : desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: text }
                 }
-                ViewerIconButton { theme: page.theme; label: desktop.labels.openExternal; iconName: "external"; onClicked: desktop.openViewerExternally() }
-                ViewerIconButton { theme: page.theme; label: desktop.labels.openFolder; iconName: "folder"; onClicked: desktop.openViewerFolder() }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    ViewerIconButton { theme: page.theme; label: reader.editing ? desktop.labels.textReading : desktop.labels.textEdit; iconName: reader.editing ? "reading" : "edit"; selected: reader.editing; enabled: reader.ready && !reader.saving; onClicked: reader.editing ? reader.stopEditing() : reader.startEditing() }
+                    ViewerIconButton { objectName: "textSaveButton"; theme: page.theme; label: desktop.labels.textSave; iconName: "save"; enabled: reader.ready && reader.dirty && !reader.saving; onClicked: reader.save() }
+                    ViewerIconButton { theme: page.theme; label: desktop.labels.textCopyDraft; iconName: "copy"; visible: reader.errorKey === "TextViewConflict"; onClicked: reader.copyDraft() }
+                    ViewerIconButton { theme: page.theme; label: desktop.labels.textReload; iconName: "reload"; visible: reader.errorKey === "TextViewConflict"; onClicked: reloadDialog.open() }
+                    ViewerIconButton { objectName: "textFindButton"; theme: page.theme; label: desktop.labels.textFind; iconName: "search"; enabled: reader.ready; onClicked: page.openFind() }
+                    ViewerIconButton { objectName: "textWrapButton"; theme: page.theme; label: desktop.labels.textWrap; iconName: "wrap"; checkable: true; checked: page.wrap; selected: checked; onClicked: { page.wrap = checked; Qt.callLater(page.refreshGutter) } }
+                    Item { Layout.fillWidth: true }
+                    ViewerIconButton { theme: page.theme; label: desktop.labels.openExternal; iconName: "external"; onClicked: desktop.openViewerExternally() }
+                    ViewerIconButton { theme: page.theme; label: desktop.labels.openFolder; iconName: "folder"; onClicked: desktop.openViewerFolder() }
+                }
             }
         }
         Label {
@@ -155,12 +141,26 @@ Item {
                 id: formatRow
                 spacing: 4
                 Repeater {
-                    model: ["H1", "H2", "H3", "H4", "H5", "H6", "B", "I", "•", "1.", "❝", "🔗", "</>", "```"]
+                    model: ["H1", "H2", "H3", "H4", "H5", "H6", "bold", "italic", "bullet", "number", "quote", "link", "code", "block"]
                     Button {
                         required property int index
                         required property string modelData
-                        text: modelData
-                        Accessible.name: modelData
+                        text: index < 6 ? modelData : ""
+                        implicitWidth: 36
+                        implicitHeight: 36
+                        Accessible.name: index < 6 ? modelData : desktop.labels["format" + modelData.charAt(0).toUpperCase() + modelData.slice(1)] || modelData
+                        background: Rectangle {
+                            radius: 8
+                            color: parent.down ? page.theme.lavender : parent.hovered ? page.theme.sage : page.theme.surface
+                            border.color: parent.activeFocus ? page.theme.accent : page.theme.line
+                            border.width: parent.activeFocus ? 2 : 1
+                        }
+                        contentItem: Item {
+                            Text { anchors.centerIn: parent; visible: index < 6; text: modelData; color: page.theme.ink; font.pixelSize: 12; font.weight: Font.DemiBold }
+                            Image { anchors.centerIn: parent; visible: index >= 6; source: visible ? "../assets/" + modelData + "-" + (page.theme.dark ? "dark" : "light") + ".svg" : ""; sourceSize.width: 18; sourceSize.height: 18 }
+                        }
+                        ToolTip.visible: hovered
+                        ToolTip.text: Accessible.name
                         onClicked: {
                             const kinds = ["h1", "h2", "h3", "h4", "h5", "h6", "bold", "italic", "bullet", "number", "quote", "link", "code", "block"]
                             reader.formatSelection(kinds[index], area.selectionStart, area.selectionEnd)
@@ -338,7 +338,7 @@ Item {
         contentItem: ColumnLayout {
             Label { text: desktop.labels.textSaveBeforeExit }
             RowLayout {
-                Button { text: desktop.labels.textSave; onClicked: { page.confirmExit = false; reader.save() } }
+                ActionButton { theme: page.theme; iconName: "save"; text: desktop.labels.textSave; onClicked: { page.confirmExit = false; reader.save() } }
                 Button { text: desktop.labels.textDiscard; onClicked: { page.confirmExit = false; reader.discard(); page.finishLeave(page.pendingExit) } }
                 Button { text: desktop.labels.cancel; onClicked: { page.confirmExit = false; page.pendingExit = "" } }
             }

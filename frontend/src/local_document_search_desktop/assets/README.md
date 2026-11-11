@@ -24,3 +24,8 @@ dei controlli usano gli SVG appropriati al tema.
 Le icone `zoom-in`, `zoom-out`, `fit`, `rotate` ed `external` del viewer sono SVG
 originali mantenuti a mano: non sono prodotti dal generatore. Le icone
 `back`, `search`, `next`, `close` e `folder` sono riutilizzate nel viewer.
+
+Le icone di editor e Markdown (`save`, `edit`, `reading`, `copy`, `reload`, `wrap`, `bold`,
+`italic`, `bullet`, `number`, `quote`, `link`, `code`, `block`, `rebuild`,
+`details`, `reset`, `delete`) sono invece SVG
+originali nelle varianti chiara/scura prodotti dal generatore su griglia 24×24.

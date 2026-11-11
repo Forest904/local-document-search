@@ -30,11 +30,13 @@ Nel desktop, `.txt`, `.md` e `.pdf` isolati da spazi e fuori dalle virgolette ap
 
 Lingua IT/EN e tema chiaro/scuro persistono nel catalogo, separati dagli snapshot; la pulizia li azzera. Comandi incompatibili con job/chiusura bloccati, lavoro nei worker e risposte obsolete ignorate.
 
-Dopo ogni ricerca di parole esatte, il riquadro «Intendevi…?» mostra una query proposta quando esistono correzioni plausibili, anche con risultati. Elenca le sostituzioni; il pulsante «Cerca con le correzioni», raggiungibile da tastiera e nominato per Narrator, sostituisce la query e cerca dalla prima pagina. La proposta sparisce se cambiano query, filtri, directory o snapshot. La digitazione continua a mostrare i suggerimenti di completamento separati.
+Dopo ogni ricerca di parole esatte, «Intendevi: query proposta» compare quando esistono correzioni plausibili, anche con risultati. La query intera è il solo controllo cliccabile, anche per correzioni multiple: clic, Invio o Spazio la inseriscono nella barra e avviano la ricerca dalla prima pagina, conservando campo, formati, cartella e ordinamento. Il testo va a capo e resta testo semplice; focus e nome accessibile restano disponibili. La proposta sparisce se cambiano query, filtri, directory o snapshot. La digitazione continua a mostrare i suggerimenti di completamento separati.
 
 ## Sistema visivo e accessibilità
 
 Segoe UI, spazio libero, bordi sottili e angoli morbidi. Palette chiara: avorio `#FAF9F6`, bianco, grafite `#252826`, verde `#315D50`, salvia `#DFEAE2`, lavanda `#E9E5F3`. Scura: `#191D1B`, superfici `#242A26`, testo `#EDF1ED`, accento `#ACD5BC`. Pastelli sulle superfici e match in grassetto, senza marcatori gialli pesanti.
+
+I controlli delle toolbar usano pulsanti da 36×36 pixel logici con simboli SVG centrati da 18; le azioni con testo conservano altezza 44 e simboli da 20. Le icone hanno tooltip IT/EN e nome accessibile. Le toolbar dei reader separano titolo/navigazione e azioni su due righe per lasciare spazio ai nomi lunghi; il salvataggio nel dialogo conserva anche l'etichetta.
 
 Toggle a due segmenti per lingua, tema e ordine; icone per lingua/tema, menu campo arrotondato e formati multiselezione. Tab muove il focus, Spazio alterna, frecce scelgono il segmento. **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync.
 

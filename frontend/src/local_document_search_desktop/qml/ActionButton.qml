@@ -7,7 +7,7 @@ Button {
     property bool primary: false
     property string iconName: ""
     activeFocusOnTab: true
-    Accessible.name: text
+    Accessible.name: text !== "" ? text : iconName
     implicitHeight: 44
     implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
     leftPadding: 20
@@ -23,8 +23,10 @@ Button {
         spacing: control.iconName ? 8 : 0
         Image {
             visible: control.iconName !== ""
-            width: visible ? 18 : 0
-            height: 18
+            width: visible ? 20 : 0
+            height: 20
+            sourceSize.width: 20
+            sourceSize.height: 20
             anchors.verticalCenter: parent.verticalCenter
             source: control.iconName ? "../assets/" + control.iconName + "-" + (control.theme.dark ? "dark" : "light") + ".svg" : ""
             opacity: control.enabled ? 1 : 0.5

@@ -18,7 +18,7 @@ Item {
                                      "percent:50", "percent:75", "percent:100", "percent:125",
                                      "percent:150", "percent:200", "percent:300", "percent:400"]
     property string warning: ""
-    property int topInset: 50
+    property int topInset: 94
     property int bottomInset: searchOpen ? 52 : 0
 
     function applyZoom(mode) {
@@ -90,13 +90,16 @@ Item {
         z: 3
         color: page.theme.surface
         border.color: page.theme.line
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
             anchors.leftMargin: 12
             anchors.rightMargin: 12
+            spacing: 4
+            RowLayout {
+            Layout.fillWidth: true
             spacing: 6
             ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: desktop.navigate("back") }
-            Label { text: page.v.viewerName; color: page.theme.ink; elide: Text.ElideMiddle; Layout.preferredWidth: 140; Layout.maximumWidth: 220 }
+            Label { text: page.v.viewerName; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true }
             ViewerIconButton { objectName: "pdfPreviousPage"; theme: page.theme; label: desktop.labels.previous; iconName: "next"; rotated: true; enabled: pdfView.currentPage > 0; onClicked: pdfView.goToPage(pdfView.currentPage - 1) }
             ViewerIconButton { objectName: "pdfNextPage"; theme: page.theme; label: desktop.labels.next; iconName: "next"; enabled: pdfView.currentPage >= 0 && pdfView.currentPage < pdfDocument.pageCount - 1; onClicked: pdfView.goToPage(pdfView.currentPage + 1) }
             TextField {
@@ -121,7 +124,10 @@ Item {
                 onAccepted: page.goToNumber()
             }
             Label { text: "/ " + pdfDocument.pageCount; color: page.theme.ink }
-            Item { Layout.fillWidth: true }
+            }
+            RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
             ViewerIconButton { objectName: "pdfZoomOut"; theme: page.theme; label: desktop.labels.zoomOut; iconName: "zoom-out"; onClicked: pdfView.zoomBy(1 / 1.15) }
             Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 22; color: page.theme.line }
             ViewerIconButton { objectName: "pdfZoomIn"; theme: page.theme; label: desktop.labels.zoomIn; iconName: "zoom-in"; onClicked: pdfView.zoomBy(1.15) }
@@ -129,7 +135,7 @@ Item {
                 id: zoomChoice
                 objectName: "pdfZoomChoice"
                 theme: page.theme
-                Layout.preferredWidth: 190
+                Layout.preferredWidth: 156
                 model: [desktop.labels.pdfAutomaticZoom, desktop.labels.pdfActualSize,
                         desktop.labels.pdfFitPage, desktop.labels.fitWidth,
                         "50%", "75%", "100%", "125%", "150%", "200%", "300%", "400%"]
@@ -143,6 +149,7 @@ Item {
             ViewerIconButton { objectName: "pdfRotate"; theme: page.theme; label: desktop.labels.pdfRotate; iconName: "rotate"; onClicked: { pdfView.pageRotation = (pdfView.pageRotation + 90) % 360; page.applyZoom(page.zoomMode === "custom" ? "automatic" : page.zoomMode) } }
             ViewerIconButton { objectName: "openPdfExternally"; theme: page.theme; label: desktop.labels.openExternal; iconName: "external"; onClicked: desktop.openViewerExternally() }
             ViewerIconButton { objectName: "openPdfFolder"; theme: page.theme; label: desktop.labels.openFolder; iconName: "folder"; onClicked: desktop.openViewerFolder() }
+            }
         }
     }
     Label {

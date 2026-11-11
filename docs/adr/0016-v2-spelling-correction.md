@@ -9,3 +9,7 @@
 - **Conseguenze:** il lessico del corpus può includere errori o mancare parole corrette; una parola reale usata al posto di un'altra non viene rilevata. Il filtro per bigrammi può perdere refusi entro la distanza massima. Il costo di build, riapertura, RAM e query va misurato separatamente.
 - **Alternative:** scansione Levenshtein dell'intero lessico, soglia più permissiva, correzione contestuale e ricerca automatica sulla proposta sono rinviate per costo o scope.
 - **Verifica:** T24/T25 in `docs/TEST_STRATEGY.md`; regressioni T03–T09, T12/T13, T18, T22/T23.
+
+## Revisione dell'interfaccia — 11 novembre 2026
+
+La proposta desktop è un'unica query cliccabile accanto a «Intendevi:». L'accettazione conserva i filtri di sessione e avvia una ricerca dalla prima pagina. Il dettaglio delle sostituzioni e il pulsante separato sono rimossi dalla presentazione; il contratto applicativo e l'algoritmo restano invariati.

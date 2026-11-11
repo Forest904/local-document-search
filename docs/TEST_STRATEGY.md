@@ -63,6 +63,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T31 | TXT/MD: bozza, undo/redo, salvataggio esplicito con BOM/newline, limiti, conflitti e percorsi sicuri; uscita protetta, serializzazione con job e sync successivo | V2-13 |
 | T32 | MD: anteprima offline, tabelle/codice/link/immagini, salto al match esatto o fallback dichiarato; ricerca manuale nelle due modalità, IT/EN, temi, tastiera e Narrator | V2-13 |
 
+La revisione visiva dopo V2-13 estende T12/T13/T25/T27/T29/T32: controlli a icona e tooltip nei temi IT/EN, focus e nomi accessibili, barre dei reader alla dimensione minima, proposta ortografica cliccabile e attivabile da tastiera con filtri conservati. Le prove QML offscreen verificano comportamento e geometria; DPI e Narrator richiedono verifica Windows nativa separata.
+
 ## Gate finale
 
 Collegare ogni risultato a revisione, artefatto, ambiente e comandi. Il pacchetto finale deve superare gli scenari applicabili, incluse le lacune M9-G01–G07: test sorgente, mock e ZIP v1 non sostituiscono Windows pulito/account standard distinto. [Matrice e limiti della release 0.2.0](V2_08_ACCEPTANCE.md#matrice-dei-gate).

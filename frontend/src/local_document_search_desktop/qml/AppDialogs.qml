@@ -65,6 +65,7 @@ Item {
                 }
                 ActionButton {
                     theme: dialogs.theme
+                    iconName: "delete"
                     text: desktop.labels.delete
                     enabled: desktop.view.canManage
                     onClicked: {

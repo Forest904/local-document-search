@@ -61,6 +61,8 @@ Implementazione sul sorgente locale: reader Qt Quick in sola lettura, salto al p
 
 Implementazione nel sorgente locale: anteprima Markdown offline, editor del sorgente TXT/MD con salvataggio esplicito e protezione della bozza, controllo dei conflitti e sync successivo. Schema SQLite e CLI invariati. Suite backend **437 passed, 7 skipped**, frontend **86 passed**, runner Homework 3 verde. [Decisione](adr/0020-v2-text-editor.md), [comportamento, evidenze e limiti](V2_13_TEXT_EDITOR.md). Verifica nativa DPI/Narrator e collaudo dell'installer non attestati; nessuna nuova release pubblicata.
 
+Revisione visiva successiva sul sorgente locale: icone editor/Markdown originali e uniformate, toolbar PDF/TXT/MD su due righe, Salva a icona nella toolbar e proposta ortografica compatta cliccabile con filtri conservati. Verifiche sulla revisione: frontend **87 passed**, backend **437 passed, 7 skipped**, script **46 passed**, runner Homework 3 **PASS** (10 query, 2 regressioni). Prove offscreen e test sorgente non attestano DPI/Narrator nativi, benchmark o collaudo del pacchetto; nessuna nuova release pubblicata.
+
 ## Backlog installer
 
 ### Filtri formato rapidi nel desktop — 11 novembre 2026

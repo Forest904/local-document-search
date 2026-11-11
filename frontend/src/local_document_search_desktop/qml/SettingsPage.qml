@@ -202,12 +202,14 @@ ScrollView {
             }
             ActionButton {
                 theme: page.theme
+                iconName: "rebuild"
                 text: page.t.rebuild
                 enabled: page.v.canManage && page.v.directory !== ""
                 onClicked: desktop.action("rebuild")
             }
             ActionButton {
                 theme: page.theme
+                iconName: "details"
                 text: page.t.details
                 visible: page.v.diagnostics !== ""
                 onClicked: page.diagnosticsRequested()
@@ -239,11 +241,13 @@ ScrollView {
             spacing: 12
             ActionButton {
                 theme: page.theme
+                iconName: "reset"
                 text: page.t.resetFilters
                 onClicked: desktop.resetOptions()
             }
             ActionButton {
                 theme: page.theme
+                iconName: "delete"
                 text: page.t.clear
                 enabled: page.v.canManage
                 onClicked: page.clearRequested()

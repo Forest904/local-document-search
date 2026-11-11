@@ -23,29 +23,41 @@ ColumnLayout {
         theme: page.theme
         Layout.fillWidth: true
     }
-    ColumnLayout {
+    RowLayout {
         objectName: "spellingProposal"
         visible: page.v.spellingProposal !== ""
         Layout.fillWidth: true
         spacing: 4
         Label {
-            text: desktop.labels.didYouMean + ": " + page.v.spellingProposal + "?"
-            color: page.theme.ink
-            wrapMode: Text.Wrap
-            Layout.fillWidth: true
-        }
-        Label {
-            text: page.v.spellingChanges
-            textFormat: Text.RichText
+            text: desktop.labels.didYouMean + ":"
             color: page.theme.muted
-            wrapMode: Text.Wrap
-            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
         }
         Button {
             objectName: "acceptSpelling"
-            text: desktop.labels.searchCorrection
+            text: page.v.spellingProposal
             Accessible.name: desktop.labels.searchCorrection + ": " + page.v.spellingProposal
             enabled: page.v.searchable
+            hoverEnabled: true
+            activeFocusOnTab: true
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
+            implicitHeight: contentItem.implicitHeight + 4
+            padding: 2
+            background: Rectangle {
+                color: "transparent"
+                radius: 4
+                border.width: parent.activeFocus ? 2 : 0
+                border.color: page.theme.accent
+            }
+            contentItem: Text {
+                text: parent.text
+                color: parent.hovered ? page.theme.accent : page.theme.ink
+                font.weight: Font.DemiBold
+                font.underline: parent.hovered || parent.activeFocus
+                wrapMode: Text.Wrap
+                textFormat: Text.PlainText
+            }
             onClicked: desktop.acceptSpelling()
         }
     }

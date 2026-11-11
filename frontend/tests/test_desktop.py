@@ -208,7 +208,7 @@ def test_pdf_find_uses_selected_search_query_and_text_probe(controller, qt, tmp_
         assert viewer.property("viewportLeft") - 12 <= viewer.property("viewportContentX") <= viewer.property("viewportRight") + 12
         zoom = viewer.property("renderScale")
         button = window.findChild(QObject, "pdfZoomIn")
-        assert button.property("width") == 32 and button.property("height") == 32
+        assert button.property("width") == 36 and button.property("height") == 36
         button.click()
         until(lambda: viewer.property("renderScale") > zoom)
         zoom_choice = window.findChild(QObject, "pdfZoomChoice")
@@ -341,7 +341,7 @@ def test_pdf_toolbar_page_zoom_rotation_and_highlights(controller, qt, tmp_path)
         folder = window.findChild(QObject, "openPdfFolder")
         assert folder.mapToScene(QPointF(folder.width(), 0)).x() <= window.width()
         table = window.findChild(QObject, "pdfTableView")
-        assert table.property("topMargin") == 50
+        assert table.property("topMargin") == 94
         assert window.findChild(QObject, "pdfPreviousPage").property("enabled")
         window.findChild(QObject, "pdfNextPage").click()
         until(lambda: viewer.property("currentPage") == 2)
@@ -539,6 +539,37 @@ def test_qml_spelling_button_keyboard(controller, qt):
         QTest.keyClick(window, Qt.Key_Space)
         until(lambda: len(s.search.calls) == 2)
         assert s.search.calls[-1][0][0].query == "famous"
+    finally:
+        s.suggest_spelling.release()
+        window.hide()
+        engine.deleteLater()
+
+
+def test_spelling_click_preserves_filters_and_searches_once(controller, qt):
+    c, s = controller
+    s.suggest_spelling = Requests()
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        c.setOptions("content", ["txt"], "notes", "path")
+        search(c, s, "famos report", total=0)
+        until(lambda: len(s.suggest_spelling.calls) == 1)
+        s.suggest_spelling.calls[0][1].set_result(SpellingResponse(
+            "N", "famous report", (SpellingReplacement(0, 5, "famos", "famous", 1, 0.4),)))
+        until(lambda: c.view["spellingProposal"] == "famous report")
+        button = window.findChild(QObject, "acceptSpelling")
+        assert button.property("text") == "famous report"
+        point = button.mapToScene(button.boundingRect().center())
+        QTest.mouseClick(window, Qt.LeftButton, pos=QPoint(int(point.x()), int(point.y())))
+        until(lambda: len(s.search.calls) == 2)
+        request = s.search.calls[-1][0][0]
+        assert request.query == "famous report" and request.offset == 0
+        assert request.field == SearchField.CONTENT
+        assert request.formats == frozenset({DocumentFormat.TXT})
+        assert request.folder == "notes"
+        assert c.order.value == "path"
+        assert c.query == "famous report"
     finally:
         s.suggest_spelling.release()
         window.hide()
