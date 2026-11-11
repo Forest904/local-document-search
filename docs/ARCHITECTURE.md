@@ -30,6 +30,8 @@ Le astrazioni rappresentano confini reali: niente `shared/` generico o porta per
 
 V2-11 associa ai PDF indicizzati una mappa immutabile degli intervalli delle pagine sul testo canonico unico, persistita nella versione del documento dello snapshot desktop schema 3. La ricerca traduce il primo intervallo corrispondente in pagina senza aprire il sorgente. Il viewer è responsabilità del frontend: render, ricerca manuale Qt PDF e verifica del testo ricercabile non importano la logica di ricerca del backend; [ADR 0017](adr/0017-v2-pdf-page-navigation.md).
 
+V2-12 associa ai risultati TXT/MD il fingerprint e il primo intervallo del contenuto canonico. Un caso d'uso separato legge il sorgente solo all'apertura e, per Markdown, ne ricostruisce la provenienza senza persisterla. Qt, numeri di riga e ricerca manuale appartengono al frontend. Lo schema resta 3; [ADR 0018](adr/0018-v2-text-reader.md).
+
 Il layout del reader e la geometria di pan/zoom sono confinati nei componenti QML del viewer; lo stato della ricerca manuale e della rotazione è per apertura e non viene persistito nello snapshot.
 
 Un file è un documento identificato da directory e percorso relativo: case e Unicode preservati, separatori serializzati come `/`, ordine lessicografico indipendente dalla locale. Niente deduplicazione per contenuto o hard link; basename uguali in cartelle diverse restano distinti. La radice assoluta è risolta dall’infrastruttura; alias non riconosciuti richiedono nuova selezione. Rename equivale a rimozione e aggiunta.

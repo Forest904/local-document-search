@@ -18,8 +18,9 @@ from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 from local_document_search.application.contracts import (
     ApplicationState, CancelOutcome, DocumentDetails, JobDiagnostic, JobPhase, JobRef,
     JobReport, JobState, JobStatus, SearchResponse, SearchResult, SuggestResponse, TextRange,
-    SpellingResponse, SpellingReplacement,
+    SpellingResponse, SpellingReplacement, TextNavigationTarget,
 )
+from local_document_search.application.text_view import PrepareTextView, TextViewDocument
 from local_document_search.application.errors import SnapshotUnavailable, StorageFailure
 from local_document_search.application.preferences import DesktopPreferences
 from local_document_search.domain.documents import (
@@ -29,8 +30,11 @@ from local_document_search.domain.queries import SearchField
 from local_document_search_desktop.composition import compose_desktop, open_document, open_document_folder
 from local_document_search_desktop.controller import DesktopController
 from local_document_search_desktop.viewer import _has_searchable_text
+from local_document_search_desktop.text_reader import display_text, find_literal, qt_offset
 from local_document_search_desktop.main import create_engine
 from local_document_search_desktop.models import highlighted, python_cursor
+from local_document_search.infrastructure.text_view_source import LocalTextViewSource
+from local_document_search.interfaces.composition import compose_cli
 from conftest import until
 
 
@@ -58,6 +62,8 @@ class FakeSession:
         self.state = ApplicationState("C:/source", "N", True)
         self.search, self.get_document, self.suggest = Requests(), Requests(), Requests()
         self.suggest_spelling = None
+        self.prepare_text_view = operation(lambda request: TextViewDocument(
+            "alpha first\nalpha second", False, "lf", (TextRange(0, 5),), "ready"))
         self.preferences = DesktopPreferences()
         self.initialize = operation(lambda: self.state)
         self.status = operation(lambda: self.state)
@@ -114,7 +120,8 @@ def search(c, s, text="alpha", total=120, items=()):
 
 def result():
     return SearchResult(DocumentId(1), "alpha.txt", RelativePath("alpha.txt"),
-                        DocumentFormat.TXT, frozenset({SearchField.CONTENT}))
+                        DocumentFormat.TXT, frozenset({SearchField.CONTENT}),
+                        text_target=TextNavigationTarget(10, 1, TextRange(0, 5)))
 
 
 def test_pdf_viewer_navigates_to_result_page(controller, qt, tmp_path):
@@ -714,18 +721,19 @@ def test_pagination_visibility_and_labels(controller, qt):
         engine.deleteLater()
 
 
-def test_direct_open_without_preview_and_obsolete_result(controller):
+def test_internal_text_open_without_preview_and_obsolete_result(controller):
     c, s = controller
     opened = []
     c.opener = lambda *args: opened.append(args)
     start(c)
     search(c, s, items=(result(),), total=1)
     c.openResult(0)
-    assert opened == [("C:/source", RelativePath("alpha.txt"))]
+    assert opened == [] and c.view["screen"] == "viewer"
+    until(lambda: c.text_reader.state in ("populating", "ready"))
     assert not s.get_document.calls
     c.editQuery("beta", 4)
     c.openResult(0)
-    assert len(opened) == 1
+    assert opened == []
 
 
 def test_unicode_and_literal_markup(qt):
@@ -1027,10 +1035,15 @@ def test_open_failure_and_stale_snapshot(controller):
     c, s = controller
     start(c)
     search(c, s, items=(result(),), total=1)
-    c.opener = lambda *_: (_ for _ in ()).throw(FileNotFoundError())
+    s.prepare_text_view = operation(lambda _: (_ for _ in ()).throw(FileNotFoundError()))
     c.openResult(0)
-    assert c.message_key == "FileNotFoundError"
+    until(lambda: c.text_reader.state == "error")
+    assert c.text_reader.errorKey == "FileNotFoundError"
     assert not s.get_document.calls
+    s.prepare_text_view = operation(lambda _: TextViewDocument("alpha", False, "none", (), "filename"))
+    c.retryTextViewer()
+    until(lambda: c.text_reader.state == "populating")
+    c.navigate("back")
     c.message_key = ""
     c.state = replace(c.state, active_snapshot_id="NEW")
     c.openResult(0)
@@ -1112,11 +1125,120 @@ def test_qml_result_opens_once_by_keyboard_and_click(controller, qt):
         listing.setProperty("currentIndex", 0)
         listing.forceActiveFocus()
         QTest.keyClick(window, Qt.Key_Return)
-        assert len(opened) == 1 and not s.get_document.calls
+        until(lambda: c.view["screen"] == "viewer")
+        until(lambda: window.findChild(QObject, "textReaderArea") is not None)
+        assert len(opened) == 0 and not s.get_document.calls
+        c.navigate("back")
+        until(lambda: window.findChild(QObject, "results") is not None)
+        listing = window.findChild(QObject, "results")
         item = listing.property("currentItem")
         point = item.mapToScene(item.boundingRect().center())
         QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier, QPoint(round(point.x()), round(point.y())))
-        assert len(opened) == 2 and not s.get_document.calls
+        until(lambda: c.view["screen"] == "viewer")
+        assert len(opened) == 0 and not s.get_document.calls
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_text_reader_qml_jump_find_and_read_only(controller, qt):
+    c, s = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, items=(result(),), total=1)
+        c.openResult(0)
+        until(lambda: c.text_reader.ready)
+        area = window.findChild(QObject, "textReaderArea")
+        assert area is not None and area.property("readOnly")
+        assert area.property("text") == "alpha first\nalpha second"
+        QTest.keyClick(window, Qt.Key_Z)
+        assert area.property("text") == "alpha first\nalpha second"
+        area.forceActiveFocus()
+        QTest.keyClick(window, Qt.Key_Tab)
+        assert not area.property("activeFocus")
+        assert c.text_reader.marker == "snapshot"
+        until(lambda: len(c.text_reader.visibleLines(0, 500)) == 2)
+        assert [row["number"] for row in c.text_reader.visibleLines(0, 500)] == [1, 2]
+        wrap_button = window.findChild(QObject, "textWrapButton")
+        assert wrap_button.property("checked")
+        wrap_button.click()
+        assert not wrap_button.property("checked")
+        wrap_button.click()
+        assert wrap_button.property("checked")
+        QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
+        field = window.findChild(QObject, "textFindField")
+        until(lambda: field is not None and field.property("visible"))
+        field.setProperty("text", "alpha")
+        QTest.keyClick(window, Qt.Key_Return)
+        until(lambda: c.text_reader.matchCount == 2)
+        assert c.text_reader.marker == "manual"
+        assert field.property("activeFocus")
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not field.property("visible"))
+        assert c.view["screen"] == "viewer"
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: c.view["screen"] == "results")
+        until(lambda: window.findChild(QObject, "results") is not None)
+        assert window.findChild(QObject, "results").property("activeFocus")
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_text_reader_coordinates_and_literal_case_rules(qt):
+    source = "😀 alpha\r\nCAFÉ cafe\u0301 &amp;"
+    assert display_text(source) == "😀 alpha\nCAFÉ cafe\u0301 &amp;"
+    assert qt_offset(source, source.index("CAFÉ")) == len("😀 alpha\n".encode("utf-16-le")) // 2
+    matches = find_literal(display_text(source), "café")
+    assert len(matches) == 2
+    assert find_literal(display_text(source), "&amp;")
+    assert len(find_literal(display_text(source), "cafe")) == 2
+
+
+def test_markdown_result_reaches_original_source_in_qml(controller, qt, tmp_path):
+    c, s = controller
+    root = tmp_path / "docs"
+    root.mkdir()
+    (root / "note.md").write_text("front **alpha** tail", encoding="utf-8")
+    backend = compose_cli(str(root))
+    backend.build.execute(str(root))
+    from local_document_search.application.contracts import SearchRequest
+    response = backend.search.execute(SearchRequest("alpha"))
+    s.state = ApplicationState(str(root), response.snapshot_id, True)
+    s.prepare_text_view = PrepareTextView(LocalTextViewSource())
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, items=response.results, total=1)
+        c.openResult(0)
+        until(lambda: c.text_reader.ready)
+        area = window.findChild(QObject, "textReaderArea")
+        until(lambda: area is not None and area.property("selectedText") == "alpha")
+        assert area.property("text") == "front **alpha** tail"
+        assert c.text_reader.marker == "snapshot"
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_text_reader_changed_file_opens_without_snapshot_jump(controller, qt):
+    c, s = controller
+    s.prepare_text_view = operation(lambda _: TextViewDocument("current alpha", False, "none", (), "changed"))
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, items=(result(),), total=1)
+        c.openResult(0)
+        until(lambda: c.text_reader.ready)
+        area = window.findChild(QObject, "textReaderArea")
+        assert area.property("text") == "current alpha"
+        assert c.text_reader.marker == ""
+        warning = window.findChild(QObject, "textWarning")
+        assert warning.property("visible") and "cambiato" in warning.property("text")
     finally:
         window.hide()
         engine.deleteLater()

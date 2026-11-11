@@ -53,6 +53,10 @@ Verifiche locali: backend **406 passed, 6 skipped**, desktop **59 passed** e run
 
 Implementazione sul sorgente locale in verifica: mappa delle pagine nello snapshot desktop schema 3, destinazione nel risultato e viewer interno Qt Quick PDF. La rifinitura aggiunge ricerca manuale nel PDF, barre sovrapposte, navigazione pagina, zoom/pan contenuti con preset 50–400%, rotazione e apertura della cartella. Gli indici desktop precedenti richiedono rebuild esplicito. Suite backend **410 passed, 6 skipped**, desktop/script **114 passed, 1 test installer escluso** perché l'app è aperta nella sessione Windows; runner Homework verde. Il benchmark target a tre cicli precedente supera i budget di avvio, no-change e query p95: gate prestazionale aperto. La [specifica e le evidenze](V2_11_PDF_PAGE_NAVIGATION.md) distinguono test sorgente, benchmark e collaudo del pacchetto; nessuna nuova release pubblicata.
 
+### V2-12 — Reader TXT e Markdown
+
+Implementazione sul sorgente locale: reader Qt Quick in sola lettura, salto al primo match tramite posizione dello snapshot e provenienza Markdown calcolata all'apertura, ricerca manuale separata e limiti espliciti. Nessuna modifica dello schema SQLite o della CLI. Suite backend **433 passed, 6 skipped**; frontend/script **118 passed, 1 test installer escluso** perché l'app è aperta; runner Homework verde. [Decisione](adr/0018-v2-text-reader.md), [comportamento, evidenze e limiti](V2_12_TEXT_READER.md). Il collaudo del pacchetto resta distinto; nessuna nuova release pubblicata.
+
 ## Backlog installer
 
 Proposte future, non approvate né implementate: firma digitale con timestamp; riepilogo della versione installata e di quella nuova; riparazione esplicita; messaggi diagnostici e accesso ai log; recupero da aggiornamento interrotto.

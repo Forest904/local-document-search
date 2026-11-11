@@ -23,3 +23,5 @@ storiche V2-06/V2-07 non si trasferiscono al nuovo frontend: vedere
 [UX](../UX_WINDOWS.md) e [verifiche Luma](../V2_08_ACCEPTANCE.md#evidenze-desktop-precedenti-al-candidato).
 
 **Estensione V2-11:** [ADR 0017](0017-v2-pdf-page-navigation.md) sostituisce l'apertura diretta dei soli PDF con un viewer interno essenziale; TXT e MD conservano l'apertura esterna.
+
+**Estensione V2-12:** [ADR 0018](0018-v2-text-reader.md) introduce il reader interno in sola lettura per TXT e MD; l'apertura esterna rimane un'azione esplicita.

@@ -16,6 +16,7 @@ from local_document_search.domain.documents import DocumentFormat
 from .i18n import catalog, translate
 from .models import ResultsModel, python_cursor, result_rows
 from .viewer import PdfTextProbe, PdfViewerState
+from .text_reader import TextReaderBridge
 
 
 PAGE_SIZE = 20
@@ -44,9 +45,13 @@ class DesktopController(QObject):
         self.viewer = PdfViewerState()
         self.viewer_probe = PdfTextProbe(self)
         self.viewer_probe.changed.connect(self.changed)
+        self.text_reader = TextReaderBridge(self)
+        self.viewer_kind = "pdf"
+        self.viewer_result = self.viewer_root = self.viewer_snapshot = None
         self.response_query = ""
         self.results_scroll = 0.0
         self.results_index = -1
+        self.focus_result_on_return = False
         self.return_screen = "home"
         self.cursor = 0
         self.field = SearchField.BOTH
@@ -73,6 +78,10 @@ class DesktopController(QObject):
     @Property(QObject, constant=True)
     def results(self):
         return self.model
+
+    @Property(QObject, constant=True)
+    def textReader(self):
+        return self.text_reader
 
     @Property('QVariantMap', notify=preferencesChanged)
     def labels(self):
@@ -110,8 +119,10 @@ class DesktopController(QObject):
                 "selectedPath": self.selected.relative_path.value if self.selected else "",
                 "viewerSource": self.viewer.source, "viewerPage": self.viewer.page,
                 "viewerName": self.viewer.name, "viewerQuery": self.viewer.query,
+                "viewerKind": self.viewer_kind,
                 "viewerTextStatus": self.viewer_probe.status,
                 "resultsScroll": self.results_scroll, "resultsIndex": self.results_index,
+                "focusResultOnReturn": self.focus_result_on_return,
                 "total": self.response.total_matches if self.response else 0,
                 "hasResponse": self.response is not None, "offset": self.offset,
                 "pageSize": PAGE_SIZE,
@@ -140,8 +151,11 @@ class DesktopController(QObject):
     def navigate(self, screen):
         if screen == "back" and self.screen == "viewer":
             self.screen = "results"
+            self.focus_result_on_return = True
             self.viewer_probe.cancel()
             self.viewer.clear()
+            self.text_reader.cancel()
+            self.viewer_result = self.viewer_root = self.viewer_snapshot = None
             self.changed.emit()
             return
         if screen == "settings":
@@ -225,6 +239,8 @@ class DesktopController(QObject):
             self.screen = "results"
             self.viewer_probe.cancel()
             self.viewer.clear()
+            self.text_reader.cancel()
+            self.viewer_result = self.viewer_root = self.viewer_snapshot = None
         self.generation += 1
         self.suggest_generation += 1
         self.spelling_generation += 1
@@ -232,6 +248,7 @@ class DesktopController(QObject):
         self.response_query = ""
         self.results_scroll = 0.0
         self.results_index = -1
+        self.focus_result_on_return = False
         self.search_duration = None
         self.offset = 0
         self.terms = []
@@ -423,7 +440,12 @@ class DesktopController(QObject):
             return
         self.selected = self.response.results[index]
         self.results_index = index
+        self.focus_result_on_return = False
         self.openSelected()
+
+    @Slot()
+    def resultFocusRestored(self):
+        self.focus_result_on_return = False
 
     @Slot(float)
     def rememberResultsScroll(self, value):
@@ -509,15 +531,32 @@ class DesktopController(QObject):
         if self.selected and self.view["searchable"]:
             try:
                 if self.selected.format is DocumentFormat.PDF:
+                    self.viewer_kind = "pdf"
                     self.viewer.open(self.state.active_directory, self.selected.relative_path,
                                      self.selected.filename, self.selected.pdf_target_page, self.response_query)
                     self.viewer_probe.start(self.viewer.path)
                     self.screen = "viewer"
                     self.changed.emit()
                 else:
-                    self.opener(self.state.active_directory, self.selected.relative_path)
+                    self.viewer_kind = "text"
+                    self.viewer_result = self.selected
+                    self.viewer_root = self.state.active_directory
+                    self.viewer_snapshot = self.response.snapshot_id
+                    self.viewer.open(self.state.active_directory, self.selected.relative_path,
+                                     self.selected.filename, None, self.response_query)
+                    self.text_reader.open(self.session, self.state.active_directory,
+                                          self.selected, self.response.snapshot_id)
+                    self.screen = "viewer"
+                    self.changed.emit()
             except Exception as exc:
                 self.error(exc)
+
+    @Slot()
+    def retryTextViewer(self):
+        if (self.screen == "viewer" and self.viewer_kind == "text" and self.viewer_result
+                and self.session and self.state and self.state.active_directory == self.viewer_root):
+            self.text_reader.open(self.session, self.viewer_root,
+                                  self.viewer_result, self.viewer_snapshot)
 
     @Slot()
     def openViewerExternally(self):
@@ -562,6 +601,7 @@ class DesktopController(QObject):
         self.debounce.stop()
         self.invalidate()
         self.viewer_probe.close()
+        self.text_reader.close()
 
     def tick(self):
         if self.control_future and self.control_future[0].done():

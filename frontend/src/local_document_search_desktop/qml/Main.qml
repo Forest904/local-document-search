@@ -116,9 +116,12 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.maximumWidth: root.v.screen === "viewer" ? 99999 : root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880
             Layout.alignment: Qt.AlignHCenter
-            sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "viewer" ? viewer : root.v.screen === "results" ? results : home
+            sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "viewer" ? (root.v.viewerKind === "text" ? textViewer : pdfViewer) : root.v.screen === "results" ? results : home
             onLoaded: Qt.callLater(function () {
-                if (content.item && content.item.focusQuery)
+                if (root.v.screen === "results" && root.v.focusResultOnReturn && content.item && content.item.focusResult) {
+                    content.item.focusResult();
+                    desktop.resultFocusRestored();
+                } else if (content.item && content.item.focusQuery)
                     content.item.focusQuery();
                 else if (root.v.screen === "settings")
                     settingsNavigation.forceActiveFocus();
@@ -186,8 +189,14 @@ ApplicationWindow {
         }
     }
     Component {
-        id: viewer
+        id: pdfViewer
         PdfViewerPage {
+            theme: design
+        }
+    }
+    Component {
+        id: textViewer
+        TextViewerPage {
             theme: design
         }
     }

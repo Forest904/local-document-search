@@ -6,7 +6,9 @@ PySide6/Qt Quick, QML e backend v2 nello stesso processo. [Installazione e avvio
 
 Al primo avvio premi **Accetta e scegli una cartella**. La home appare quando l’indice è ricercabile; agli avvii successivi il catalogo viene recuperato e sincronizzato in background.
 
-Invio o la lente eseguono la query; `termine*` cerca prefissi e `*termine` cerca suffissi. Digitare propone suggerimenti anche dopo `*`: selezionarne uno sostituisce la clausola con il termine completo e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il file nell’app Windows associata.
+Invio o la lente eseguono la query; `termine*` cerca prefissi e `*termine` cerca suffissi. Digitare propone suggerimenti anche dopo `*`: selezionarne uno sostituisce la clausola con il termine completo e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il viewer interno per PDF, TXT e MD. Il viewer offre anche l'apertura nell'app Windows associata.
+
+TXT e Markdown mostrano il sorgente in sola lettura, con numeri di riga, salto al primo match e a capo visivo selezionabile. **Ctrl+F** cerca letteralmente nel file aperto; **Escape** chiude Trova e poi torna ai risultati. Il limite del reader è 10 MiB, 100.000 righe e 100.000 caratteri per riga; oltre soglia si può usare l'app associata. [Dettagli V2-12](../docs/V2_12_TEXT_READER.md).
 
 **Impostazioni**, accessibile dalla home, contiene campo, formati, ordine, cartella, sync, rebuild, diagnostiche, pulizia, lingua e tema. Filtri solo di sessione, azzerati al cambio cartella/riavvio; lingua e tema persistono. Il filtro sottocartella, il recupero del precedente e i dettagli completi restano API backend, senza controlli dedicati nella UI.
 

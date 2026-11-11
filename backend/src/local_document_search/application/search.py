@@ -6,7 +6,7 @@ from threading import Condition
 
 from .contracts import (DocumentDetails, InvalidInput, SearchOrder, SearchRequest, SearchResponse,
                         SearchResult, SearchSnippet, TextRange, SuggestMode, SuggestRequest, SuggestResponse,
-                        SpellingRequest, SpellingResponse, SpellingReplacement)
+                        SpellingRequest, SpellingResponse, SpellingReplacement, TextNavigationTarget)
 from .errors import ResourceFailure, SnapshotUnavailable
 from .ports import SnapshotRepositoryPort
 from local_document_search.domain.documents import DocumentId
@@ -98,6 +98,9 @@ class SearchDocuments:
                         match.document_id, metadata.filename, metadata.relative_path,
                         metadata.format, match.matched_fields,
                         _snippet(document.extracted_text, content_ranges), filename_ranges, target_page,
+                        TextNavigationTarget(metadata.fingerprint.size_bytes, metadata.fingerprint.mtime_ns,
+                                             content_ranges[0] if content_ranges else None)
+                        if metadata.format.value in ("txt", "md") else None,
                     ))
                 return SearchResponse(snapshot.snapshot_id, tuple(results), total)
         except MemoryError as exc:

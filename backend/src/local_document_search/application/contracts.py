@@ -75,6 +75,19 @@ class TextRange:
 
 
 @dataclass(frozen=True)
+class TextNavigationTarget:
+    """Coordinate del contenuto dello snapshot, mai del file su disco."""
+    size_bytes: int
+    mtime_ns: int
+    canonical_range: TextRange | None = None
+
+    def __post_init__(self) -> None:
+        require_nonnegative(self.size_bytes, "size_bytes")
+        if type(self.mtime_ns) is not int:
+            raise ValueError("mtime_ns non valido")
+
+
+@dataclass(frozen=True)
 class SearchSnippet:
     text: str
     start: int
@@ -163,6 +176,7 @@ class SearchResult:
     snippet: SearchSnippet | None = None
     filename_highlights: tuple[TextRange, ...] = ()
     pdf_target_page: int | None = None
+    text_target: TextNavigationTarget | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "matched_fields", frozenset(self.matched_fields))
@@ -175,6 +189,11 @@ class SearchResult:
             require_nonnegative(self.pdf_target_page, "pdf_target_page")
             if self.format is not DocumentFormat.PDF:
                 raise ValueError("Pagina di destinazione solo per PDF")
+        if self.text_target is not None:
+            if not isinstance(self.text_target, TextNavigationTarget):
+                raise ValueError("Destinazione testuale non valida")
+            if self.format not in (DocumentFormat.TXT, DocumentFormat.MARKDOWN):
+                raise ValueError("Destinazione testuale solo per TXT/MD")
 
 
 @dataclass(frozen=True)

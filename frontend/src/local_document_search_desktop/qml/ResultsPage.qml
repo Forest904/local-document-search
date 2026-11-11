@@ -9,6 +9,10 @@ ColumnLayout {
     function focusQuery() {
         search.focusQuery();
     }
+    function focusResult() {
+        results.currentIndex = page.v.resultsIndex;
+        results.forceActiveFocus();
+    }
     spacing: 16
     SearchBox {
         id: search

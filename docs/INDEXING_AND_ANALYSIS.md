@@ -49,4 +49,6 @@ Snippet ed evidenziazioni derivano da testo estratto persistito e versione acqui
 
 V2-11 conserva per ogni pagina PDF un intervallo nel medesimo testo estratto, incluse pagine senza testo. Gli indici e la semantica delle frasi restano sul testo unico; la pagina del primo match deriva dal primo intervallo di evidenziazione del contenuto. La mappa non contiene coordinate geometriche; [ADR 0017](adr/0017-v2-pdf-page-navigation.md).
 
+V2-12 usa il primo intervallo canonico di TXT/MD nel risultato, prima del ritaglio dello snippet. Il reader Markdown ricostruisce una mappa temporanea dal testo estratto al sorgente con lo stesso parser CommonMark/tabelle; un intervallo non localizzabile non genera un salto approssimativo. File cambiati si aprono dall'inizio con avviso. La ricerca manuale del reader opera sul sorgente aperto e non usa analyzer, posting o snapshot; [ADR 0018](adr/0018-v2-text-reader.md).
+
 Diff, metadati in ingestione e pubblicazione sono definiti in [architettura](ARCHITECTURE.md#snapshot-e-sincronizzazione).

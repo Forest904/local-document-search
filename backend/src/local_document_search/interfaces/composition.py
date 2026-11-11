@@ -25,6 +25,8 @@ from local_document_search.infrastructure.snapshot_storage import InMemorySnapsh
 from local_document_search.infrastructure.v2_snapshot_storage import SCHEMA_VERSION as DESKTOP_SCHEMA_VERSION
 from local_document_search.application.errors import StorageFailure
 from local_document_search.application.preferences import GetDesktopPreferences, SaveDesktopPreferences
+from local_document_search.application.text_view import PrepareTextView
+from local_document_search.infrastructure.text_view_source import LocalTextViewSource
 from local_document_search.infrastructure.sqlite_snapshot_storage import storage_directory
 
 from local_document_search.application.ports import (
@@ -95,6 +97,7 @@ class PersistentApplication:
     get_preferences: GetDesktopPreferences | None = None
     save_preferences: SaveDesktopPreferences | None = None
     suggest_spelling: SuggestSpellingCorrections | None = None
+    prepare_text_view: PrepareTextView | None = None
     _close_lock: Lock = field(default_factory=Lock)
     _closed: bool = False
 
@@ -164,7 +167,8 @@ def compose_persistent_application(storage=None, *, v2=False, read_workers=None)
             CancelSynchronization(lifecycle.jobs), lifecycle, reads, lock,
             GetDesktopPreferences(settings) if v2 else None,
             SaveDesktopPreferences(settings) if v2 else None,
-            suggest_spelling=SuggestSpellingCorrections(snapshots, reads) if v2 else None)
+            suggest_spelling=SuggestSpellingCorrections(snapshots, reads) if v2 else None,
+            prepare_text_view=PrepareTextView(LocalTextViewSource()) if v2 else None)
     except BaseException:
         try:
             if lifecycle is not None:
