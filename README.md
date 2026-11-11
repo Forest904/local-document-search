@@ -8,7 +8,7 @@ Funziona localmente e offline, senza account né invio dei documenti a servizi e
 
 Serve **Windows 11 x64**; non occorre installare Python.
 
-1. Apri la [release 0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0) e scarica `LocalDocumentSearch-0.2.0-windows-x64-setup.exe` dalla sezione **Assets**.
+1. Apri la [release 0.2.1](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) e scarica `LocalDocumentSearch-0.2.1-windows-x64-setup.exe` dalla sezione **Assets**.
 2. Esegui l’installer e avvia **Local Document Search** dal menu Start.
 3. Premi **Accetta e scegli una cartella**, seleziona i documenti e attendi la prima indicizzazione.
 4. Scrivi una query e premi **Invio**. Per esempio: `bilancio`, `"relazione annuale"` oppure `progett*`. Clicca un risultato per aprire il file.
@@ -43,4 +43,4 @@ L’uso personale, di studio e interno è gratuito, anche professionale. Vendita
 
 Il nome pubblico resta **Local Document Search**, indipendentemente dalla generazione interna. Per passare dalla precedente installazione nella cartella `LocalDocumentSearchV2`, disinstallarla conservando i dati e installare il nuovo pacchetto. Al primo avvio scegliere nuovamente la cartella e indicizzarla: i dati precedenti restano conservati e non vengono importati.
 
-Nel candidato 0.2.1, il wizard permette di scegliere la cartella applicativa alla prima installazione, mostra un riepilogo, consente di riprovare dopo aver chiuso l'app e propone l'avvio finale. Un aggiornamento mantiene la cartella registrata; per cambiarla occorre disinstallare conservando i dati e reinstallare. Gli indici desktop con schema precedente richiedono una ricostruzione esplicita. La release pubblica rimane 0.2.0 fino alla chiusura delle verifiche del candidato.
+Nella release 0.2.1, il wizard permette di scegliere la cartella applicativa alla prima installazione, mostra un riepilogo, consente di riprovare dopo aver chiuso l'app e propone l'avvio finale. Un aggiornamento mantiene la cartella registrata; per cambiarla occorre disinstallare conservando i dati e reinstallare. Gli indici desktop con schema precedente richiedono una ricostruzione esplicita.

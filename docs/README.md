@@ -31,7 +31,9 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 
 ## Modifiche successive alla release 0.2.0
 
-Il candidato **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo sia dal sorgente sia tramite installer; revisione e hash di quel pacchetto non sono attestati qui. Build pulita, benchmark sul compilato e collaudo del candidato finale restano verifiche distinte prima della pubblicazione.
+La **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo sia dal sorgente sia tramite installer; revisione e hash di quel pacchetto non sono attestati qui. Build pulita, benchmark sul compilato e collaudo manuale restano evidenze distinte.
+
+La [release **0.2.1**](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è pubblicata dall'esatto commit `a799901766a5da35f0a133eef15bbb898bb0a6e1`: workflow Windows/Ubuntu verde, installer, checksum e manifest pubblico disponibili. SHA-256 dell'installer pubblicato `e9d253f6c269ab80243750902abe775014df414fbbdc5e70baa344b739ea5f6c`. Il binario GitHub differisce da quello della build locale, quindi il benchmark locale e il collaudo manuale non sono attestazioni byte per byte dell'asset pubblicato.
 
 L'11 novembre 2026 l'utente ha confermato un **PASS** del collaudo della nuova versione su PC Windows di test. Non è stato fornito l'hash dell'installer provato, quindi l'evidenza resta una conferma manuale della versione e non identifica byte per byte l'asset che produrrà GitHub Actions.
 

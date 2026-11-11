@@ -2,7 +2,8 @@
 
 La [release 0.2.0](https://github.com/Forest904/local-document-search/releases/tag/v0.2.0) distribuisce l’installer collaudato dal commit `3b78203`, checksum e manifest pubblico. [Accettazione](../../docs/V2_08_ACCEPTANCE.md), [audit del payload](../../docs/V2_07_INSTALLER.md).
 
-Il candidato 0.2.1 include le estensioni successive. Le [note preparate](RELEASE_NOTES_0.2.1.md) descrivono funzionalità e aggiornamento; build pulita, benchmark e collaudo del pacchetto finale restano da attestare prima della pubblicazione.
+La 0.2.1 include le estensioni successive. Le [note di release](RELEASE_NOTES_0.2.1.md) descrivono funzionalità e aggiornamento.
+La [release 0.2.1](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è stata pubblicata dal commit `a799901` con installer, checksum e manifest. Il benchmark del compilato locale è PASS; l'asset GitHub ha SHA-256 `e9d253f6c269ab80243750902abe775014df414fbbdc5e70baa344b739ea5f6c` e non coincide byte per byte con la build locale.
 
 ## Build Windows x64
 
