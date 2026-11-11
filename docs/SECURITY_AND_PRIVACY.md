@@ -12,6 +12,8 @@ Pulizia esplicita: rimuove dati applicativi correnti secondo lo stato del job e 
 
 ## Distribuzione e diritti
 
+V2-13 modifica il sorgente TXT/MD soltanto dopo il comando esplicito Salva. La scrittura usa un temporaneo nella stessa cartella, verifica identità e metadati e sostituisce il file; non invia testo alla rete. Anteprima Markdown: HTML incorporato non eseguibile, immagini rese come testo alternativo, link senza navigazione automatica. La bozza può essere copiata negli appunti su richiesta dell'utente. Il confronto dei metadati non rileva modifiche esterne che li preservano e non elimina la breve gara prima della sostituzione.
+
 Il viewer V2-11 usa Qt PDF, che incorpora PDFium. Payload, avvisi e archivi sorgente pertinenti richiedono un audit aggiornato prima della distribuzione; le evidenze della release 0.2.0 non coprono il nuovo componente.
 
 «Trova nel PDF» analizza localmente il file aperto tramite Qt PDF, senza inviare query o testo alla rete. Il componente QML Qt PDF adattato nel frontend conserva l'intestazione LGPL/GPL originale ed è elencato negli avvisi del pacchetto; l'archivio del sorgente originale accompagna il payload.

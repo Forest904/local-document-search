@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Item {
     id: page
+    signal chooseRequested()
     objectName: "textViewerPage"
     required property var theme
     property var reader: desktop.textReader
@@ -11,6 +12,21 @@ Item {
     property bool submitted: false
     property bool wrap: true
     property var gutterRows: []
+    property bool confirmExit: false
+    property string pendingExit: ""
+    function requestLeave(action) {
+        if (reader.saving) return
+        if (reader.dirty) { pendingExit = action; confirmExit = true; return }
+        finishLeave(action)
+    }
+    function finishLeave(action) {
+        pendingExit = ""
+        if (action === "close") desktop.requestClose()
+        else {
+            if (action === "choose") chooseRequested()
+            desktop.navigate("back")
+        }
+    }
 
     function refreshGutter() {
         if (!reader.ready) { gutterRows = []; return }
@@ -36,6 +52,14 @@ Item {
     }
     function jump(start, end) {
         if (!reader.ready) return
+        if (reader.mode === "preview") {
+            const target = reader.marker === "manual" ? [start, end] : reader.previewTarget
+            if (target.length !== 2) return
+            previewArea.select(target[0], target[1])
+            const previewRect = previewArea.positionToRectangle(target[0])
+            previewScroll.contentItem.contentY = Math.max(0, previewRect.y - previewScroll.height * 0.3)
+            return
+        }
         area.select(start, end)
         const rectangle = area.positionToRectangle(start)
         scroll.contentItem.contentY = Math.max(0, rectangle.y - scroll.height * 0.3)
@@ -44,11 +68,17 @@ Item {
     }
 
     Shortcut { sequence: "Ctrl+F"; enabled: reader.ready; onActivated: page.openFind() }
+    Shortcut { sequence: "Ctrl+S"; enabled: reader.ready && reader.dirty && !reader.saving; onActivated: reader.save() }
     Connections {
         target: reader
-        function onChanged() { Qt.callLater(page.refreshGutter) }
+        function onChanged() {
+            Qt.callLater(page.refreshGutter)
+            if (page.pendingExit !== "" && !reader.saving && reader.errorKey !== "")
+                page.pendingExit = ""
+        }
         function onGutterChanged() { Qt.callLater(page.refreshGutter) }
         function onJumpRequested(start, end) { Qt.callLater(function() { page.jump(start, end) }) }
+        function onSaveCompleted() { if (page.pendingExit !== "") page.finishLeave(page.pendingExit) }
     }
     Connections {
         target: scroll.contentItem
@@ -72,9 +102,13 @@ Item {
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
                 spacing: 8
-                ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: desktop.navigate("back") }
+                ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: page.requestLeave("back") }
                 Label { text: reader.filename; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true; Accessible.name: text }
-                Label { text: desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: text }
+                Label { text: reader.dirty ? "●" : reader.editing ? desktop.labels.textEdit : desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: text }
+                Button { text: reader.editing ? desktop.labels.textReading : desktop.labels.textEdit; enabled: reader.ready && !reader.saving; onClicked: reader.editing ? reader.stopEditing() : reader.startEditing() }
+                Button { text: desktop.labels.textSave; enabled: reader.ready && reader.dirty && !reader.saving; onClicked: reader.save() }
+                Button { text: desktop.labels.textCopyDraft; visible: reader.errorKey === "TextViewConflict"; onClicked: reader.copyDraft() }
+                Button { text: desktop.labels.textReload; visible: reader.errorKey === "TextViewConflict"; onClicked: reloadDialog.open() }
                 ViewerIconButton { objectName: "textFindButton"; theme: page.theme; label: desktop.labels.textFind; iconName: "search"; enabled: reader.ready; onClicked: page.openFind() }
                 Button {
                     objectName: "textWrapButton"
@@ -101,6 +135,39 @@ Item {
                 }
                 ViewerIconButton { theme: page.theme; label: desktop.labels.openExternal; iconName: "external"; onClicked: desktop.openViewerExternally() }
                 ViewerIconButton { theme: page.theme; label: desktop.labels.openFolder; iconName: "folder"; onClicked: desktop.openViewerFolder() }
+            }
+        }
+        Label {
+            Layout.fillWidth: true
+            visible: reader.saving || reader.syncWarning || (reader.errorKey !== "" && reader.state === "ready")
+            text: reader.saving ? desktop.labels.textSaving : reader.syncWarning ? desktop.labels.textSyncWarning : desktop.labels[reader.errorKey] || reader.errorKey
+            color: reader.errorKey !== "" ? page.theme.error : page.theme.muted
+            padding: 8
+            Accessible.name: text
+        }
+        Flickable {
+            Layout.fillWidth: true
+            Layout.preferredHeight: reader.editing && reader.markdown ? 42 : 0
+            visible: reader.editing && reader.markdown
+            contentWidth: formatRow.implicitWidth
+            clip: true
+            RowLayout {
+                id: formatRow
+                spacing: 4
+                Repeater {
+                    model: ["H1", "H2", "H3", "H4", "H5", "H6", "B", "I", "•", "1.", "❝", "🔗", "</>", "```"]
+                    Button {
+                        required property int index
+                        required property string modelData
+                        text: modelData
+                        Accessible.name: modelData
+                        onClicked: {
+                            const kinds = ["h1", "h2", "h3", "h4", "h5", "h6", "bold", "italic", "bullet", "number", "quote", "link", "code", "block"]
+                            reader.formatSelection(kinds[index], area.selectionStart, area.selectionEnd)
+                            area.forceActiveFocus()
+                        }
+                    }
+                }
             }
         }
         RowLayout {
@@ -142,6 +209,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: reader.mode !== "preview"
             spacing: 0
             Rectangle {
                 Layout.preferredWidth: 60
@@ -176,7 +244,7 @@ Item {
                     id: area
                     objectName: "textReaderArea"
                     width: scroll.availableWidth
-                    readOnly: true
+                    readOnly: !reader.editing || reader.saving
                     textFormat: TextEdit.PlainText
                     selectByMouse: true
                     selectByKeyboard: true
@@ -192,6 +260,27 @@ Item {
                     Component.onCompleted: reader.attach(textDocument)
                     onWidthChanged: { reader.invalidateLayout(); Qt.callLater(page.refreshGutter) }
                 }
+            }
+        }
+        ScrollView {
+            id: previewScroll
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: reader.mode === "preview"
+            clip: true
+            TextArea {
+                id: previewArea
+                objectName: "markdownPreviewArea"
+                width: previewScroll.availableWidth
+                text: reader.previewHtml
+                textFormat: TextEdit.RichText
+                onLinkActivated: function(link) { reader.copyLink(link) }
+                readOnly: true
+                selectByMouse: true
+                padding: 32
+                color: page.theme.ink
+                background: Rectangle { color: page.theme.surface }
+                Accessible.name: reader.filename
             }
         }
         Rectangle {
@@ -239,6 +328,36 @@ Item {
         }
     }
     Component.onCompleted: reader.setDark(page.theme.dark)
+    Dialog {
+        id: unsavedDialog
+        objectName: "unsavedTextDialog"
+        modal: true
+        title: desktop.labels.textUnsaved
+        visible: page.confirmExit
+        anchors.centerIn: parent
+        contentItem: ColumnLayout {
+            Label { text: desktop.labels.textSaveBeforeExit }
+            RowLayout {
+                Button { text: desktop.labels.textSave; onClicked: { page.confirmExit = false; reader.save() } }
+                Button { text: desktop.labels.textDiscard; onClicked: { page.confirmExit = false; reader.discard(); page.finishLeave(page.pendingExit) } }
+                Button { text: desktop.labels.cancel; onClicked: { page.confirmExit = false; page.pendingExit = "" } }
+            }
+        }
+        onRejected: { page.confirmExit = false; page.pendingExit = "" }
+    }
+    Dialog {
+        id: reloadDialog
+        modal: true
+        title: desktop.labels.textReload
+        anchors.centerIn: parent
+        contentItem: ColumnLayout {
+            Label { text: desktop.labels.textUnsaved }
+            RowLayout {
+                Button { text: desktop.labels.textReload; onClicked: { reloadDialog.close(); desktop.retryTextViewer() } }
+                Button { text: desktop.labels.cancel; onClicked: reloadDialog.close() }
+            }
+        }
+    }
     Component.onDestruction: reader.detach()
     onWrapChanged: { reader.invalidateLayout(); Qt.callLater(page.refreshGutter) }
 }

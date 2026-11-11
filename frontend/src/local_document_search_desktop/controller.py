@@ -179,6 +179,8 @@ class DesktopController(QObject):
 
     @Slot(str)
     def navigate(self, screen):
+        if self.screen == "viewer" and self.viewer_kind == "text" and self.text_reader.dirty:
+            return
         if screen == "back" and self.screen == "viewer":
             self.screen = "results"
             self.focus_result_on_return = True
@@ -516,6 +518,8 @@ class DesktopController(QObject):
 
     @Slot(str)
     def chooseDirectory(self, url):
+        if self.screen == "viewer" and self.viewer_kind == "text" and self.text_reader.dirty:
+            return
         if not self.view["canManage"]:
             return
         path = QUrl(url).toLocalFile()
@@ -572,6 +576,8 @@ class DesktopController(QObject):
 
     @Slot()
     def openSelected(self):
+        if self.screen == "viewer" and self.viewer_kind == "text" and self.text_reader.dirty:
+            return
         if self.selected and self.view["searchable"]:
             try:
                 if self.selected.format is DocumentFormat.PDF:
@@ -638,6 +644,8 @@ class DesktopController(QObject):
 
     @Slot()
     def requestClose(self):
+        if self.screen == "viewer" and self.viewer_kind == "text" and (self.text_reader.dirty or self.text_reader.saving):
+            return
         if self.closing or self.closed:
             return
         self.closing = True

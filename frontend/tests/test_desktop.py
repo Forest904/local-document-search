@@ -1298,9 +1298,61 @@ def test_markdown_result_reaches_original_source_in_qml(controller, qt, tmp_path
         c.openResult(0)
         until(lambda: c.text_reader.ready)
         area = window.findChild(QObject, "textReaderArea")
-        until(lambda: area is not None and area.property("selectedText") == "alpha")
+        preview = window.findChild(QObject, "markdownPreviewArea")
+        until(lambda: preview is not None and preview.property("selectedText") == "alpha")
         assert area.property("text") == "front **alpha** tail"
+        assert c.text_reader.mode == "preview"
         assert c.text_reader.marker == "snapshot"
+    finally:
+        window.hide()
+        engine.deleteLater()
+
+
+def test_text_editor_saves_source_and_clears_dirty(controller, qt, tmp_path):
+    c, s = controller
+    root = tmp_path / "docs"
+    root.mkdir()
+    path = root / "note.md"
+    path.write_text("old alpha", encoding="utf-8")
+    backend = compose_cli(str(root))
+    backend.build.execute(str(root))
+    from local_document_search.application.contracts import SearchRequest
+    response = backend.search.execute(SearchRequest("alpha"))
+    s.state = ApplicationState(str(root), response.snapshot_id, True)
+    s.prepare_text_view = PrepareTextView(LocalTextViewSource())
+    from local_document_search.application.text_view import SaveTextDocument
+    s.save_text_document = SaveTextDocument(LocalTextViewSource())
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        start(c)
+        search(c, s, items=response.results, total=1)
+        c.openResult(0)
+        until(lambda: c.text_reader.ready)
+        c.text_reader.startEditing()
+        area = window.findChild(QObject, "textReaderArea")
+        c.text_reader.formatSelection("bold", 4, 9)
+        until(lambda: "**alpha**" in area.property("text"))
+        area.undo()
+        until(lambda: area.property("text") == "old alpha")
+        area.setProperty("text", "new alpha")
+        until(lambda: c.text_reader.dirty)
+        c.navigate("back")
+        assert c.screen == "viewer"
+        window.close()
+        assert window.isVisible()
+        assert c.text_reader.dirty
+        dialog = window.findChild(QObject, "unsavedTextDialog")
+        assert dialog is not None and dialog.property("visible")
+        c.text_reader.stopEditing()
+        until(lambda: c.text_reader.mode == "preview")
+        preview = window.findChild(QObject, "markdownPreviewArea")
+        assert "new alpha" in preview.property("text")
+        c.text_reader.startEditing()
+        c.text_reader.save()
+        until(lambda: not c.text_reader.saving)
+        assert path.read_text(encoding="utf-8") == "new alpha"
+        assert not c.text_reader.dirty
     finally:
         window.hide()
         engine.deleteLater()

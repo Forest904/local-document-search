@@ -32,6 +32,8 @@ V2-11 associa ai PDF indicizzati una mappa immutabile degli intervalli delle pag
 
 V2-12 associa ai risultati TXT/MD il fingerprint e il primo intervallo del contenuto canonico. Un caso d'uso separato legge il sorgente solo all'apertura e, per Markdown, ne ricostruisce la provenienza senza persisterla. Qt, numeri di riga e ricerca manuale appartengono al frontend. Lo schema resta 3; [ADR 0018](adr/0018-v2-text-reader.md).
 
+V2-13 aggiunge una porta applicativa di scrittura TXT/MD. Il frontend conserva la bozza e renderizza una copia Markdown; l'infrastruttura verifica il file aperto e sostituisce il sorgente con un temporaneo. Il caso d'uso attende i job, blocca nuove ammissioni durante la scrittura e richiede un sync dopo il salvataggio. Snapshot e schema restano invariati; [ADR 0020](adr/0020-v2-text-editor.md).
+
 Il layout del reader e la geometria di pan/zoom sono confinati nei componenti QML del viewer; lo stato della ricerca manuale e della rotazione è per apertura e non viene persistito nello snapshot.
 
 Un file è un documento identificato da directory e percorso relativo: case e Unicode preservati, separatori serializzati come `/`, ordine lessicografico indipendente dalla locale. Niente deduplicazione per contenuto o hard link; basename uguali in cartelle diverse restano distinti. La radice assoluta è risolta dall’infrastruttura; alias non riconosciuti richiedono nuova selezione. Rename equivale a rimozione e aggiunta.

@@ -6,10 +6,12 @@ import re
 from threading import Event
 
 from PySide6.QtCore import QObject, Property, QRegularExpression, QTimer, Signal, Slot
-from PySide6.QtGui import QColor, QTextCharFormat, QTextCursor, QSyntaxHighlighter
+from PySide6.QtGui import QColor, QGuiApplication, QTextCharFormat, QTextCursor, QSyntaxHighlighter
 from shiboken6 import isValid
 
-from local_document_search.application.text_view import TextViewRequest
+from local_document_search.application.text_view import TextViewRequest, SaveTextRequest
+from local_document_search.domain.documents import DocumentFormat
+from .markdown_preview import render_preview
 
 
 def display_text(source):
@@ -48,7 +50,9 @@ def prepare_display(operation, request):
         position += 2 if ord(char) > 0xFFFF else 1
         if char == "\n":
             starts.append(position)
-    return prepared, shown, target, starts
+    preview = render_preview(shown, tuple((len(display_text(source[:item.start])), len(display_text(source[:item.end])))
+                                          for item in prepared.source_ranges)) if request.format is DocumentFormat.MARKDOWN else ("", None, "")
+    return prepared, shown, target, starts, preview
 
 
 class MatchHighlighter(QSyntaxHighlighter):
@@ -87,6 +91,7 @@ class TextReaderBridge(QObject):
     changed = Signal()
     gutterChanged = Signal()
     jumpRequested = Signal(int, int)
+    saveCompleted = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -103,6 +108,19 @@ class TextReaderBridge(QObject):
         self._gutter_block = None
         self._wrapper = self._document = self._highlighter = None
         self._open_future = self._find_future = None
+        self._save_future = None
+        self._preview_future = None
+        self._preview_revision = 0
+        self._session = self._directory = self._relative_path = self._format = None
+        self._version = None
+        self._saved_display = ""
+        self._sync_warning = False
+        self._mode = "source"
+        self._preview_html = ""
+        self._preview_target = None
+        self._preview_plain = ""
+        self._editing = False
+        self._dirty = False
         self._generation = self._find_generation = 0
         self._source = self._display = ""
         self._target = ()
@@ -156,12 +174,37 @@ class TextReaderBridge(QObject):
     @Property(bool, notify=changed)
     def ready(self): return self.status == "ready"
 
+    @Property(bool, notify=changed)
+    def markdown(self): return self._format is DocumentFormat.MARKDOWN
+
+    @Property(bool, notify=changed)
+    def editing(self): return self._editing
+
+    @Property(bool, notify=changed)
+    def dirty(self): return self._dirty
+
+    @Property(bool, notify=changed)
+    def saving(self): return self._save_future is not None
+
+    @Property(bool, notify=changed)
+    def syncWarning(self): return self._sync_warning
+
+    @Property(str, notify=changed)
+    def mode(self): return self._mode
+
+    @Property(str, notify=changed)
+    def previewHtml(self): return self._preview_html
+
+    @Property('QVariantList', notify=changed)
+    def previewTarget(self): return list(self._preview_target or ())
+
     @Slot(QObject)
     def attach(self, wrapper):
         self._wrapper = wrapper
         self._document = wrapper.textDocument()
         self._document.setUndoRedoEnabled(False)
         self._highlighter = MatchHighlighter(self._document)
+        self._document.contentsChanged.connect(self._document_changed)
         self._reset_document()
         if self.status == "populating":
             self._chunks.start()
@@ -185,6 +228,8 @@ class TextReaderBridge(QObject):
 
     def open(self, session, directory, result, snapshot_id):
         self.cancel()
+        self._session, self._directory = session, directory
+        self._relative_path, self._format = result.relative_path, result.format
         self.name = result.filename
         self.path = result.relative_path.value
         self.status = "loading"
@@ -197,6 +242,7 @@ class TextReaderBridge(QObject):
     @Slot()
     def cancel(self):
         self._generation += 1
+        self._preview_revision += 1
         self._find_generation += 1
         self._chunks.stop()
         if self._open_future:
@@ -206,8 +252,17 @@ class TextReaderBridge(QObject):
         if self._find_cancelled:
             self._find_cancelled.set()
         self._open_future = self._find_future = None
+        if self._preview_future:
+            self._preview_future[0].cancel()
+        self._preview_future = None
         self._find_cancelled = None
         self._source = self._display = ""
+        self._dirty = self._editing = False
+        self._mode = "source"
+        self._version = None
+        self._sync_warning = False
+        self._preview_html = self._preview_plain = ""
+        self._preview_target = None
         self._target = ()
         self._line_starts = array("I", [0])
         self._block_y = []
@@ -227,12 +282,15 @@ class TextReaderBridge(QObject):
             self._open_future = None
             if generation == self._generation:
                 try:
-                    prepared, shown, target, line_starts = future.result()
+                    prepared, shown, target, line_starts, preview = future.result()
                     self._source = prepared.source
                     self._display = shown
                     self.bom = prepared.bom
                     self.line_endings = prepared.line_endings
+                    self._version = prepared.source_version
+                    self._saved_display = shown
                     self._target = target
+                    self._preview_html, self._preview_target, self._preview_plain = preview
                     self.warning = prepared.destination_status if prepared.destination_status in ("changed", "unavailable") else ""
                     self._line_starts = line_starts
                     self._inserted = 0
@@ -262,6 +320,33 @@ class TextReaderBridge(QObject):
                     self._matches = array("I")
                     self._match_index = -1
                     self.changed.emit()
+        if self._save_future and self._save_future.done():
+            future = self._save_future
+            self._save_future = None
+            try:
+                saved = future.result()
+                self._source = saved.source
+                self._version = saved.source_version
+                self._saved_display = self._display
+                self._dirty = False
+                self.error = ""
+                self._sync_warning = not saved.sync_requested
+                self.saveCompleted.emit()
+            except Exception as exc:
+                self.error = type(exc).__name__
+            self.changed.emit()
+        if self._preview_future and self._preview_future[0].done():
+            future, revision = self._preview_future
+            self._preview_future = None
+            if revision == self._preview_revision and not self._editing:
+                try:
+                    self._preview_html, self._preview_target, self._preview_plain = future.result()
+                    self._mode = "preview"
+                    self.warning = ""
+                except Exception:
+                    self.warning = "unavailable"
+                    self._mode = "source"
+                self.changed.emit()
 
     def _append_chunk(self):
         if not self._document or not isValid(self._document) or self.status != "populating":
@@ -277,6 +362,13 @@ class TextReaderBridge(QObject):
                 return
             self._chunks.stop()
             self.status = "ready"
+            self._document.setUndoRedoEnabled(True)
+            if self.markdown:
+                if self._target and self._preview_target is None:
+                    self._mode = "source"
+                    self.warning = "unavailable"
+                else:
+                    self._mode = "preview"
             self.invalidateLayout()
             if self._target:
                 self._mark = "snapshot"
@@ -385,7 +477,7 @@ class TextReaderBridge(QObject):
         self._find_direction = direction
         self._find_cancelled = Event()
         self._apply_mark()
-        self._find_future = (self._executor.submit(find_literal, self._display, needle,
+        self._find_future = (self._executor.submit(find_literal, self._preview_plain if self._mode == "preview" else self._display, needle,
                                                    self._find_cancelled), self._find_generation)
         self.changed.emit()
 
@@ -410,3 +502,82 @@ class TextReaderBridge(QObject):
         self.cancel()
         self._timer.stop()
         self._executor.shutdown(wait=False, cancel_futures=True)
+
+    def _document_changed(self):
+        if self.status != "ready" or not self._editing or self._save_future:
+            return
+        self._display = self._document.toPlainText()
+        self._preview_revision += 1
+        if self._last_needle:
+            self.clearFind()
+        self._dirty = self._display != self._saved_display
+        self._target = ()
+        self._preview_target = None
+        if self._mark == "snapshot":
+            self._mark = ""
+            self._apply_mark()
+        self.changed.emit()
+
+    @Slot()
+    def startEditing(self):
+        if self.ready and not self.saving:
+            self.clearFind()
+            self._preview_revision += 1
+            self._mode = "source"
+            self._editing = True
+            self.changed.emit()
+
+    @Slot()
+    def stopEditing(self):
+        if self.ready and not self.saving:
+            self.clearFind()
+            self._editing = False
+            if self.markdown:
+                self._mode = "rendering"
+                self._preview_future = (self._executor.submit(render_preview, self._display), self._preview_revision)
+            self.changed.emit()
+
+    @Slot()
+    def save(self):
+        if not self.ready or not self._dirty or self.saving or self._version is None:
+            return
+        request = SaveTextRequest(self._directory, self._relative_path, self._format,
+                                  self._display, self._source, self.bom, self._version)
+        self._save_future = self._executor.submit(self._session.save_text_document.execute, request)
+        self.changed.emit()
+
+    @Slot()
+    def copyDraft(self):
+        QGuiApplication.clipboard().setText(self._display)
+
+    @Slot()
+    def discard(self):
+        self._dirty = False
+        self.changed.emit()
+
+    @Slot(str)
+    def copyLink(self, address):
+        QGuiApplication.clipboard().setText(address)
+
+    @Slot(str, int, int)
+    def formatSelection(self, kind, start, end):
+        if not self.ready or not self._editing or not self.markdown or self.saving:
+            return
+        cursor = QTextCursor(self._document)
+        cursor.setPosition(min(start, end))
+        cursor.setPosition(max(start, end), QTextCursor.KeepAnchor)
+        selected = cursor.selectedText().replace("\u2029", "\n")
+        if kind.startswith("h") and kind[1:].isdigit():
+            replacement = "#" * max(1, min(6, int(kind[1:]))) + " " + selected
+        elif kind == "bold": replacement = "**" + selected + "**"
+        elif kind == "italic": replacement = "*" + selected + "*"
+        elif kind == "bullet": replacement = "- " + selected
+        elif kind == "number": replacement = "1. " + selected
+        elif kind == "quote": replacement = "> " + selected
+        elif kind == "link": replacement = "[" + (selected or "testo") + "](url)"
+        elif kind == "code": replacement = "`" + selected + "`"
+        elif kind == "block": replacement = "```\n" + selected + "\n```"
+        else: return
+        cursor.beginEditBlock()
+        cursor.insertText(replacement)
+        cursor.endEditBlock()

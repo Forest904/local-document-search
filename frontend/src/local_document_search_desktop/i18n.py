@@ -1,6 +1,17 @@
 """Catalogo locale completo per i flussi desktop, senza servizi remoti."""
 MESSAGES = {
     "textReadOnly": ("Sola lettura", "Read only"),
+    "textEdit": ("Modifica", "Edit"),
+    "textReading": ("Lettura", "Reading"),
+    "textSave": ("Salva", "Save"),
+    "textUnsaved": ("Modifiche non salvate", "Unsaved changes"),
+    "textSaveBeforeExit": ("Salvare le modifiche prima di uscire?", "Save changes before leaving?"),
+    "textDiscard": ("Scarta", "Discard"),
+    "textCopyDraft": ("Copia bozza", "Copy draft"),
+    "textReload": ("Ricarica file", "Reload file"),
+    "textSaving": ("Attesa della sincronizzazione o salvataggio in corso…", "Waiting for synchronization or saving…"),
+    "textSyncWarning": ("File salvato; avvia una nuova sincronizzazione.", "File saved; start a new synchronization."),
+    "TextViewConflict": ("Il file è cambiato fuori dall'app. Copia la bozza o ricarica il file.", "The file changed outside the app. Copy the draft or reload the file."),
     "textFind": ("Trova nel file", "Find in file"),
     "textWrap": ("A capo", "Word wrap"),
     "textCancelLoad": ("Annulla apertura", "Cancel opening"),

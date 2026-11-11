@@ -41,3 +41,7 @@ Toggle a due segmenti per lingua, tema e ordine; icone per lingua/tema, menu cam
 Minimo **900×640 pixel logici**, focus visibile ed etichette accessibili. Verificare contrasto, DPI, scrolling e Narrator: test automatici/offscreen non sostituiscono Windows nativo o collaudo del pacchetto. Testi QML nel catalogo, eccetto marchio e TXT/MD/PDF; niente slogan negli asset traducibili.
 
 [Asset locali e provenienza](../frontend/src/local_document_search_desktop/assets/README.md), rigenerabili con `scripts/dev/generate_luma_assets.py`. Il naming non implica verifica di disponibilità commerciale. [Evidenze desktop](V2_08_ACCEPTANCE.md#evidenze-desktop-precedenti-al-candidato).
+
+## Editor e anteprima V2-13
+
+I risultati MD si aprono in anteprima formattata; TXT nel sorgente in sola lettura. **Modifica** abilita l'editor, **Lettura** mostra di nuovo l'anteprima MD, anche con una bozza non salvata. La barra MD inserisce sintassi nel sorgente. **Salva** e Ctrl+S scrivono il file e richiedono un nuovo sync; durante attesa e scrittura l'editor è bloccato. Uscire con modifiche pendenti richiede Salva, Scarta o Annulla. Un conflitto conserva la bozza e offre copia o ricaricamento con conferma. Ctrl+F cerca nel testo della modalità attiva. L'anteprima non carica immagini o link e non usa la rete.

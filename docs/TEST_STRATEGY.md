@@ -60,6 +60,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T28 | TXT/MD: prima destinazione per parola, frase, AND, wildcard e campi; proiezione Markdown su markup/entità/tabelle/duplicati, BOM/newline/Unicode, file cambiato, errori e limiti; nessuna lettura sorgente durante query | V2-12 |
 | T29 | Reader Qt: caricamento incrementale, numeri di riga e a capo, ricerca manuale letterale/ciclica, focus/Escape, temi e accessibilità; regressioni PDF/CLI e collaudo offline distinti dai test sorgente | V2-12 |
 | T30 | Desktop: estensioni isolate applicano formati senza ricerca intermedia, frasi/nomi file restano query, filtro solo prepara la home; riepilogo con reset accessibile, risultati obsoleti scartati e CLI invariata | Dopo V2-12 |
+| T31 | TXT/MD: bozza, undo/redo, salvataggio esplicito con BOM/newline, limiti, conflitti e percorsi sicuri; uscita protetta, serializzazione con job e sync successivo | V2-13 |
+| T32 | MD: anteprima offline, tabelle/codice/link/immagini, salto al match esatto o fallback dichiarato; ricerca manuale nelle due modalità, IT/EN, temi, tastiera e Narrator | V2-13 |
 
 ## Gate finale
 

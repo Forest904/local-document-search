@@ -36,6 +36,8 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 | V2-R20 | Aprire i PDF alla pagina del primo match | Mappa delle pagine persistita con lo snapshot; viewer interno naviga alla pagina del primo match nel contenuto, o alla prima se il match è solo nel nome; ritorno ai risultati ed errori gestibili | V2-11 / T26, T27 |
 | V2-R24 | Leggere TXT/MD nel viewer interno | Sorgente in sola lettura, salto esatto al primo match quando il file corrisponde allo snapshot, ricerca manuale indipendente, limiti ed errori gestibili; CLI invariata | V2-12 / T28, T29 |
 | V2-R25 | Filtri formato rapidi nel desktop | `.txt`, `.md` e `.pdf` isolati nella barra sostituiscono i formati di sessione all'invio; filtro solo senza ricerca; riepilogo con reset a icona accessibile e Impostazioni dalla home | Dopo V2-12 / T30 |
+| V2-R26 | Modifica esplicita TXT/MD | Editor del sorgente dei risultati, bozza protetta, salvataggio atomico con conflitti e sincronizzazione successiva; CLI invariata | V2-13 / T31 |
+| V2-R27 | Anteprima Markdown | Lettura formattata offline con salto esatto quando la provenienza è rappresentabile; sorgente disponibile come fallback | V2-13 / T32 |
 
 ## Limiti e non-obiettivi
 
@@ -43,7 +45,7 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 
 Il viewer presenta una barra fissa con navigazione per pagina, zoom automatico, dimensione reale, adattamento alla pagina o larghezza e percentuali predefinite dal 50% al 400%, rotazione visiva e azioni sul file. La barra di ricerca inferiore compare su Ctrl+F; l'utente può scegliere se evidenziare tutte le occorrenze manuali. Pagine che entrano nel viewport restano centrate senza scorrimento laterale.
 
-Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. I documenti originali non vengono modificati. Il viewer V2-11 rende le pagine PDF; non promette coordinate della query né conservazione del layout originale nel testo estratto.
+Restano esclusi OCR, AI/ricerca semantica, watcher continuo, più directory attive, OR/NOT, fuzzy, servizi cloud, updater online e motori IR esterni. Ricerca e reader non modificano i documenti originali; V2-13 consente soltanto il salvataggio esplicito di TXT/MD aperti dai risultati, secondo [ADR 0020](adr/0020-v2-text-editor.md). Il viewer V2-11 rende le pagine PDF; non promette coordinate della query né conservazione del layout originale nel testo estratto.
 
 Il diff resta basato su path, size e mtime_ns. Modifiche che preservano dimensione e timestamp possono non essere rilevate, anche con i nuovi controlli in ingestione. I risultati possono diventare obsoleti fino al sync. PDF multicolonna e tabelle possono produrre testo imperfetto; le frasi operano sul testo canonico unico.
 

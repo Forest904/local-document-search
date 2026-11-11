@@ -57,6 +57,10 @@ Implementazione sul sorgente locale in verifica: mappa delle pagine nello snapsh
 
 Implementazione sul sorgente locale: reader Qt Quick in sola lettura, salto al primo match tramite posizione dello snapshot e provenienza Markdown calcolata all'apertura, ricerca manuale separata e limiti espliciti. Nessuna modifica dello schema SQLite o della CLI. Suite backend **433 passed, 6 skipped**; frontend/script **118 passed, 1 test installer escluso** perché l'app è aperta; runner Homework verde. [Decisione](adr/0018-v2-text-reader.md), [comportamento, evidenze e limiti](V2_12_TEXT_READER.md). Il collaudo del pacchetto resta distinto; nessuna nuova release pubblicata.
 
+### V2-13 — Editor TXT/MD e anteprima Markdown
+
+Implementazione nel sorgente locale: anteprima Markdown offline, editor del sorgente TXT/MD con salvataggio esplicito e protezione della bozza, controllo dei conflitti e sync successivo. Schema SQLite e CLI invariati. Suite backend **437 passed, 7 skipped**, frontend **86 passed**, runner Homework 3 verde. [Decisione](adr/0020-v2-text-editor.md), [comportamento, evidenze e limiti](V2_13_TEXT_EDITOR.md). Verifica nativa DPI/Narrator e collaudo dell'installer non attestati; nessuna nuova release pubblicata.
+
 ## Backlog installer
 
 ### Filtri formato rapidi nel desktop — 11 novembre 2026

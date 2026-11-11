@@ -39,8 +39,11 @@ ApplicationWindow {
     }
     onClosing: function (close) {
         close.accepted = v.closed;
-        if (!close.accepted)
-            desktop.requestClose();
+        if (!close.accepted) {
+            if (v.screen === "viewer" && v.viewerKind === "text" && content.item && content.item.requestLeave)
+                content.item.requestLeave("close");
+            else desktop.requestClose();
+        }
     }
     Connections {
         target: desktop
@@ -64,6 +67,8 @@ ApplicationWindow {
         onActivated: {
             if (root.v.screen === "viewer" && content.item && content.item.searchOpen)
                 content.item.closeFind();
+            else if (root.v.screen === "viewer" && root.v.viewerKind === "text" && content.item && content.item.requestLeave)
+                content.item.requestLeave("back");
             else
                 desktop.navigate(root.v.screen === "viewer" ? "back" : "home");
         }
@@ -71,7 +76,11 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+O"
         enabled: v.canManage
-        onActivated: dialogs.choose()
+        onActivated: {
+            if (v.screen === "viewer" && v.viewerKind === "text" && content.item && content.item.requestLeave)
+                content.item.requestLeave("choose")
+            else dialogs.choose()
+        }
     }
     Shortcut {
         sequence: "F5"
@@ -197,6 +206,7 @@ ApplicationWindow {
     Component {
         id: textViewer
         TextViewerPage {
+            onChooseRequested: dialogs.choose()
             theme: design
         }
     }
