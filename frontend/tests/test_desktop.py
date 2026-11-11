@@ -1424,6 +1424,11 @@ def test_text_editor_saves_source_and_clears_dirty(controller, qt, tmp_path):
         until(lambda: area.property("text") == "old alpha")
         area.setProperty("text", "new alpha")
         until(lambda: c.text_reader.dirty)
+        window.setWidth(480)
+        window.setHeight(360)
+        until(lambda: window.findChild(QObject, "textToolbar").width() == 480)
+        assert window.findChild(QObject, "textSaveButton").mapToScene(QPointF(36, 0)).x() <= window.width()
+        assert c.text_reader.dirty and area.property("text") == "new alpha"
         c.navigate("back")
         assert c.screen == "viewer"
         window.close()
