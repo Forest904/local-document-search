@@ -5,6 +5,8 @@ La [release 0.2.0](https://github.com/Forest904/local-document-search/releases/t
 La 0.2.1 include le estensioni successive. Le [note di release](RELEASE_NOTES_0.2.1.md) descrivono funzionalità e aggiornamento.
 La [release 0.2.1](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è stata pubblicata dal commit `a799901` con installer, checksum e manifest. Il benchmark del compilato locale è PASS; l'asset GitHub ha SHA-256 `e9d253f6c269ab80243750902abe775014df414fbbdc5e70baa344b739ea5f6c` e non coincide byte per byte con la build locale.
 
+La 0.2.2 è un candidato locale con [note dedicate](RELEASE_NOTES_0.2.2.md). Il collaudo positivo riferito dall'utente per l'installer 0.2.1 scaricato da GitHub non attesta il nuovo pacchetto.
+
 ## Build Windows x64
 
 Prerequisiti: Windows 11 x64, **CPython 3.12.2 x64**, Visual Studio 2022 Build Tools con C++ x64 e Windows SDK, **Inno Setup 6.7.3**, Git e accesso ai download delle dipendenze. Lo script non installa tool di sistema o usa il Python generico del PATH. `ISCC.exe` è cercato nelle installazioni per utente e Program Files (x86); `LDS_ISCC` può indicarlo esplicitamente. Hash del compilatore fissato in `build.py`.
@@ -21,7 +23,7 @@ Dalla root, PowerShell:
 
 `-Release` rifiuta modifiche tracciate e file non tracciati. Il venv `build/package-venv` è separato dallo sviluppo; il lock fissa strumenti e dipendenze, i package locali sono installati senza editable. `pyside6-deploy --no-install` usa la configurazione standalone versionata; Nuitka può scaricare lo strumento di analisi DLL nella cache utente.
 
-Output del candidato in `dist/`: `LocalDocumentSearch-0.2.1-windows-x64-setup.exe`, `.sha256`, `.manifest.json` e ZIP di prova `LocalDocumentSearch-0.2.1-windows-x64.zip` con checksum. Log, configurazione risolta e report Nuitka in `build/package/`.
+Output del candidato in `dist/`: `LocalDocumentSearch-0.2.2-windows-x64-setup.exe`, `.sha256`, `.manifest.json` e ZIP di prova `LocalDocumentSearch-0.2.2-windows-x64.zip` con checksum. Log, configurazione risolta e report Nuitka in `build/package/`.
 
 La build pulisce solo `build/package`; per ricreare l’ambiente rimuovere manualmente il venv dedicato. Manifest e input tracciati rendono riproducibile la procedura, non garantiscono binari identici byte per byte.
 

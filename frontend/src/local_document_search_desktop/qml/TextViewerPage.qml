@@ -5,6 +5,7 @@ import QtQuick.Layouts
 Item {
     id: page
     signal chooseRequested()
+    signal helpRequested()
     objectName: "textViewerPage"
     required property var theme
     property var reader: desktop.textReader
@@ -94,10 +95,11 @@ Item {
         Rectangle {
             objectName: "textToolbar"
             Layout.fillWidth: true
-            Layout.preferredHeight: 94
+            Layout.preferredHeight: textToolbarContent.implicitHeight + 12
             color: page.theme.surface
             border.color: page.theme.line
             ColumnLayout {
+                id: textToolbarContent
                 anchors.fill: parent
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
@@ -106,7 +108,8 @@ Item {
                     Layout.fillWidth: true
                     ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: page.requestLeave("back") }
                     Label { text: reader.filename; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true; Accessible.name: text }
-                    Label { text: reader.dirty ? "●" : reader.editing ? desktop.labels.textEdit : desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: text }
+                    ActionButton { theme: page.theme; text: desktop.labels.help; onClicked: page.helpRequested() }
+                    Label { text: reader.dirty ? "●" : reader.editing ? desktop.labels.textEdit : desktop.labels.textReadOnly; color: page.theme.muted; Accessible.name: reader.dirty ? desktop.labels.textUnsaved : text }
                 }
                 RowLayout {
                     Layout.fillWidth: true
@@ -286,20 +289,21 @@ Item {
         Rectangle {
             objectName: "textFindBar"
             Layout.fillWidth: true
-            Layout.preferredHeight: page.searchOpen ? 52 : 0
+            Layout.preferredHeight: page.searchOpen ? textFindContent.implicitHeight + 8 : 0
             visible: page.searchOpen
             color: page.theme.surface
             border.color: page.theme.line
             RowLayout {
+                id: textFindContent
                 anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
                 spacing: 8
                 TextField {
                     id: findField
                     objectName: "textFindField"
-                    Layout.preferredWidth: 300
-                    Layout.maximumWidth: 340
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 80
                     placeholderText: desktop.labels.textFind
                     property bool invalidInput: /[\r\n]/.test(text)
                     Accessible.name: desktop.labels.textFind
@@ -321,8 +325,9 @@ Item {
                     color: page.theme.muted
                     text: findField.invalidInput ? desktop.labels.textFindSingleLine : !page.submitted ? "" : reader.searching ? desktop.labels.pdfSearching : reader.matchCount === 0 ? desktop.labels.pdfNoMatches : reader.matchIndex + " / " + reader.matchCount + (reader.wrapped ? " · " + desktop.labels.textWrapped : "")
                     Accessible.name: text
+                    Layout.maximumWidth: Math.max(60, page.width * 0.25)
+                    elide: Text.ElideRight
                 }
-                Item { Layout.fillWidth: true }
                 ViewerIconButton { theme: page.theme; label: desktop.labels.close; iconName: "close"; onClicked: page.closeFind() }
             }
         }

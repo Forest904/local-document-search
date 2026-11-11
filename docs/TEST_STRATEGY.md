@@ -62,6 +62,8 @@ Unit test per dominio, contratti per reader/storage, integrazione per sync/conco
 | T30 | Desktop: estensioni isolate applicano formati senza ricerca intermedia, frasi/nomi file restano query, filtro solo prepara la home; riepilogo con reset accessibile, risultati obsoleti scartati e CLI invariata | Dopo V2-12 |
 | T31 | TXT/MD: bozza, undo/redo, salvataggio esplicito con BOM/newline, limiti, conflitti e percorsi sicuri; uscita protetta, serializzazione con job e sync successivo | V2-13 |
 | T32 | MD: anteprima offline, tabelle/codice/link/immagini, salto al match esatto o fallback dichiarato; ricerca manuale nelle due modalità, IT/EN, temi, tastiera e Narrator | V2-13 |
+| T33 | Tutte le superfici e i dialoghi a 480×360, 640×480, 900×640, 1280×820 e 1920×1080; lingue/temi, resize continuo e DPI 100–200%; nessuna sovrapposizione o azione irraggiungibile, focus e Narrator nativi | V2-14 |
+| T34 | F1 e Aiuto da onboarding, home, risultati, impostazioni e viewer; guida IT/EN offline, indice, scorrimento, Escape e focus ripristinato, query/bozza preservate, F5 ancora sync | V2-14 |
 
 La revisione visiva dopo V2-13 estende T12/T13/T25/T27/T29/T32: controlli a icona e tooltip nei temi IT/EN, focus e nomi accessibili, barre dei reader alla dimensione minima, proposta ortografica cliccabile e attivabile da tastiera con filtri conservati. Le prove QML offscreen verificano comportamento e geometria; DPI e Narrator richiedono verifica Windows nativa separata.
 

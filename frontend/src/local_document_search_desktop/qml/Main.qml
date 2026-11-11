@@ -8,8 +8,8 @@ ApplicationWindow {
     visible: true
     width: Math.min(1280, Screen.desktopAvailableWidth - 32)
     height: Math.min(820, Screen.desktopAvailableHeight - 60)
-    minimumWidth: 900
-    minimumHeight: 640
+    minimumWidth: 480
+    minimumHeight: 360
     title: root.t.windowTitle
     property var v: desktop.view
     property var t: desktop.labels
@@ -83,14 +83,19 @@ ApplicationWindow {
         }
     }
     Shortcut {
+        sequence: "F1"
+        enabled: !(root.v.screen === "viewer" && root.v.viewerKind === "text" && content.item && content.item.confirmExit)
+        onActivated: dialogs.help()
+    }
+    Shortcut {
         sequence: "F5"
         enabled: v.canManage && v.directory !== ""
         onActivated: desktop.action("sync")
     }
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: root.v.screen === "viewer" ? 0 : 24
-        spacing: 16
+        anchors.margins: root.v.screen === "viewer" ? 0 : root.width < 700 ? 12 : 24
+        spacing: root.height < 500 ? 8 : 16
         RowLayout {
             visible: root.v.screen !== "viewer"
             Layout.fillWidth: true
@@ -110,6 +115,12 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             ActionButton {
+                objectName: "helpNavigation"
+                theme: design
+                text: root.t.help
+                onClicked: dialogs.help()
+            }
+            ActionButton {
                 id: settingsNavigation
                 objectName: "settingsNavigation"
                 theme: design
@@ -123,8 +134,10 @@ ApplicationWindow {
             id: content
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.maximumWidth: root.v.screen === "viewer" ? 99999 : root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880
-            Layout.alignment: Qt.AlignHCenter
+            Layout.minimumWidth: 0
+            Layout.minimumHeight: 0
+            Layout.maximumWidth: Math.min(root.width - 2 * (root.v.screen === "viewer" ? 0 : root.width < 700 ? 12 : 24), root.v.screen === "viewer" ? 99999 : root.v.screen === "onboarding" || root.v.screen === "home" ? 1200 : 880)
+            Layout.alignment: root.width < 700 ? Qt.AlignLeft : Qt.AlignHCenter
             sourceComponent: root.v.screen === "onboarding" ? onboarding : root.v.screen === "settings" ? settings : root.v.screen === "viewer" ? (root.v.viewerKind === "text" ? textViewer : pdfViewer) : root.v.screen === "results" ? results : home
             onLoaded: Qt.callLater(function () {
                 if (root.v.screen === "results" && root.v.focusResultOnReturn && content.item && content.item.focusResult) {
@@ -201,12 +214,14 @@ ApplicationWindow {
         id: pdfViewer
         PdfViewerPage {
             theme: design
+            onHelpRequested: dialogs.help()
         }
     }
     Component {
         id: textViewer
         TextViewerPage {
             onChooseRequested: dialogs.choose()
+            onHelpRequested: dialogs.help()
             theme: design
         }
     }

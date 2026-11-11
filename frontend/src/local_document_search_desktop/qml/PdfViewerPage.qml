@@ -5,6 +5,7 @@ import QtQuick.Pdf
 
 Item {
     id: page
+    signal helpRequested()
     objectName: "pdfViewerPage"
     required property var theme
     property var v: desktop.view
@@ -18,8 +19,8 @@ Item {
                                      "percent:50", "percent:75", "percent:100", "percent:125",
                                      "percent:150", "percent:200", "percent:300", "percent:400"]
     property string warning: ""
-    property int topInset: 94
-    property int bottomInset: searchOpen ? 52 : 0
+    property int topInset: pdfToolbarContent.implicitHeight + 12
+    property int bottomInset: searchOpen ? pdfFindContent.implicitHeight + 8 : 0
 
     function applyZoom(mode) {
         if (pdfDocument.status !== PdfDocument.Ready) return
@@ -91,6 +92,7 @@ Item {
         color: page.theme.surface
         border.color: page.theme.line
         ColumnLayout {
+            id: pdfToolbarContent
             anchors.fill: parent
             anchors.leftMargin: 12
             anchors.rightMargin: 12
@@ -99,7 +101,8 @@ Item {
             Layout.fillWidth: true
             spacing: 6
             ViewerIconButton { theme: page.theme; label: desktop.labels.back; iconName: "back"; onClicked: desktop.navigate("back") }
-            Label { text: page.v.viewerName; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true }
+            Label { text: page.v.viewerName; color: page.theme.ink; elide: Text.ElideMiddle; Layout.fillWidth: true; Accessible.name: text }
+            ActionButton { theme: page.theme; text: desktop.labels.help; onClicked: page.helpRequested() }
             ViewerIconButton { objectName: "pdfPreviousPage"; theme: page.theme; label: desktop.labels.previous; iconName: "next"; rotated: true; enabled: pdfView.currentPage > 0; onClicked: pdfView.goToPage(pdfView.currentPage - 1) }
             ViewerIconButton { objectName: "pdfNextPage"; theme: page.theme; label: desktop.labels.next; iconName: "next"; enabled: pdfView.currentPage >= 0 && pdfView.currentPage < pdfDocument.pageCount - 1; onClicked: pdfView.goToPage(pdfView.currentPage + 1) }
             TextField {
@@ -183,16 +186,20 @@ Item {
         z: 100
         color: page.theme.surface
         border.color: page.theme.line
-        RowLayout {
+        ColumnLayout {
+            id: pdfFindContent
             anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
-            spacing: 8
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
+            spacing: 2
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
             TextField {
                 id: findField
                 objectName: "pdfFindField"
-                Layout.preferredWidth: 300
-                Layout.maximumWidth: 340
+                Layout.fillWidth: true
+                Layout.minimumWidth: 80
                 placeholderText: desktop.labels.pdfFind
                 Accessible.name: desktop.labels.pdfFind
                 color: page.theme.ink
@@ -210,6 +217,10 @@ Item {
             }
             ViewerIconButton { theme: page.theme; label: desktop.labels.previous; iconName: "next"; rotated: true; enabled: findField.text.trim() !== ""; onClicked: page.find(-1) }
             ViewerIconButton { theme: page.theme; label: desktop.labels.next; iconName: "next"; enabled: findField.text.trim() !== ""; onClicked: page.find(1) }
+            ViewerIconButton { theme: page.theme; label: desktop.labels.close; iconName: "close"; onClicked: page.closeFind() }
+            }
+            RowLayout {
+                Layout.fillWidth: true
             CheckBox {
                 id: highlightCheck
                 objectName: "pdfHighlightAll"
@@ -241,7 +252,7 @@ Item {
                       : (pdfView.searchIndex + 1) + " / " + pdfView.searchCount
             }
             Item { Layout.fillWidth: true }
-            ViewerIconButton { theme: page.theme; label: desktop.labels.close; iconName: "close"; onClicked: page.closeFind() }
+            }
         }
     }
     function jumpOnce() {

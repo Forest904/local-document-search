@@ -1,6 +1,6 @@
 # Local Document Search
 
-Local Document Search è un’app per Windows che trova documenti sul tuo computer cercando nel nome e nel contenuto di file TXT, Markdown e PDF testuali. Scegli una cartella, anche con sottocartelle, e cerca parole o frasi: i risultati mostrano un estratto evidenziato e si aprono nell’app associata al file.
+Local Document Search è un’app per Windows che trova documenti sul tuo computer cercando nel nome e nel contenuto di file TXT, Markdown e PDF testuali. Scegli una cartella, anche con sottocartelle, e cerca parole o frasi: i risultati mostrano un estratto evidenziato e si aprono nel viewer interno, dal quale puoi anche usare l’app associata al file.
 
 Funziona localmente e offline, senza account né invio dei documenti a servizi esterni. L’interfaccia Luma è disponibile in italiano e inglese, con tema chiaro o scuro.
 
@@ -14,6 +14,8 @@ Serve **Windows 11 x64**; non occorre installare Python.
 4. Scrivi una query e premi **Invio**. Per esempio: `bilancio`, `"relazione annuale"` oppure `progett*`. Clicca un risultato per aprire il file.
 
 In **Impostazioni** puoi scegliere campo di ricerca, formati, ordinamento e cartella. Ai successivi avvii l’app recupera l’indice e sincronizza in background; **F5** aggiorna manualmente. Non c’è monitoraggio continuo delle modifiche. I PDF scansionati senza testo richiederebbero OCR, che non è supportato.
+
+La versione 0.2.2 è un candidato locale in preparazione: aggiunge una guida integrata IT/EN con **F1** e il pulsante **Aiuto**, oltre a layout adattivi fino a una finestra minima di 480×360 pixel logici. Il download pubblico sopra resta la 0.2.1.
 
 Il pacchetto non è firmato digitalmente; nella release trovi il checksum `.sha256`. Per aggiornare un'installazione nella cartella `LocalDocumentSearch`, chiudi l’app e avvia il nuovo installer. La disinstallazione conserva i dati salvo tua scelta esplicita.
 

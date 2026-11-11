@@ -8,13 +8,13 @@ Al primo avvio premi **Accetta e scegli una cartella**. La home appare quando l�
 
 Invio o la lente eseguono la query; `termine*` cerca prefissi e `*termine` cerca suffissi. Digitare propone suggerimenti anche dopo `*`: selezionarne uno sostituisce la clausola con il termine completo e avvia la ricerca. I risultati mostrano estratti evidenziati, tempo di ricerca e pagine da 20. Clic sul titolo o Invio sul risultato apre il viewer interno per PDF, TXT e MD. Il viewer offre anche l'apertura nell'app Windows associata.
 
-TXT e Markdown mostrano il sorgente in sola lettura, con numeri di riga, salto al primo match e a capo visivo selezionabile. **Ctrl+F** cerca letteralmente nel file aperto; **Escape** chiude Trova e poi torna ai risultati. Il limite del reader è 10 MiB, 100.000 righe e 100.000 caratteri per riga; oltre soglia si può usare l'app associata. [Dettagli V2-12](../docs/V2_12_TEXT_READER.md).
+TXT e Markdown si aprono in lettura, con numeri di riga, salto al primo match e a capo visivo selezionabile; Markdown offre l'anteprima. **Modifica** abilita l'editor e **Ctrl+S** salva esplicitamente il sorgente. **Ctrl+F** cerca letteralmente nel file aperto; **Escape** chiude Trova e poi torna ai risultati. Il limite del reader è 10 MiB, 100.000 righe e 100.000 caratteri per riga; oltre soglia si può usare l'app associata. [Dettagli V2-12](../docs/V2_12_TEXT_READER.md) e [V2-13](../docs/V2_13_TEXT_EDITOR.md).
 
 **Impostazioni**, accessibile dalla home, contiene campo, formati, ordine, cartella, sync, rebuild, diagnostiche, pulizia, lingua e tema. Filtri solo di sessione, azzerati al cambio cartella/riavvio; lingua e tema persistono. Il filtro sottocartella, il recupero del precedente e i dettagli completi restano API backend, senza controlli dedicati nella UI.
 
 Nella barra di ricerca, `.txt`, `.md` e `.pdf` isolati da spazi applicano i rispettivi filtri formato all'invio; più estensioni selezionano più formati. Per esempio `contratto .pdf` cerca `contratto` nei PDF. Una sola estensione prepara il filtro senza cercare. Il riepilogo dei filtri offre un'icona × per ripristinare le opzioni.
 
-Scorciatoie: **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync, **Esc** dai risultati alla home. Finestra minima 900×640 pixel logici. [Specifica UX](../docs/UX_WINDOWS.md).
+Scorciatoie: **F1** guida, **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync, **Esc** dai risultati alla home. Finestra minima 480×360 pixel logici. [Specifica UX](../docs/UX_WINDOWS.md).
 
 ## Sviluppo e verifiche
 

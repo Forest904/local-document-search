@@ -24,7 +24,7 @@ def test_installer_compiles_with_synthetic_payload(tmp_path):
          str(ROOT / "scripts/package/installer.iss")],
         capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert (tmp_path / "output/LocalDocumentSearch-0.2.1-windows-x64-setup.exe").is_file()
+    assert (tmp_path / "output/LocalDocumentSearch-0.2.2-windows-x64-setup.exe").is_file()
 
 
 def test_silent_install_keeps_registered_destination(tmp_path):
@@ -57,7 +57,7 @@ def test_silent_install_keeps_registered_destination(tmp_path):
         [str(compiler), f"/DPayloadDir={payload}", f"/DOutputDir={tmp_path / 'output'}",
          str(package / "installer.iss")], capture_output=True, text=True, timeout=60)
     assert build.returncode == 0, build.stdout + build.stderr
-    installer = tmp_path / "output/LocalDocumentSearch-0.2.1-windows-x64-setup.exe"
+    installer = tmp_path / "output/LocalDocumentSearch-0.2.2-windows-x64-setup.exe"
     destination = tmp_path / "Custom é folder/LocalDocumentSearch"
     wrong = tmp_path / "other/LocalDocumentSearch"
     registry_key = f"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{{identifier}}}_is1"

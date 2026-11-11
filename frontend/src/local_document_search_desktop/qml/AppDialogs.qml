@@ -7,6 +7,13 @@ Item {
     id: dialogs
     required property var theme
     property bool pendingChoice: false
+    property var helpReturnFocus: null
+    function help() {
+        if (clearDialog.visible || diagnosticsDialog.visible || folder.visible || helpDialog.visible)
+            return;
+        helpReturnFocus = dialogs.Window.window ? dialogs.Window.window.activeFocusItem : null;
+        helpDialog.open();
+    }
     function choose() {
         if (!desktop.view.initialized) {
             pendingChoice = true;
@@ -36,6 +43,62 @@ Item {
         id: folder
         title: desktop.labels.choose
         onAccepted: desktop.chooseDirectory(selectedFolder.toString())
+    }
+    Dialog {
+        id: helpDialog
+        objectName: "helpDialog"
+        title: desktop.labels.help
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(760, parent.width - 24)
+        height: Math.min(620, parent.height - 24)
+        palette.window: dialogs.theme.surface
+        palette.windowText: dialogs.theme.ink
+        standardButtons: Dialog.Close
+        onClosed: {
+            if (dialogs.helpReturnFocus && dialogs.helpReturnFocus.visible)
+                dialogs.helpReturnFocus.forceActiveFocus();
+            dialogs.helpReturnFocus = null;
+        }
+        contentItem: ScrollView {
+            id: helpScroll
+            contentWidth: availableWidth
+            ColumnLayout {
+                width: helpScroll.availableWidth - 16
+                spacing: 14
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    spacing: 6
+                    Repeater {
+                        model: [desktop.labels.helpSearchTitle, desktop.labels.helpIndexTitle,
+                                desktop.labels.helpReadTitle, desktop.labels.helpKeysTitle]
+                        Button {
+                            required property int index
+                            required property string modelData
+                            text: modelData
+                            Accessible.name: modelData
+                            onClicked: helpScroll.contentItem.contentY = helpSections.itemAt(index).y
+                        }
+                    }
+                }
+                Repeater {
+                    id: helpSections
+                    model: [
+                        [desktop.labels.helpSearchTitle, desktop.labels.helpSearchBody],
+                        [desktop.labels.helpIndexTitle, desktop.labels.helpIndexBody],
+                        [desktop.labels.helpReadTitle, desktop.labels.helpReadBody],
+                        [desktop.labels.helpKeysTitle, desktop.labels.helpKeysBody]
+                    ]
+                    ColumnLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        Label { text: modelData[0]; font.pixelSize: 20; font.weight: Font.DemiBold; color: dialogs.theme.ink; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                        Label { text: modelData[1]; color: dialogs.theme.ink; Layout.fillWidth: true; wrapMode: Text.Wrap; textFormat: Text.PlainText }
+                    }
+                }
+            }
+        }
     }
     Dialog {
         id: clearDialog

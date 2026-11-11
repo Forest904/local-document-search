@@ -33,11 +33,13 @@ Gli ID sono stabili. Txx identifica gli scenari della [strategia di test](TEST_S
 | V2-R17 | Privacy e distribuzione verificabili | Nessuna telemetria/upload; termini e inventario dipendenze verificati; avvisi della release non firmata documentati | V2-07, V2-08 / T17 |
 | V2-R18 | Preservare CLI Homework e backend condiviso | Sintassi, ordine per percorso, output e codici esistenti; nessuna dipendenza Qt della CLI | V2-03, V2-05, V2-08 / T18 |
 | V2-R19 | Corpus ibrido riproducibile per validazione funzionale | Sintetici TXT/MD/PDF deterministici; circa 12–30 documenti Internet indicizzabili con permessi espliciti, italiano/inglese e almeno un file reale per formato; ground truth completa e versionata; suite reale opt-in valida solo con corpus completo | V2-01 / T20, T21 |
-| V2-R20 | Aprire i PDF alla pagina del primo match | Mappa delle pagine persistita con lo snapshot; viewer interno naviga alla pagina del primo match nel contenuto, o alla prima se il match è solo nel nome; ritorno ai risultati ed errori gestibili | V2-11 / T26, T27 |
+| V2-R28 | Aprire i PDF alla pagina del primo match | Mappa delle pagine persistita con lo snapshot; viewer interno naviga alla pagina del primo match nel contenuto, o alla prima se il match è solo nel nome; ritorno ai risultati ed errori gestibili | V2-11 / T26, T27 |
 | V2-R24 | Leggere TXT/MD nel viewer interno | Sorgente in sola lettura, salto esatto al primo match quando il file corrisponde allo snapshot, ricerca manuale indipendente, limiti ed errori gestibili; CLI invariata | V2-12 / T28, T29 |
 | V2-R25 | Filtri formato rapidi nel desktop | `.txt`, `.md` e `.pdf` isolati nella barra sostituiscono i formati di sessione all'invio; filtro solo senza ricerca; riepilogo con reset a icona accessibile e Impostazioni dalla home | Dopo V2-12 / T30 |
 | V2-R26 | Modifica esplicita TXT/MD | Editor del sorgente dei risultati, bozza protetta, salvataggio atomico con conflitti e sincronizzazione successiva; CLI invariata | V2-13 / T31 |
 | V2-R27 | Anteprima Markdown | Lettura formattata offline con salto esatto quando la provenienza è rappresentabile; sorgente disponibile come fallback | V2-13 / T32 |
+| V2-R29 | Layout e accessibilità desktop adattivi | Tutte le schermate e i dialoghi utilizzabili da 480×360 pixel logici, con ridimensionamento continuo, DPI 100–200%, tastiera e Narrator; controlli e contenuti raggiungibili | V2-14 / T33 |
+| V2-R30 | Guida locale alle funzionalità | F1 e Aiuto aprono la guida IT/EN offline da ogni schermata; F5 mantiene il sync; la guida non altera navigazione, query o bozza | V2-14 / T34 |
 
 ## Limiti e non-obiettivi
 
@@ -69,6 +71,8 @@ La ricerca supporta anche `*suffisso` con opzione wildcard esplicita e suggerime
 |---|---|---|
 | V2-R20 | Ricerca esplicita per suffisso | `*termine` restituisce match completi nello stesso campo, con limiti e ranking coerenti; T22 |
 | V2-R21 | Suggerimenti per suffisso | Termini dello snapshot in ordine originale; il desktop sostituisce la clausola senza avviare query durante digitazione; T23 |
+
+La navigazione PDF, etichettata `V2-R20` nella tabella principale prima della correzione documentale 0.2.2, è `V2-R28`. `V2-R20` resta l'ID della ricerca per suffisso; nessun comportamento o contratto cambia per questa rinumerazione.
 
 ## Estensione V2-10 — correzione ortografica proposta
 

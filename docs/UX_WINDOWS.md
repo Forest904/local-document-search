@@ -38,9 +38,9 @@ Segoe UI, spazio libero, bordi sottili e angoli morbidi. Palette chiara: avorio 
 
 I controlli delle toolbar usano pulsanti da 36×36 pixel logici con simboli SVG centrati da 18; le azioni con testo conservano altezza 44 e simboli da 20. Le icone hanno tooltip IT/EN e nome accessibile. Le toolbar dei reader separano titolo/navigazione e azioni su due righe per lasciare spazio ai nomi lunghi; il salvataggio nel dialogo conserva anche l'etichetta.
 
-Toggle a due segmenti per lingua, tema e ordine; icone per lingua/tema, menu campo arrotondato e formati multiselezione. Tab muove il focus, Spazio alterna, frecce scelgono il segmento. **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync.
+Toggle a due segmenti per lingua, tema e ordine; icone per lingua/tema, menu campo arrotondato e formati multiselezione. Tab muove il focus, Spazio alterna, frecce scelgono il segmento. **F1** apre la guida offline IT/EN da ogni schermata, accessibile anche con Aiuto; **Ctrl+L** ricerca, **Ctrl+O** cartella, **F5** sync. La guida descrive ricerca, filtri, indice, viewer, editor e scorciatoie; Escape la chiude e ripristina il focus.
 
-Minimo **900×640 pixel logici**, focus visibile ed etichette accessibili. Verificare contrasto, DPI, scrolling e Narrator: test automatici/offscreen non sostituiscono Windows nativo o collaudo del pacchetto. Testi QML nel catalogo, eccetto marchio e TXT/MD/PDF; niente slogan negli asset traducibili.
+Minimo **480×360 pixel logici**: pagine e dialoghi scorrono quando necessario, Impostazioni passa a una colonna e i reader mantengono raggiungibili i comandi. Il ridimensionamento preserva query, selezione, posizione di lettura e bozza. Focus visibile ed etichette accessibili. Verificare contrasto, DPI, scrolling e Narrator: test automatici/offscreen non sostituiscono Windows nativo o collaudo del pacchetto. Testi QML nel catalogo, eccetto marchio e TXT/MD/PDF; niente slogan negli asset traducibili.
 
 [Asset locali e provenienza](../frontend/src/local_document_search_desktop/assets/README.md), rigenerabili con `scripts/dev/generate_luma_assets.py`. Il naming non implica verifica di disponibilità commerciale. [Evidenze desktop](V2_08_ACCEPTANCE.md#evidenze-desktop-precedenti-al-candidato).
 

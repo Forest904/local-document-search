@@ -124,6 +124,57 @@ def result():
                         text_target=TextNavigationTarget(10, 1, TextRange(0, 5)))
 
 
+@pytest.mark.parametrize("size", [(480, 360), (640, 480), (900, 640),
+                                   (1280, 820), (1920, 1080)])
+def test_help_and_responsive_window(controller, qt, size):
+    c, _ = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        window.setWidth(size[0])
+        window.setHeight(size[1])
+        start(c)
+        until(lambda: window.findChild(QObject, "helpNavigation") is not None)
+        assert window.minimumWidth() == 480
+        assert window.minimumHeight() == 360
+        button = window.findChild(QObject, "helpNavigation")
+        assert button.mapToScene(QPointF(button.width(), 0)).x() <= window.width()
+        button.click()
+        dialog = window.findChild(QObject, "helpDialog")
+        until(lambda: dialog is not None and dialog.property("visible"))
+        assert dialog.property("width") <= window.width()
+        assert dialog.property("height") <= window.height()
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not dialog.property("visible"))
+        QTest.keyClick(window, Qt.Key_F1)
+        until(lambda: dialog.property("visible"))
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not dialog.property("visible"))
+        c.navigate("settings")
+        until(lambda: window.findChild(QObject, "field") is not None)
+        settings = window.findChild(QObject, "field")
+        assert settings.mapToScene(QPointF(settings.width(), 0)).x() <= window.width()
+    finally:
+        engine.deleteLater()
+
+
+def test_help_onboarding_does_not_initialize_backend(controller, qt):
+    c, _ = controller
+    engine = create_engine(c)
+    window = engine.rootObjects()[0]
+    try:
+        window.requestActivate()
+        qt.processEvents()
+        QTest.keyClick(window, Qt.Key_F1)
+        dialog = window.findChild(QObject, "helpDialog")
+        until(lambda: dialog.property("visible"))
+        assert c.session is None
+        QTest.keyClick(window, Qt.Key_Escape)
+        until(lambda: not dialog.property("visible"))
+    finally:
+        engine.deleteLater()
+
+
 def test_pdf_viewer_navigates_to_result_page(controller, qt, tmp_path):
     c, s = controller
     writer = PdfWriter()
@@ -340,8 +391,12 @@ def test_pdf_toolbar_page_zoom_rotation_and_highlights(controller, qt, tmp_path)
         assert window.findChild(QObject, "pdfToolbar").property("width") == window.width()
         folder = window.findChild(QObject, "openPdfFolder")
         assert folder.mapToScene(QPointF(folder.width(), 0)).x() <= window.width()
+        window.setWidth(480)
+        window.setHeight(360)
+        until(lambda: window.findChild(QObject, "pdfToolbar").width() == 480)
+        assert folder.mapToScene(QPointF(folder.width(), 0)).x() <= window.width()
         table = window.findChild(QObject, "pdfTableView")
-        assert table.property("topMargin") == 94
+        assert table.property("topMargin") == window.findChild(QObject, "pdfToolbar").height()
         assert window.findChild(QObject, "pdfPreviousPage").property("enabled")
         window.findChild(QObject, "pdfNextPage").click()
         until(lambda: viewer.property("currentPage") == 2)
@@ -373,10 +428,10 @@ def test_pdf_toolbar_page_zoom_rotation_and_highlights(controller, qt, tmp_path)
         QTest.keyClick(window, Qt.Key_F, Qt.ControlModifier)
         field = window.findChild(QObject, "pdfFindField")
         until(lambda: field is not None and field.property("visible"))
-        assert table.property("bottomMargin") == 52
+        assert table.property("bottomMargin") == window.findChild(QObject, "pdfFindBar").height()
         find_bar = window.findChild(QObject, "pdfFindBar")
-        assert find_bar.property("height") == 52
-        assert window.height() - 100 <= find_bar.mapToScene(QPointF(0, 0)).y() + 52 <= window.height()
+        assert find_bar.height() >= 52
+        assert window.height() - 100 <= find_bar.mapToScene(QPointF(0, 0)).y() + find_bar.height() <= window.height()
         assert find_bar.property("z") > window.findChild(QObject, "pdfToolbar").property("z")
         QTest.keyClick(window, Qt.Key_Return)
         until(lambda: viewer.property("searchCount") == 3)

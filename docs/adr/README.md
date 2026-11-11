@@ -24,6 +24,7 @@
 | [0018](0018-v2-text-reader.md) | Reader interno TXT/Markdown e salto al sorgente | V2-12 |
 | [0019](0019-desktop-format-query-filters.md) | Scorciatoie di formato nella query desktop | Dopo V2-12 |
 | [0020](0020-v2-text-editor.md) | Editor TXT/MD e anteprima Markdown | V2-13 |
+| [0021](0021-v2-adaptive-help.md) | Layout adattivi e guida locale | V2-14 |
 
 V2-D10–D13 (fonti, permessi, manifest, cache, sintetici e ground truth) sono risolte nella [specifica del corpus](../TEST_DATASETS.md). Non richiedono un ADR per il solo layout dei dati.
 

@@ -1,4 +1,4 @@
-Local Document Search 0.2.1 — Luma — Windows 11 x64
+Local Document Search 0.2.2 — Luma — Windows 11 x64
 
 Installare con il wizard offline oppure estrarre l'intera cartella dallo ZIP
 ed aprire LocalDocumentSearch.exe. DLL e plugin adiacenti sono necessari.
@@ -16,15 +16,15 @@ Formati: TXT e Markdown UTF-8, PDF testuali; nessun OCR.
 Le aperture successive recuperano l'indice e sincronizzano in background.
 
 Inserire termini o frasi tra virgolette e premere Invio o Cerca.
-Usare termine* per un prefisso esplicito. I suggerimenti non eseguono ricerche.
+Usare termine* per un prefisso esplicito. Scegliere un suggerimento sostituisce la clausola e avvia la ricerca.
 I termini sono in AND; in Nome e contenuto tutta la query deve corrispondere
 nel nome oppure nel contenuto. Pagine da 20 risultati con estratti evidenziati.
-Clic sul titolo o Invio sul risultato apre il file nell'app Windows associata.
+Clic sul titolo o Invio sul risultato apre il viewer interno; da lì puoi aprire il file nell'app Windows associata.
 
 Per un suffisso usare *termine. I token .txt, .md e .pdf nella query
 selezionano rapidamente i formati. Una proposta ortografica richiede un clic.
 Il viewer PDF interno apre la pagina del primo match; TXT e Markdown si leggono
-nell'app. L'editor TXT/Markdown salva solo su comando esplicito.
+nel reader interno. L'editor TXT/Markdown salva solo su comando esplicito.
 
 Dalla precedente installazione LocalDocumentSearchV2, disinstallare conservando
 i dati e reinstallare. Selezionare nuovamente la cartella e ricostruire l'indice.
@@ -32,7 +32,7 @@ Gli indici desktop con schema precedente richiedono una ricostruzione esplicita.
 
 Impostazioni contiene campo, formati, ordine, gestione indice,
 lingua IT/EN e tema chiaro/scuro. Filtri solo di sessione, azzerati al cambio
-cartella/riavvio; lingua e tema persistono. Ctrl+L ricerca, Ctrl+O cartella, F5 sync.
+cartella/riavvio; lingua e tema persistono. F1 apre la guida; Ctrl+L ricerca, Ctrl+O cartella, F5 sync.
 Sync rileva aggiunte/modifiche/rimozioni; nessun controllo continuo.
 Modifiche con dimensione e timestamp invariati possono non essere rilevate.
 

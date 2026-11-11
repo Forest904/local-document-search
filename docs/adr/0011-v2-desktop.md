@@ -27,3 +27,5 @@ storiche V2-06/V2-07 non si trasferiscono al nuovo frontend: vedere
 **Estensione V2-12:** [ADR 0018](0018-v2-text-reader.md) introduce il reader interno in sola lettura per TXT e MD; l'apertura esterna rimane un'azione esplicita.
 
 **Revisione visiva dell'11 novembre 2026:** il desktop conserva palette e marchio Luma e uniforma i controlli a icona, con barre dei reader su due righe, tooltip e nomi accessibili. Salva è a icona nella toolbar e mantiene testo esplicito nelle conferme. La proposta ortografica compatta è descritta nell'ADR 0016.
+
+**Estensione V2-14:** [ADR 0021](0021-v2-adaptive-help.md) definisce finestre da 480×360 pixel logici, layout adattivi e guida F1/Aiuto offline. F5 resta sincronizzazione.

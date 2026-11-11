@@ -4,13 +4,15 @@ import QtQuick.Layouts
 
 ScrollView {
     id: page
+    objectName: "settingsPage"
     required property var theme
     signal chooseFolder
     signal clearRequested
     signal diagnosticsRequested
     property var v: desktop.view
     property var t: desktop.labels
-    contentWidth: availableWidth
+    contentWidth: width
+    implicitWidth: 0
     function revealFocus(item) {
         if (!item || !contentItem || !contentItem.contentItem)
             return;
@@ -38,7 +40,7 @@ ScrollView {
         desktop.setOptions(["both", "filename", "content"][field.currentIndex], formats, "", (orderIndex === undefined ? order.currentIndex : orderIndex) === 0 ? "relevance" : "path");
     }
     ColumnLayout {
-        width: page.availableWidth - 24
+        width: Math.max(0, page.width - 24)
         spacing: 16
         Label {
             text: page.t.settings
@@ -52,11 +54,16 @@ ScrollView {
             color: page.theme.ink
             Layout.topMargin: 12
         }
-        RowLayout {
+        GridLayout {
             Layout.fillWidth: true
-            spacing: 24
+            Layout.minimumWidth: 0
+            Layout.maximumWidth: parent.width
+            columns: page.width < 700 ? 1 : 2
+            rowSpacing: 12
+            columnSpacing: 24
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Label { text: page.t.language; color: page.theme.ink }
                 BinarySelect {
                     theme: page.theme
@@ -72,6 +79,7 @@ ScrollView {
             }
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Label { text: page.t.theme; color: page.theme.ink }
                 BinarySelect {
                     theme: page.theme
@@ -103,11 +111,16 @@ ScrollView {
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
-        RowLayout {
+        GridLayout {
             Layout.fillWidth: true
-            spacing: 24
+            Layout.minimumWidth: 0
+            Layout.maximumWidth: parent.width
+            columns: page.width < 700 ? 1 : 2
+            rowSpacing: 12
+            columnSpacing: 24
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Label { text: page.t.field; color: page.theme.ink }
                 OptionSelect {
                     id: field
@@ -122,6 +135,7 @@ ScrollView {
             }
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Label { text: page.t.formats; color: page.theme.ink }
                 RowLayout {
                     CheckBox {
@@ -183,8 +197,9 @@ ScrollView {
             color: page.theme.muted
             Layout.fillWidth: true
         }
-        RowLayout {
+        Flow {
             Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
             spacing: 12
             ActionButton {
                 theme: page.theme
@@ -237,7 +252,9 @@ ScrollView {
             font.pixelSize: 22
             color: page.theme.ink
         }
-        RowLayout {
+        Flow {
+            Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
             spacing: 12
             ActionButton {
                 theme: page.theme

@@ -2,6 +2,12 @@
 
 Per installare e provare l’app parti dal [README](../README.md).
 
+## Stato corrente — candidato 0.2.2
+
+La [0.2.1 pubblicata](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è la versione scaricabile. L'11 novembre 2026 l'utente ha confermato che l'installer scaricato da GitHub funziona correttamente sul PC di test; non ha comunicato hash, misure o risultati per singolo scenario. Il lavoro successivo prepara la **0.2.2 locale** con guida F1/Aiuto, layout da 480×360 pixel logici, audit di accessibilità e documentazione coerente. [Matrice di accettazione 0.2.2](V2_14_ACCEPTANCE.md). Nessuna prova della 0.2.1 attesta automaticamente il nuovo artefatto.
+
+I paragrafi datati che seguono documentano la sequenza delle verifiche storiche: espressioni come «da pubblicare» e gate aperti si riferiscono al candidato di quella fase, non revocano la pubblicazione 0.2.1 né anticipano l'accettazione 0.2.2.
+
 ## Stato implementato
 
 La release **0.2.0**, pubblicata il 9 novembre 2026, deriva dal candidato pulito `3b78203e6cfbb3be1b01d8bed82728c45b56ab00`: backend condiviso, CLI volatile senza Qt, ricerca con prefissi/ranking/filtri, SQLite v2 con cancel/recovery e desktop Luma Qt Quick con IT/EN e temi. Il desktop apre i file direttamente e mostra pagine da 20. [Codice e ownership](ARCHITECTURE.md).
@@ -31,9 +37,9 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 
 ## Modifiche successive alla release 0.2.0
 
-La **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo sia dal sorgente sia tramite installer; revisione e hash di quel pacchetto non sono attestati qui. Build pulita, benchmark sul compilato e collaudo manuale restano evidenze distinte.
+La **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo dal sorgente e tramite installer, e successivamente ha specificato che l'installer proviene da GitHub; hash del pacchetto provato non attestato. Build pulita, benchmark sul compilato e collaudo manuale restano evidenze distinte.
 
-La [release **0.2.1**](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è pubblicata dall'esatto commit `a799901766a5da35f0a133eef15bbb898bb0a6e1`: workflow Windows/Ubuntu verde, installer, checksum e manifest pubblico disponibili. SHA-256 dell'installer pubblicato `e9d253f6c269ab80243750902abe775014df414fbbdc5e70baa344b739ea5f6c`. Il binario GitHub differisce da quello della build locale, quindi il benchmark locale e il collaudo manuale non sono attestazioni byte per byte dell'asset pubblicato.
+La [release **0.2.1**](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1) è pubblicata dall'esatto commit `a799901766a5da35f0a133eef15bbb898bb0a6e1`: workflow Windows/Ubuntu verde, installer, checksum e manifest pubblico disponibili. SHA-256 dell'installer pubblicato `e9d253f6c269ab80243750902abe775014df414fbbdc5e70baa344b739ea5f6c`. Il binario GitHub differisce da quello della build locale; il benchmark locale non attesta l'asset pubblicato byte per byte. Il collaudo manuale riguarda un download GitHub ma non identifica l'hash del file provato.
 
 L'11 novembre 2026 l'utente ha confermato un **PASS** del collaudo della nuova versione su PC Windows di test. Non è stato fornito l'hash dell'installer provato, quindi l'evidenza resta una conferma manuale della versione e non identifica byte per byte l'asset che produrrà GitHub Actions.
 

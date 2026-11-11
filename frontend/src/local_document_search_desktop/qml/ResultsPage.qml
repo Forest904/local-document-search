@@ -13,7 +13,7 @@ ColumnLayout {
         results.currentIndex = page.v.resultsIndex;
         results.forceActiveFocus();
     }
-    spacing: 16
+    spacing: height < 500 ? 8 : 16
     SearchBox {
         id: search
         theme: page.theme
@@ -32,6 +32,8 @@ ColumnLayout {
             text: desktop.labels.didYouMean + ":"
             color: page.theme.muted
             Layout.alignment: Qt.AlignTop
+            Layout.maximumWidth: page.width * 0.3
+            wrapMode: Text.Wrap
         }
         Button {
             objectName: "acceptSpelling"
@@ -70,6 +72,8 @@ ColumnLayout {
                   + " " + desktop.labels.seconds
                 : desktop.labels.enter
         color: page.theme.muted
+        wrapMode: Text.Wrap
+        Layout.fillWidth: true
     }
     ListView {
         id: results
@@ -98,6 +102,8 @@ ColumnLayout {
             visible: results.count === 0 && page.v.hasResponse && !page.v.searching
             text: desktop.labels.empty
             color: page.theme.muted
+            elide: Text.ElideRight
+            Layout.maximumWidth: Math.max(100, page.width - 120)
         }
     }
     RowLayout {

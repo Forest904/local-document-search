@@ -20,7 +20,7 @@ Item {
         anchors.fill: parent
         contentWidth: availableWidth
         ColumnLayout {
-            width: Math.min(600, page.width - 64)
+            width: Math.max(0, Math.min(600, page.width - (page.width < 700 ? 16 : 64)))
             x: (page.width - width) / 2
             spacing: 24
             Item {
