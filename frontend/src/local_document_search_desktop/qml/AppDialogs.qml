@@ -54,7 +54,13 @@ Item {
         height: Math.min(620, parent.height - 24)
         palette.window: dialogs.theme.surface
         palette.windowText: dialogs.theme.ink
-        standardButtons: Dialog.Close
+        onOpened: Qt.callLater(function () { if (helpIndex.itemAt(0)) helpIndex.itemAt(0).forceActiveFocus(); })
+        footer: DialogButtonBox {
+            Button {
+                text: desktop.labels.close
+                DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+            }
+        }
         onClosed: {
             if (dialogs.helpReturnFocus && dialogs.helpReturnFocus.visible)
                 dialogs.helpReturnFocus.forceActiveFocus();
@@ -71,11 +77,13 @@ Item {
                     Layout.preferredHeight: implicitHeight
                     spacing: 6
                     Repeater {
+                        id: helpIndex
                         model: [desktop.labels.helpSearchTitle, desktop.labels.helpIndexTitle,
                                 desktop.labels.helpReadTitle, desktop.labels.helpKeysTitle]
                         Button {
                             required property int index
                             required property string modelData
+                            objectName: "helpSection" + index
                             text: modelData
                             Accessible.name: modelData
                             onClicked: helpScroll.contentItem.contentY = helpSections.itemAt(index).y

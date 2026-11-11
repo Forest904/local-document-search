@@ -1,6 +1,7 @@
 """Catalogo locale completo per i flussi desktop, senza servizi remoti."""
 MESSAGES = {
     "help": ("Aiuto", "Help"),
+    "close": ("Chiudi", "Close"),
     "helpSearchTitle": ("Ricerca e risultati", "Search and results"),
     "helpSearchBody": ("Scrivi parole per richiederle tutte nello stesso campo, oppure racchiudi una frase tra virgolette: \"relazione annuale\". Usa progett* per un prefisso e *zione per un suffisso. Un suggerimento sostituisce la parola e avvia la ricerca; «Intendevi» propone una nuova ricerca solo se lo scegli. .txt, .md e .pdf isolati nella barra filtrano i formati. Impostazioni offre campo, formati e ordine; il riepilogo permette di ripristinarli. I risultati sono divisi in pagine da 20.", "Enter words to require all of them in the same field, or quote a phrase: \"annual report\". Use project* for a prefix and *tion for a suffix. Selecting a suggestion replaces the word and starts a search; “Did you mean” starts a new search only when you choose it. Isolated .txt, .md and .pdf tokens filter formats. Settings offers field, formats and sort order; the summary can reset them. Results are shown in pages of 20."),
     "helpIndexTitle": ("Indice e aggiornamenti", "Index and updates"),

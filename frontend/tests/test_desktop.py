@@ -142,6 +142,7 @@ def test_help_and_responsive_window(controller, qt, size):
         button.click()
         dialog = window.findChild(QObject, "helpDialog")
         until(lambda: dialog is not None and dialog.property("visible"))
+        until(lambda: window.activeFocusItem() is not None and window.activeFocusItem().objectName() == "helpSection0")
         assert dialog.property("width") <= window.width()
         assert dialog.property("height") <= window.height()
         QTest.keyClick(window, Qt.Key_Escape)
