@@ -33,6 +33,8 @@ M9 v1 rimane **parzialmente accettata**: le lacune G01–G07 sono state chiuse s
 
 Il candidato **0.2.1** raccoglie le modifiche sottostanti. L'utente ha riferito un collaudo positivo sia dal sorgente sia tramite installer; revisione e hash di quel pacchetto non sono attestati qui. Build pulita, benchmark sul compilato e collaudo del candidato finale restano verifiche distinte prima della pubblicazione.
 
+L'11 novembre 2026 l'utente ha confermato un **PASS** del collaudo della nuova versione su PC Windows di test. Non è stato fornito l'hash dell'installer provato, quindi l'evidenza resta una conferma manuale della versione e non identifica byte per byte l'asset che produrrà GitHub Actions.
+
 Verifica del candidato `165161847029f465983de169d289131e8f4d3b64`: suite **570 passed, 7 skipped**, runner Homework 3 **PASS**, build release pulita e audit del manifest superati. Installer SHA-256 `e6fc5386845904315b9eea54fc345d90d8fe222012ac03c7aa84df238b623d8e`. Benchmark del compilato su corpus sintetico target, tre cicli, 100 campioni e cinque warmup: **PASS** e sei budget rispettati; massimi build 160,092 s, riapertura 6,519 s, no-change 0,894 s, sync incrementale 4,103 s, query p95 72,266 ms, working set 1432,490 MB. [Report locale ignorato da Git](../experiments/README.md). Il collaudo install/update/uninstall del pacchetto finale su account Windows isolato non è attestato; la release resta da pubblicare.
 
 ### V2-09 — ricerca per suffisso

@@ -41,12 +41,11 @@ jobs:
       - name: Verify CLI installation has no Qt dependency
         run: '"${{ matrix.python }}" -c "import importlib.util; assert importlib.util.find_spec(''PySide6'') is None"'
       - name: Install desktop and test dependencies
+        if: runner.os == 'Windows'
         run: '"${{ matrix.python }}" -m pip install -e "../frontend[dev]"'
-      - name: Install Qt runtime library on Ubuntu
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libegl1
       - run: '"${{ matrix.python }}" -m pip check'
       - name: Desktop Qt tests
+        if: runner.os == 'Windows'
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
