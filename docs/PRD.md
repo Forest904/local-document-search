@@ -55,6 +55,8 @@ Il [corpus funzionale](TEST_DATASETS.md) resta distinto dal benchmark prestazion
 
 Il target di scala non è un limite automatico ai file né una garanzia su qualunque PDF o hardware. Soglie e profilo supportato sono fissati nell’[ADR 0014](adr/0014-v2-performance-budgets.md); risorse esaurite devono produrre errori gestibili quando intercettabili. Non si promette recupero da ogni OOM o perdita fisica di alimentazione.
 
+La revisione V2-D01 del 12 novembre 2026 fissa p95 ≤100 ms per query esatte, wildcard ordinarie e suggerimenti, p95 ≤200 ms per `frasecom*` nel contenuto e no-change ≤2 s. Gli altri budget restano invariati; il confronto fra compilati documenta anche eventuali rallentamenti non spiegati, che possono essere accettati entro tali soglie.
+
 ## Condizione di rilascio
 
 La release pubblica richiede V2-08, incluse le lacune M9 trasferite nella [stato del progetto](README.md#stato-implementato), e i [gate di distribuzione](SECURITY_AND_PRIVACY.md#distribuzione-e-diritti). Approvazione del progetto, test del sorgente e collaudo del pacchetto sono evidenze differenti.

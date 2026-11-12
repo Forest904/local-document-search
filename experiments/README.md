@@ -18,6 +18,13 @@ python experiments/v2_benchmark.py generate experiments/results/v2-target --prof
 python experiments/v2_benchmark.py verify experiments/results/v2-target
 python experiments/run_v2_benchmark.py run experiments/results/v2-target experiments/results/v2-target-run
 python experiments/run_v2_benchmark.py summary experiments/results/v2-target-run/report.json
+
+# Rivalutazione separata di un report compilato storico con i budget approvati:
+python experiments/run_v2_benchmark.py reassess experiments/results/v2-022-compiled/report.json experiments/results/v2-022-reassessed.json
+
+# Confronto compilato alternato: sei prove da un ciclo, poi aggregazione per versione.
+# Indicare gli EXE estratti dagli ZIP identificati e un output nuovo.
+python experiments/compare_compiled.py experiments/results/v2-target C:/percorso/021/LocalDocumentSearch.exe C:/percorso/022/LocalDocumentSearch.exe experiments/results/v2-compare-nuovo
 ```
 
 I profili sono `small` (100), `adverse` (1.000) e `target` (10.000 file,

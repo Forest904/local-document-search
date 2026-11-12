@@ -39,13 +39,15 @@ Installer per utente senza elevazione o download; wizard IT/EN, Start e desktop 
 
 ## Diagnostica e collaudo
 
+Dal 12 novembre 2026 i budget T08 sono p95 ≤100 ms per query esatte, wildcard ordinarie e suggerimenti, p95 ≤200 ms per `frasecom*` nel contenuto, no-change ≤2 s; gli altri restano invariati. Una rivalutazione di report precedenti usa `python experiments/run_v2_benchmark.py reassess <report-originale> <nuovo-file>` e non modifica il report né il manifest del pacchetto. Lo storage della diagnostica deve trovarsi fuori dal repository.
+
 Il payload include i tre script V2-02 in `diagnostics/`, attribuiti e verificati nel manifest. Generare il corpus sul PC di sviluppo con `experiments/v2_benchmark.py generate`, poi eseguire da PowerShell:
 
 ```powershell
 & '<installazione>/LocalDocumentSearch.exe' --diagnostic '<corpus>' '<output-nuovo>' --storage-root '<storage-nuovo>' --cycles 3 --samples 100 --warmups 5
 ```
 
-Corpus, output e storage devono essere distinti; lo storage personale v2 è rifiutato. Il runner verifica hash del corpus e script, crea copie per ciclo e processi compilati nuovi per fase. L’EXE è GUI: leggere `report.json`, non la console. Una fase fallita lascia `INCOMPLETE`; `budget_status` indica separatamente i sei limiti T08.
+Corpus, output e storage devono essere distinti; lo storage personale v2 è rifiutato. Il runner verifica hash del corpus e script, crea copie per ciclo e processi compilati nuovi per fase. L’EXE è GUI: leggere `report.json`, non la console. Una fase fallita lascia `INCOMPLETE`; `budget_status` indica separatamente fasi, gruppi di query e RAM T08.
 
 Per lo ZIP di prova, estrarre fuori repo in un percorso con spazi/Unicode e usare corpus sintetici. Nel solo processo rimuovere `PYTHONHOME`, `PYTHONPATH`, `VIRTUAL_ENV`, `QT_PLUGIN_PATH`, `QML2_IMPORT_PATH` e isolare `LOCALAPPDATA`; non alterare l’account. Verificare lo storage prima delle prove.
 

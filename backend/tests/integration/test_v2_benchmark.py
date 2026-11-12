@@ -10,7 +10,7 @@ import pytest
 EXPERIMENTS = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(EXPERIMENTS))
 import v2_benchmark as benchmark
-from run_v2_benchmark import percentile95
+from run_v2_benchmark import percentile95, query_group, query_group_peaks, evaluate_budgets
 
 
 def test_corpus_reproducible_and_detects_damage(tmp_path):
@@ -35,6 +35,47 @@ def test_expected_paths_are_independent_of_search(tmp_path):
     assert len(benchmark.expected_paths(manifest, "marcatoremedio", "content")) == 2
     assert benchmark.expected_paths(manifest, "documento marcatoreuniversale", "both") == []
     assert percentile95(list(range(1, 101))) == 95
+
+
+def test_query_budgets_keep_broad_wildcard_separate():
+    cases = [("documento", "filename", .04), ("marcatoremed*", "content", .08),
+             ("frasecom*", "content", .17), ("marcatoreme", "suggest", .01)]
+    cycles = [[{"phase": "queries", "queries": [
+        {"query": query, "field": field, "summary": {"p95_nearest_rank": p95}}
+        for query, field, p95 in cases]}]]
+    assert query_group("frasecom*", "content") == "broad_wildcard"
+    assert query_group("frasecom*", "filename") == "wildcard"
+    assert query_group_peaks(cycles) == {
+        "exact": .04, "wildcard": .08, "broad_wildcard": .17, "suggestion": .01}
+
+
+def test_budget_gate_uses_three_complete_cycles_and_suggestions():
+    def cycle(suggestion=.01):
+        return [{"phase": phase, "operation_seconds": .2,
+                 "process_to_search_ready_seconds": 1,
+                 "memory": {"peak_working_set_bytes": 1024},
+                 **({"queries": [{"query": query, "field": field,
+                                   "summary": {"p95_nearest_rank": p95}}
+                                  for query, field, p95 in [
+                                      ("documento", "filename", .04),
+                                      ("marcatoremed*", "content", .08),
+                                      ("frasecom*", "content", .17),
+                                      ("marcatoreme", "suggest", suggestion)]]}
+                    if phase == "queries" else {})}
+                for phase in ("build", "reopen", "nochange", "queries", "incremental")]
+    report = {"status": "PASS", "cycles": [cycle(), cycle(), cycle(.11)]}
+    budgets, status = evaluate_budgets(report)
+    assert status == "FAIL"
+    assert budgets["query_status_by_group"]["suggestion"] == "FAIL"
+    assert budgets["query_status_by_group"]["broad_wildcard"] == "PASS"
+    with pytest.raises(ValueError):
+        evaluate_budgets({**report, "cycles": report["cycles"][:2]})
+    with pytest.raises(ValueError):
+        evaluate_budgets({**report, "cycles": [cycle()[:-1]] * 3})
+    with pytest.raises(ValueError):
+        evaluate_budgets({**report, "cycles": [[{**event, "queries": event["queries"][:-1]}
+                                                if event["phase"] == "queries" else event
+                                                for event in cycle()]] * 3})
 
 
 def test_smoke_runner_complete(tmp_path):

@@ -17,7 +17,7 @@
 | [0011](0011-v2-desktop.md) | Qt Quick e revisione Luma | Redesign approvato l’8 novembre 2026 |
 | [0012](0012-v2-lifecycle-storage.md) | Lifecycle e isolamento dati | V2-D04 |
 | [0013](0013-v2-distribution.md) | Installer e distribuzione | V2-D07/D08/D09 |
-| [0014](0014-v2-performance-budgets.md) | Metodo e budget prestazionali | V2-D01 |
+| [0014](0014-v2-performance-budgets.md) | Metodo e budget prestazionali; soglie riviste il 12 novembre 2026 | V2-D01 |
 | [0015](0015-v2-suffix-wildcards.md) | Suffissi, vocabolario rovesciato e wildcard esplicite | V2-09 |
 | [0016](0016-v2-spelling-correction.md) | Correzione proposta delle query tramite bigrammi e Levenshtein | V2-10 |
 | [0017](0017-v2-pdf-page-navigation.md) | Mappa delle pagine PDF e viewer interno | V2-11 |

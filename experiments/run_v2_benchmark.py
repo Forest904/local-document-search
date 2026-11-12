@@ -20,6 +20,70 @@ import os
 
 from v2_benchmark import MARKERS, QUERIES, expected_paths, verify
 
+QUERY_BUDGETS = {"exact": .1, "wildcard": .1, "broad_wildcard": .2,
+                 "suggestion": .1}
+STAGE_LIMITS = {"build": ("operation_seconds", 300),
+                "reopen": ("process_to_search_ready_seconds", 15),
+                "nochange": ("operation_seconds", 2),
+                "incremental": ("operation_seconds", 60)}
+
+
+def query_group(query, field):
+    if field.startswith("suggest"):
+        return "suggestion"
+    if query == "frasecom*" and field == "content":
+        return "broad_wildcard"
+    if "*" in query:
+        return "wildcard"
+    return "exact"
+
+
+def query_group_peaks(cycles):
+    peaks = {group: 0.0 for group in QUERY_BUDGETS}
+    for cycle in cycles:
+        event = next(item for item in cycle if item["phase"] == "queries")
+        for case in event["queries"]:
+            group = query_group(case["query"], case["field"])
+            peaks[group] = max(peaks[group], case["summary"]["p95_nearest_rank"])
+    return peaks
+
+
+def evaluate_budgets(report):
+    if report.get("status") != "PASS" or len(report.get("cycles", [])) != 3:
+        raise ValueError("T08 richiede un report completo di tre cicli")
+    required = {*STAGE_LIMITS, "queries"}
+    if any({event.get("phase") for event in cycle} != required for cycle in report["cycles"]):
+        raise ValueError("Fasi T08 mancanti o inattese")
+    measured = {stage: max(next(event[key] for event in cycle
+                                if event["phase"] == stage) for cycle in report["cycles"])
+                for stage, (key, _) in STAGE_LIMITS.items()}
+    for cycle in report["cycles"]:
+        queries = next(event["queries"] for event in cycle if event["phase"] == "queries")
+        groups = {query_group(case["query"], case["field"]) for case in queries}
+        if not set(QUERY_BUDGETS) <= groups:
+            raise ValueError("Gruppi query mancanti")
+        if any(event.get("memory", {}).get("peak_working_set_bytes") is None for event in cycle):
+            raise ValueError("Misura RAM mancante")
+    query_p95 = query_group_peaks(report["cycles"])
+    peak_memory = max(event["memory"]["peak_working_set_bytes"]
+                      for cycle in report["cycles"] for event in cycle)
+    query_status = {group: "PASS" if query_p95[group] <= limit else "FAIL"
+                    for group, limit in QUERY_BUDGETS.items()}
+    stage_status = {stage: "PASS" if measured[stage] <= limit else "FAIL"
+                    for stage, (_, limit) in STAGE_LIMITS.items()}
+    memory_status = "PASS" if peak_memory <= 2560 * 1024**2 else "FAIL"
+    budgets = {"seconds": measured, "query_p95_seconds": max(query_p95.values()),
+               "query_p95_seconds_by_group": query_p95,
+               "peak_working_set_bytes": peak_memory,
+               "limits_seconds": {stage: limit for stage, (_, limit) in STAGE_LIMITS.items()},
+               "query_limits_seconds_by_group": QUERY_BUDGETS,
+               "peak_working_set_limit_bytes": 2560 * 1024**2,
+               "stage_status": stage_status, "query_status_by_group": query_status,
+               "memory_status": memory_status}
+    status = "PASS" if all(value == "PASS" for value in (
+        *stage_status.values(), *query_status.values(), memory_status)) else "FAIL"
+    return budgets, status
+
 
 def memory():
     if sys.platform != "win32":
@@ -105,6 +169,11 @@ def check_queries(app, manifest):
                                                 limit=manifest["count"], allow_wildcards=True))
         if [r.relative_path.value for r in page.results] != expected_paths(manifest, marker, "content"):
             raise AssertionError(f"Prefisso errato: {prefix}")
+    broad = app.search.execute(SearchRequest("frasecom*", SearchField.CONTENT,
+                                             limit=manifest["count"], allow_wildcards=True))
+    if [r.relative_path.value for r in broad.results] != expected_paths(
+            manifest, '"frasecomune consecutiva"', "content"):
+        raise AssertionError("Prefisso ampio errato: frasecom*")
     if app.suggest.execute(SuggestRequest("marcatoreme", SearchField.CONTENT)).terms != (MARKERS[1],):
         raise AssertionError("Suggerimento errato")
     suffix = MARKERS[1][-6:]
@@ -221,7 +290,7 @@ def phase(args):
                         begin = time.perf_counter()
                         (app.suggest if isinstance(request, SuggestRequest) else app.search).execute(request)
                         samples[q, f].append(time.perf_counter() - begin)
-                result["queries"] = [{"query": q, "field": f, "seconds": values,
+                result["queries"] = [{"query": q, "field": f, "group": query_group(q, f), "seconds": values,
                                       "summary": summary(values)} for (q, f), values in samples.items()]
         if diagnostics:
             result["diagnostic_seconds"] = diagnostics
@@ -327,22 +396,9 @@ def run(args):
                 event["process_seconds"] = time.perf_counter() - elapsed
                 events.append(event)
                 save()
-        if packaged:
-            limits = {"build": ("operation_seconds", 300),
-                      "reopen": ("process_to_search_ready_seconds", 15),
-                      "nochange": ("operation_seconds", 1),
-                      "incremental": ("operation_seconds", 60)}
-            measured = {stage: max(next(event[key] for event in cycle if event["phase"] == stage)
-                                   for cycle in report["cycles"])
-                        for stage, (key, _) in limits.items()}
-            query_p95 = max(q["summary"]["p95_nearest_rank"] for cycle in report["cycles"]
-                            for event in cycle if event["phase"] == "queries" for q in event["queries"])
-            peak_memory = max(event["memory"]["peak_working_set_bytes"] or 0
-                              for cycle in report["cycles"] for event in cycle)
-            report["budgets"] = {"seconds": measured, "query_p95_seconds": query_p95,
-                                 "peak_working_set_bytes": peak_memory}
-            report["budget_status"] = "PASS" if all(measured[stage] <= limit for stage, (_, limit) in limits.items()) and query_p95 <= .1 and peak_memory <= 2560 * 1024**2 else "FAIL"
         report["status"] = "PASS"
+        if packaged:
+            report["budgets"], report["budget_status"] = evaluate_budgets(report)
     except BaseException as exc:
         report["error"] = repr(exc)
         raise
@@ -376,11 +432,14 @@ def main():
     child.add_argument("--parent-start", type=float)
     summary_command = sub.add_parser("summary")
     summary_command.add_argument("report", type=Path)
+    reassess = sub.add_parser("reassess")
+    reassess.add_argument("report", type=Path)
+    reassess.add_argument("output", type=Path)
     diagnostic = sub.add_parser("profile")
     diagnostic.add_argument("corpus", type=Path)
     diagnostic.add_argument("storage", type=Path)
     diagnostic.add_argument("output", type=Path)
-    diagnostic.add_argument("--phase", choices=("build", "reopen", "queries"), default="build")
+    diagnostic.add_argument("--phase", choices=("build", "reopen", "nochange", "queries"), default="build")
     args = parser.parse_args()
     if args.command == "run" and os.environ.get("LDS_PACKAGED_DIAGNOSTIC"):
         if args.storage_root is None or args.payload_manifest is None:
@@ -403,10 +462,24 @@ def main():
         with args.output.open("w", encoding="utf-8") as stream:
             stream.write(json.dumps(result, indent=2) + "\n")
             pstats.Stats(profiler, stream=stream).strip_dirs().sort_stats("cumulative").print_stats(40)
+    elif args.command == "reassess":
+        report = json.loads(args.report.read_text(encoding="utf-8"))
+        if args.output.exists() or args.output.resolve() == args.report.resolve():
+            raise ValueError("La rivalutazione richiede un nuovo file")
+        budgets, status = evaluate_budgets(report)
+        args.output.write_text(json.dumps({"source_report": str(args.report.resolve()),
+                                           "source_sha256": hashlib.sha256(args.report.read_bytes()).hexdigest(),
+                                           "revision": report["revision"], "corpus_id": report["corpus_id"],
+                                           "budgets": budgets, "budget_status": status}, indent=2) + "\n",
+                               encoding="utf-8")
     else:
         report = json.loads(args.report.read_text(encoding="utf-8"))
         if report["status"] != "PASS":
             raise ValueError("Report incompleto")
+        if len(report.get("cycles", [])) == 3:
+            budgets, status = evaluate_budgets(report)
+            print(json.dumps({"phase": "reassessed_budgets", "budget_status": status,
+                              "budgets": budgets}))
         for stage in ("build", "reopen", "nochange", "queries", "incremental"):
             events = [next(e for e in cycle if e["phase"] == stage) for cycle in report["cycles"]]
             key = "process_to_search_ready_seconds" if stage == "reopen" and "process_to_search_ready_seconds" in events[0] else ("search_ready_seconds" if stage == "reopen" else "operation_seconds")

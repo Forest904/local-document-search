@@ -1,5 +1,47 @@
 # Prestazioni e verifiche backend v2
 
+## Revisione budget del 12 novembre 2026
+
+La revisione approvata prima delle nuove misure comparative stabilisce p95 ≤100 ms per query esatte, wildcard ordinarie e suggerimenti, p95 ≤200 ms per `frasecom*` nel contenuto e no-change ≤2 s. Build 300 s, riapertura 15 s, sync 60 s e RAM 2560 MiB restano invariati. Il massimo di tre cicli determina il gate. Le tabelle storiche sotto mantengono i limiti precedenti; nessun risultato precedente è sovrascritto.
+
+### Confronto compilato 0.2.1 / 0.2.2 del 12 novembre 2026
+
+ZIP locali estratti: 0.2.1 revisione `637f1359390e0ce24f1862d599a80af098e8b037`, SHA-256 ZIP `0f85668cf97f907864410168b15e4b2beb3f6e115b432f2efdd1c7d86d122011`, EXE `7c96817d6aa50528a7c17ad3ca225f6043c37f4be12b627f7aff513def7323f5`; 0.2.2 revisione `4263029e218f60eed1f1fe32f21e70a7cf08bb1c`, SHA-256 ZIP `fc92f27798f25a72022079d19693e95032e202e6c60f987197adb5af878b1f23`, EXE `19feaffc84a478aef29ae518c770a4c83cb4a4959a58f766ffba7c0a535e53f1`. Non sono gli asset GitHub 0.2.1. I manifest degli installer locali dichiarano le medesime revisioni; i rispettivi SHA-256 installer sono `6cad46a5810950c9b5ac60140d3ac6451abe60bbe0b47e6a4b382bd495313dcc` e `70b8d0f7a983f4f7dbfad0122f1129d9ad2af1c49b84d3e36b1606867808c4b6`.
+
+Corpus target V2-02, ID `db18e157aa72b9f8395a3f338a2caa7395447e83e32e40c63297ca11d5136c2a`; Windows 11 build 26200, Ryzen AI 7 350, 32 GB RAM, SSD WD SN5000S. Sequenza alternata 0.2.1→0.2.2, 0.2.2→0.2.1, 0.2.1→0.2.2: tre cicli/versione, copie e storage indipendenti, processi nuovi, cinque warmup e cento campioni/query. Alimentazione collegata per tutte le prove, batteria dal 73% al 99%, profilo Balanced; cache OS non svuotata. Non è stato campionato il carico concorrente, quindi la sua influenza residua non è quantificata. `sequence.json`, sei report originali, campioni e aggregati sono conservati localmente in `experiments/results/v2-021-022-comparison-20261112/`, esclusa da Git. Tutti i report singoli hanno `status=PASS`.
+
+| Massimo di tre cicli | 0.2.1 | 0.2.2 | Differenza 0.2.2 − 0.2.1 | Budget |
+|---|---:|---:|---:|---:|
+| Build | 161,259 s | 144,245 s | −17,014 s (−10,6%) | ≤300 s |
+| Riapertura | 6,640 s | 6,358 s | −0,282 s (−4,2%) | ≤15 s |
+| No-change | 0,700 s | 0,713 s | +0,013 s (+1,8%) | ≤2 s |
+| Sync incrementale | 3,394 s | 4,139 s | +0,745 s (+22,0%) | ≤60 s |
+| Query esatte p95 | 54,287 ms | 97,799 ms | +43,512 ms (+80,2%) | ≤100 ms |
+| Wildcard ordinarie p95 | 24,319 ms | 50,051 ms | +25,732 ms (+105,8%) | ≤100 ms |
+| `frasecom*` contenuto p95 | 33,743 ms | 68,263 ms | +34,520 ms (+102,3%) | ≤200 ms |
+| Suggerimenti p95 | 0,204 ms | 0,319 ms | +0,115 ms (+56,3%) | ≤100 ms |
+| Working set | 1366,383 MiB | 1365,789 MiB | −0,594 MiB | ≤2560 MiB |
+
+P95 massimi per ciclo, nell'ordine esatte / wildcard ordinarie / `frasecom*` / suggerimenti, in ms: 0.2.1 ciclo 1 `54,287 / 23,623 / 30,722 / 0,204`, ciclo 2 `49,198 / 22,760 / 32,675 / 0,175`, ciclo 3 `54,157 / 24,319 / 33,743 / 0,185`; 0.2.2 ciclo 1 `61,371 / 24,935 / 30,462 / 0,191`, ciclo 2 `97,799 / 50,051 / 68,263 / 0,319`, ciclo 3 `72,526 / 33,465 / 42,986 / 0,304`. Build dei sei cicli: `132,136 / 127,285 / 141,614 / 161,259 / 128,746 / 144,245 s` nell'ordine della sequenza.
+
+Il secondo ciclo storico 0.2.2 arriva a 2,201 ms dal limite delle query esatte. Il candidato finale aggiornato ha maggiore margine, ma la differenza fra sessioni richiede cautela nel generalizzare i numeri ad altri PC o carichi.
+
+Il peggioramento delle query rispetto alla 0.2.1 rimane senza causa accertata. Fra le due revisioni il backend non cambia e gli script diagnostici incorporati hanno SHA-256 identico; ciò non dimostra che runtime, scheduling e carico concorrente siano identici. La 0.2.2 storica aveva raggiunto 172,797 ms su `frasecom*` e 1,520 s no-change, mentre qui i massimi sono 68,263 ms e 0,713 s: la variazione fra sessioni è sostanziale. Le soglie revisionate accettano esplicitamente il rallentamento entro i limiti, con indagine futura non bloccante. La verifica di correttezza completa di `frasecom*` richiede il runner aggiornato nel candidato finale.
+
+I runner incorporati nei due compilati storici verificano gli altri attesi completi e misurano `frasecom*`, ma non confrontano la lista completa di quel prefisso con l'atteso. Il candidato finale aggiunge tale controllo nel compilato; resta questo limite nella prova comparativa storica 0.2.1/0.2.2.
+
+Profilazione diagnostica separata, eseguita sul sorgente corrente con gli storage dopo il sync dei cicli 0.2.1 e 0.2.2: `profile-021-nochange.txt/.pstats` e `profile-022-nochange.txt/.pstats` nella stessa directory locale. cProfile ha misurato rispettivamente 2,546 e 2,596 s nell'operazione no-change; la composizione ha impiegato 18,114 e 18,099 s, soprattutto nel caricamento snapshot. I tempi profilati hanno overhead marcato e non sono misure dei compilati né sostituiscono il gate. Una profilazione query sullo storage già sincronizzato è stata respinta dal controllo degli attesi (100 file rimossi): non è usata per attribuire la regressione. Per approfondire, profilare una copia dello storage prima del sync, misurare il carico concorrente e ripetere in condizioni controllate; le differenze osservate restano senza causa dimostrata.
+
+La profilazione query ripetuta con storage sorgente fresco è in `profile-source-queries.txt/.pstats`, sempre fuori Git. Include la verifica completa di 10.000 risultati prima dei campioni: cProfile attribuisce a quella verifica circa 204 s su 222 s della fase, con costo concentrato nella generazione degli intervalli di evidenziazione. Non isola quindi il costo delle query campionate né spiega il divario fra compilati. Per una futura indagine servono profili per singolo caso campionato, separati dalla verifica completa, nelle due revisioni compilate e con carico concorrente monitorato.
+
+### Candidato finale con diagnostica aggiornata
+
+Build release pulita dal commit locale in worktree separato `800ff756012c96a31f27d3baf11fc459ebaf47a1`; ZIP SHA-256 `2bd51f8be58327f10c29133755be0ef7a787113455aa514d5f7c7e19b1b66610`, installer SHA-256 `be9ce4c280d73e7e108c6e41a6e658fa396dc53199a3c9810dcaf29f82fd38ab`. Il payload contiene il controllo completo degli attesi per `frasecom*`. Report compilato `experiments/results/v2-022-final-800ff75/report.json` (SHA-256 `f78dc9abe5688f0dd550abd3d8f101fcb4ae34cf56d66b1bfdc6160ae2283a6e`), fuori Git: stesso corpus target, tre cicli, cinque warmup e cento campioni; `status=PASS`, `budget_status=PASS`, cinque fasi complete per ciclo. Profilo Balanced, alimentazione collegata; cache OS non svuotata.
+
+Installer, ZIP, manifest e checksum del candidato sono conservati in `dist/candidates/800ff756/`, fuori Git, senza sovrascrivere gli artefatti storici. Gli hash delle copie sono stati ricontrollati.
+
+Massimi dei tre cicli: build **131,868 s**, riapertura **5,705 s**, no-change **0,617 s**, sync **3,140 s**; p95 esatte **55,684 ms**, wildcard ordinarie **22,338 ms**, `frasecom*` **29,058 ms**, suggerimenti **0,199 ms**; working set **1.432.920.064 byte**. Tutti i budget rivisti sono rispettati. L'accettazione prestazionale T08 è chiusa per questo artefatto identificato, con il rallentamento storico non spiegato registrato come limite accettato. Il collaudo del nuovo installer e l'accessibilità nativa restano gate separati per la dichiarazione complessiva «production ready».
+
 Evidenze storiche V2-02–V2-05: ogni sezione identifica revisione, ambiente e limiti. Il collaudo del binario distribuito è nel [registro V2-08](V2_08_ACCEPTANCE.md). Corpus e report grezzi restano fuori Git.
 
 ## V2-02
