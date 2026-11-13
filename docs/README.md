@@ -16,6 +16,8 @@ V2-01–V2-08 sono concluse; nessuna ulteriore milestone è definita. Le evidenz
 
 ## Riferimenti
 
+**HW3-01 conclusa:** corpus reale verificato e accettato dall'utente; sintetici originali IT/EN `-003` verificati e annidati (100/1.000/10.000 TXT). Test mirati 25 passati, backend 464 passati/7 skip, CLI dieci query e due regressioni superate. [Protocollo, identità e limiti](homework-3/HW3_01_CORPUS.md). HW3-02–04 restano da eseguire.
+
 | Ti serve capire… | Documento |
 |---|---|
 | Cosa deve fare il prodotto | [PRD](PRD.md) |
@@ -26,6 +28,7 @@ V2-01–V2-08 sono concluse; nessuna ulteriore milestone è definita. Le evidenz
 | Quali dati conserva e come distribuirlo | [Privacy e diritti](SECURITY_AND_PRIVACY.md), [packaging](../scripts/package/README.md) |
 | Perché sono state fatte certe scelte | [Decisioni approvate e aperte](adr/README.md) |
 | Come verificare una modifica | [Strategia e scenari](TEST_STRATEGY.md), [corpus funzionale](TEST_DATASETS.md), [comandi esperimenti](../experiments/README.md) |
+| Come ampliare la valutazione e la relazione Homework 3 | [Roadmap Homework](homework-3/ROADMAP.md): HW3-01 conclusa; HW3-02–04 da eseguire, distinte da V2-01 e V2-02 |
 
 Requisiti e scenari mantengono ID stabili; misure ed esiti appartengono ai report. Le specifiche correnti sono autonome: l’[archivio v1](archive/v1/README.md) rimanda ai documenti storici a revisione Git fissa e riassume M9; non integra implicitamente le regole attuali.
 

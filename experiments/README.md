@@ -88,6 +88,19 @@ La suite reale è opt-in e non può passare con documenti mancanti, hash errati 
 
 ## Homework 3
 
+HW3-01: `homework3_corpus.py` prepara il corpus personale in `experiments/results/homework3/` (ignorata da Git). Eseguire `inventory SOURCE OUTPUT.json`, poi `prepare SOURCE DESTINAZIONE_NUOVA` e `verify DESTINAZIONE`. Manifest, sorgenti copiati ed estratti sono locali. I PDF senza testo estraibile sono esclusioni ammesse; `complete` riguarda la preparazione. `verify` controlla anche gli originali esclusi e la corrispondenza con l'inventario. Nessuna soglia minima di testo è applicata alle slide. Il registro `metadata/manual_review.json` conserva separatamente la revisione e la decisione dell'utente.
+
+I sintetici correnti sono `synthetic-small-003`, `synthetic-medium-003` e `synthetic-large-003`: paragrafi originali IT/EN, seed 20261113, schema 2, 100/1.000/10.000 TXT. [Protocollo, risultati e limiti](../docs/homework-3/HW3_01_CORPUS.md). Per riprodurli, scegliere tre destinazioni nuove con un suffisso comune libero a partire da 002; non cancellare o sovrascrivere i precedenti. Il profilo non modifica gli ID condivisi.
+
+```powershell
+backend/.venv/Scripts/python.exe experiments/homework3_corpus.py synthetic experiments/results/homework3/synthetic-small-NNN --profile small
+backend/.venv/Scripts/python.exe experiments/homework3_corpus.py synthetic experiments/results/homework3/synthetic-medium-NNN --profile medium
+backend/.venv/Scripts/python.exe experiments/homework3_corpus.py synthetic experiments/results/homework3/synthetic-large-NNN --profile large
+backend/.venv/Scripts/python.exe experiments/homework3_corpus.py verify-nested experiments/results/homework3/synthetic-small-NNN experiments/results/homework3/synthetic-medium-NNN experiments/results/homework3/synthetic-large-NNN --output experiments/results/homework3/verification-NNN.json
+```
+
+Sostituire `NNN` con il suffisso scelto. Il controllo congiunto legge tutti i file, verifica conteggi, byte UTF-8, hash, tolleranza e metadati, quindi confronta percorsi/hash per ID. È opt-in e separato dalla suite ordinaria. `verify DESTINAZIONE` resta disponibile per un singolo corpus e per i manifest storici schema 1. Famiglie e termini assenti sono metadati di costruzione fuori da `txt/`, non il futuro set di query HW3-02.
+
 `run_homework3.py` crea otto TXT sintetici in una directory temporanea, esegue dieci query e due regressioni in una sessione CLI reale, confronta gli attesi espliciti e stampa misure/trascrizione in JSON. Nessun dato personale o snapshot è versionato.
 
 Dalla radice, dopo l'installazione del backend:
