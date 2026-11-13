@@ -16,7 +16,9 @@
 - PDF digitali e Markdown.
 - Snapshot persistenti, aggiornamenti incrementali, manifest, ricerca durante sync.
 - UI Windows, background job e barra di progresso.
-- Persistenza del testo estratto e futura generazione di snippet.
+- Persistenza del testo estratto, snippet ed evidenziazione.
+- Prefissi/suffissi, suggerimenti e proposta ortografica esplicita; filtri e ranking desktop.
+- Viewer PDF/TXT/MD, editor TXT/MD e anteprima Markdown, guida e installer offline. Lo [stato corrente](../README.md) distingue release e candidato locale.
 
 La CLI con TXT deve essere realizzabile e verificabile **indipendentemente** dalle estensioni.
 
@@ -28,7 +30,7 @@ Le slide `id-02-source-discovery-basics.pptx` presentano inverted index con dict
 
 - Design documentato: sì.
 - Codice di indexing/ricerca e CLI TXT: **implementati e verificati localmente in M3**.
-- Misura del build iniziale su corpus sintetico: **8 file, 192 byte, 0,016752 s**; non è un benchmark di scala.
+- Nuova verifica del 12 novembre 2026, revisione `40826b0`: **8 file, 192 byte, 0,086036 s**, una sola esecuzione con cache OS non controllata; non è un benchmark di scala. La misura M3 di 0,016752 s resta un'evidenza storica separata.
 - Dieci query eseguite: **PASS**, oltre a due regressioni BOTH/clausole miste.
 - Repository pubblico fornito dall'utente: https://github.com/Forest904/local-document-search. Nessun push o invio al docente eseguito.
 

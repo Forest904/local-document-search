@@ -12,10 +12,11 @@ foreach ($program in @('pandoc', 'xelatex')) {
     }
 }
 New-Item -ItemType Directory -Force $work, (Split-Path $destination) | Out-Null
+Copy-Item -LiteralPath (Join-Path (Split-Path $source) 'figures') -Destination $work -Recurse -Force
 
 Push-Location $work
 try {
-    & pandoc $source --standalone --from markdown+yaml_metadata_block --to latex --output 'homework-3-report.tex' --pdf-engine=xelatex -V 'documentclass=article' -V 'papersize=a4' -V 'fontsize=11pt' -V 'geometry:margin=23mm' -V 'mainfont=Latin Modern Roman' -V 'monofont=Latin Modern Mono' -V 'colorlinks=true' -V 'linkcolor=blue' -V 'urlcolor=blue' -V 'linestretch=1.12'
+    & pandoc $source --standalone --from markdown+yaml_metadata_block --resource-path (Split-Path $source) --to latex --output 'homework-3-report.tex' --pdf-engine=xelatex -V 'documentclass=article' -V 'papersize=a4' -V 'fontsize=11pt' -V 'geometry:margin=20mm' -V 'mainfont=Latin Modern Roman' -V 'monofont=Latin Modern Mono' -V 'colorlinks=true' -V 'linkcolor=teal' -V 'urlcolor=teal' -V 'linestretch=1.06' -V 'float-placement=H'
     if ($LASTEXITCODE -ne 0) { throw "Pandoc non ha generato il LaTeX (codice $LASTEXITCODE)." }
 
     for ($pass = 1; $pass -le 2; $pass++) {
