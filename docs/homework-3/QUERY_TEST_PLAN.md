@@ -23,3 +23,23 @@ Per ogni query registrare:
 - Esito PASS/FAIL, osservazioni sull'analyzer e sulle posizioni.
 
 Estensioni facoltative: query multilingue, filename vs content, Markdown senza codice, PDF digitale. Le prove dell'homework devono comunque includere un corpus TXT verificato.
+
+## Estensione HW3-02
+
+La matrice storica e le due regressioni restano invariate e indipendenti.
+La nuova [valutazione HW3-02](HW3_02_EVALUATION.md) congela 30 query per ciascuno
+dei quattro corpus: 10 nome, 15 contenuto, 5 entrambi. I tre sintetici annidati
+condividono il testo delle query; gli attesi sono specifici per corpus. Il set
+reale è distinto e rimane locale.
+
+Gli attesi lessicali derivano dalla scansione indipendente e da controlli manuali
+su esempi, prima della ricerca. Il confronto recupera tutte le pagine e conserva
+insiemi, TP/FP/FN, metriche micro/macro, casi N/A e correttezza esatta. Esempi
+sintetici: `velnaro tespilo` verifica il vincolo fra campi; `"frandilo spolvero"`
+distingue adiacenza, interruzione e ordine invertito; `café` verifica gli accenti.
+
+Dieci ulteriori query tematiche, approvate con i bisogni e poi mantenute fisse,
+usano un indice dei soli 60 documenti selezionati. I 600 giudizi sono stati
+revisionati e approvati prima di mostrarne i risultati; non derivano dalla
+presenza lessicale dei termini. ID anonimi, metriche e limiti sono nel protocollo;
+testi delle query reali, motivazioni e documenti dettagliati restano locali.

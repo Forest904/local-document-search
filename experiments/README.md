@@ -113,6 +113,66 @@ Su Linux usare `backend/.venv/bin/python`. Il runner restituisce codice 1 se i r
 
 Risultati locali in `experiments/results/` (ignorata da Git). [Relazione M3](../docs/homework-3/REPORT.md), [matrice query](../docs/homework-3/QUERY_TEST_PLAN.md).
 
+## Homework 3 — HW3-02
+
+Gli strumenti `homework3_scan.py`, `homework3_metrics.py`, `homework3_evaluate.py`
+e `homework3_relevance.py` implementano il [protocollo di valutazione](../docs/homework-3/HW3_02_EVALUATION.md).
+Non misurano prestazioni HW3-03. Tutti i percorsi dei comandi seguenti sono
+esempi: scegliere output nuovi sotto `experiments/results/homework3/`.
+
+```powershell
+backend/.venv/Scripts/python.exe experiments/homework3_evaluate.py freeze-lexical CORPUS DRAFT.json FROZEN.json
+backend/.venv/Scripts/python.exe experiments/homework3_evaluate.py evaluate-lexical FROZEN.json REPORT.json
+backend/.venv/Scripts/python.exe experiments/homework3_relevance.py prepare-sample REAL_CORPUS SUBJECTS.json SAMPLE_DIR
+backend/.venv/Scripts/python.exe experiments/homework3_relevance.py freeze-needs SAMPLE_DIR/sample.json NEEDS_DRAFT.json APPROVAL.json NEEDS_FROZEN.json
+backend/.venv/Scripts/python.exe experiments/homework3_relevance.py prepare-batches SAMPLE_DIR/sample.json NEEDS_FROZEN.json BATCH_DIR
+backend/.venv/Scripts/python.exe experiments/homework3_relevance.py freeze-judgments SAMPLE_DIR/sample.json NEEDS_FROZEN.json BATCH_DIR APPROVAL.json JUDGMENTS_FROZEN.json
+backend/.venv/Scripts/python.exe experiments/homework3_relevance.py evaluate SAMPLE_DIR/sample.json NEEDS_FROZEN.json JUDGMENTS_FROZEN.json REPORT.json
+backend/.venv/Scripts/python.exe experiments/homework3_summary.py REPORT.json --output PUBLIC_SUMMARY.json
+```
+
+Il draft lessicale è un oggetto JSON con `author`, `queries` e `manual_checks`.
+Ogni query ha `id` anonimo `Q01`…`Q30`, `field` (`filename`, `content`, `both`)
+e `query`. Ogni controllo manuale ha `query_id`, `document` relativo alla radice
+`txt/`, `expected` booleano e `reason`. L'oracolo produce gli insiemi completi;
+il congelamento verifica i controlli manuali, le quote 10/15/5 e l'integrità.
+Non usare il backend per formulare query o attesi.
+
+`SUBJECTS.json` associa ogni percorso sorgente incluso a `subject` e `basis`;
+eventuali estratti di riscontro sono locali. `prepare-sample` applica quote
+40/10/10, terzili per formato e seed 20261113, quindi copia i soli TXT mantenendo
+nomi e percorsi. Il campione non deve essere rigenerato in risposta ai risultati.
+
+Il draft dei bisogni contiene `sample_sha256` e dieci `needs`, con `id` anonimo
+`N01`…`N10`, `need`, `criterion`, `include`, `exclude`, `field`, `query`.
+Il primo registro di approvazione contiene `decision: "approved"`, `role: "user"`,
+`author`, `date`, `evidence` della risposta effettiva e `target_sha256` dei byte
+del draft. Non generare una conferma fittizia per superare il controllo.
+
+`prepare-batches` produce dieci moduli da 60 giudizi inizialmente pendenti.
+Conservare questi moduli; compilare nuove versioni con `relevant` booleano,
+`reason`, `reference` a pagina/sezione, `original_review`, `reviewer`.
+Le proposte restano `state: "proposed"`; solo dopo la revisione finale diventano
+`reviewed`. Gli ambigui restano pendenti. L'approvazione finale usa come
+`target_sha256` il risultato di `homework3_evaluate.identity(rows)`, dove `rows`
+è la lista dei dieci JSON caricati in ordine di nome `batch-*.json`. Il comando
+di congelamento rifiuta lotti mancanti, duplicati, ambigui o non approvati.
+
+Non modificare artefatti congelati o riutilizzare output esistenti. La valutazione
+rifiuta TXT/manifest modificati; quella tematica verifica anche gli originali
+selezionati e la copia del campione. Le misure non definite sono `null`, non zero.
+L'export pubblico accetta più report e ricostruisce metriche/aggregati senza
+copiare query, percorsi, giudizi o altri campi liberi. Un confronto lessicale
+con differenze restituisce exit code 1; un report tematico imperfetto resta un
+risultato valido e non comporta riscrittura delle query.
+
+Artefatti correnti: lessicale in `hw3-02-002/`, tematico in
+`hw3-02-001/relevance/`; `hw3-02-001/obsolete-run-status.json` documenta il
+tentativo lessicale superato. L'integrità HW3-01 rimane un prerequisito distinto.
+Milestone conclusa: 120 confronti esatti e 600 giudizi approvati. Gli
+[aggregati pubblici](homework3_results.json) riportano metriche per query,
+corpus e campo senza testi o percorsi personali.
+
 ## M9: corpus multiformato e misure
 
 Dalla radice su Windows, con il backend installato:

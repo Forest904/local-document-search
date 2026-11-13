@@ -1,5 +1,15 @@
 # Strategia di verifica v2
 
+HW3-02 usa `backend/tests/integration/test_homework3_evaluation.py`: esempi manuali
+per Unicode, segni combinanti, filename senza directory/suffisso, AND/frasi/BOTH,
+input invalidi, UTF-8/BOM e metriche con denominatori nulli. Le integrazioni coprono
+paginazione completa oltre 50 match e risposte incoerenti, congelamento e manomissioni,
+quote e determinismo del campione, giudizi incompleti/approvazioni mancanti ed export
+senza contenuti privati. Le valutazioni sui quattro corpus e i 600 giudizi reali
+restano opt-in: [protocollo ed evidenze HW3-02](homework-3/HW3_02_EVALUATION.md).
+La correttezza lessicale e la rilevanza tematica hanno attesi e report distinti;
+la rilevanza si misura soltanto dopo la revisione finale dell'utente.
+
 HW3-01 usa `backend/tests/integration/test_homework3_corpus.py` per fixture piccole di preparazione e verifica. Copre riproducibilità da seed/ID e indipendenza dal profilo, annidamento, varietà di dimensioni/sezioni/strutture, tutte le materie in IT/EN, famiglie riservate e termini assenti. Le frasi consecutive, interrotte da una parola e invertite sono controllate direttamente sui testi, senza analyzer del prodotto; si controllano anche coppie distanti e contaminazioni fra campi. Le prove negative coprono file mancanti/aggiuntivi, hash, conteggi, byte, identità e metadati alterati, volume fuori tolleranza, UTF-8 invalido e destinazioni esistenti. I manifest schema 1 restano una regressione esplicita. La prova congiunta riduce i conteggi dei tre profili nelle fixture, senza cambiare dimensioni o generazione per ID.
 
 La verifica completa dei tre profili da 100/1.000/10.000 TXT tramite `verify-nested`, l'integrità del corpus reale e la revisione manuale sono prove separate opt-in, registrate nel [protocollo HW3-01](homework-3/HW3_01_CORPUS.md). La regressione `experiments/run_homework3.py` deve riportare esplicitamente dieci query e due regressioni superate. Queste prove non misurano recall o prestazioni dei nuovi corpus e non sostituiscono V2-01/V2-02.

@@ -1,0 +1,2272 @@
+{
+  "schema": 1,
+  "undefined_metric": "null = N/A",
+  "results": [
+    {
+      "kind": "lexical_report",
+      "corpus_id": "b61a15c9a8a513b67e2ef221a70cbfde110179088953c0aa0db757be3dab9715",
+      "report_sha256": "c645877cd57d95edee6df5788fd2bb3bf4926937ac14e8fff5506b7f8f4f8c47",
+      "query_count": 30,
+      "rows": [
+        {
+          "id": "Q01",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q02",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q03",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q04",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q05",
+          "field": "filename",
+          "metrics": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q06",
+          "field": "filename",
+          "metrics": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q07",
+          "field": "filename",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q08",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q09",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q10",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q11",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q12",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q13",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q14",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q15",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q16",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q17",
+          "field": "content",
+          "metrics": {
+            "tp": 30,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q18",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q19",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q20",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q21",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q22",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q23",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q24",
+          "field": "content",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q25",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q26",
+          "field": "both",
+          "metrics": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q27",
+          "field": "both",
+          "metrics": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q28",
+          "field": "both",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q29",
+          "field": "both",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q30",
+          "field": "both",
+          "metrics": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        }
+      ],
+      "summary": {
+        "micro": {
+          "tp": 455,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "macro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "valid_cases": {
+          "precision": 22,
+          "recall": 22,
+          "f1": 22
+        },
+        "exact_sets": 30,
+        "exact_set_fraction": 1.0
+      },
+      "by_field": {
+        "both": {
+          "micro": {
+            "tp": 80,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 5,
+            "recall": 5,
+            "f1": 5
+          },
+          "exact_sets": 5,
+          "exact_set_fraction": 1.0
+        },
+        "content": {
+          "micro": {
+            "tp": 300,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 10,
+            "recall": 10,
+            "f1": 10
+          },
+          "exact_sets": 15,
+          "exact_set_fraction": 1.0
+        },
+        "filename": {
+          "micro": {
+            "tp": 75,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 7,
+            "recall": 7,
+            "f1": 7
+          },
+          "exact_sets": 10,
+          "exact_set_fraction": 1.0
+        }
+      }
+    },
+    {
+      "kind": "lexical_report",
+      "corpus_id": "b871bc7cfb89c6b223e0a3a81e114c5b29315990d59841ac973c60566392bff0",
+      "report_sha256": "6dd1279df3009e8207c23ca187cd4a06e1f8109cb663472a62de9dd4b7f2f6e7",
+      "query_count": 30,
+      "rows": [
+        {
+          "id": "Q01",
+          "field": "filename",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q02",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q03",
+          "field": "filename",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q04",
+          "field": "filename",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q05",
+          "field": "filename",
+          "metrics": {
+            "tp": 167,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q06",
+          "field": "filename",
+          "metrics": {
+            "tp": 167,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q07",
+          "field": "filename",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q08",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q09",
+          "field": "filename",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q10",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q11",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q12",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q13",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q14",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q15",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q16",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q17",
+          "field": "content",
+          "metrics": {
+            "tp": 300,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q18",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q19",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q20",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q21",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q22",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q23",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q24",
+          "field": "content",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q25",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q26",
+          "field": "both",
+          "metrics": {
+            "tp": 200,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q27",
+          "field": "both",
+          "metrics": {
+            "tp": 200,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q28",
+          "field": "both",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q29",
+          "field": "both",
+          "metrics": {
+            "tp": 100,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q30",
+          "field": "both",
+          "metrics": {
+            "tp": 200,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        }
+      ],
+      "summary": {
+        "micro": {
+          "tp": 4535,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "macro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "valid_cases": {
+          "precision": 22,
+          "recall": 22,
+          "f1": 22
+        },
+        "exact_sets": 30,
+        "exact_set_fraction": 1.0
+      },
+      "by_field": {
+        "both": {
+          "micro": {
+            "tp": 800,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 5,
+            "recall": 5,
+            "f1": 5
+          },
+          "exact_sets": 5,
+          "exact_set_fraction": 1.0
+        },
+        "content": {
+          "micro": {
+            "tp": 3000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 10,
+            "recall": 10,
+            "f1": 10
+          },
+          "exact_sets": 15,
+          "exact_set_fraction": 1.0
+        },
+        "filename": {
+          "micro": {
+            "tp": 735,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 7,
+            "recall": 7,
+            "f1": 7
+          },
+          "exact_sets": 10,
+          "exact_set_fraction": 1.0
+        }
+      }
+    },
+    {
+      "kind": "lexical_report",
+      "corpus_id": "396a82555f2da6db726d16376a84ff40d633fd5fe092905a2d6ff35340019f11",
+      "report_sha256": "6e33a9188975af6fd62d8328b847b0c646f0f072b81f09470e0be5335e5829c1",
+      "query_count": 30,
+      "rows": [
+        {
+          "id": "Q01",
+          "field": "filename",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q02",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q03",
+          "field": "filename",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q04",
+          "field": "filename",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q05",
+          "field": "filename",
+          "metrics": {
+            "tp": 1667,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q06",
+          "field": "filename",
+          "metrics": {
+            "tp": 1667,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q07",
+          "field": "filename",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q08",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q09",
+          "field": "filename",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q10",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q11",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q12",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q13",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q14",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q15",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q16",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q17",
+          "field": "content",
+          "metrics": {
+            "tp": 3000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q18",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q19",
+          "field": "content",
+          "metrics": {
+            "tp": 10000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q20",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q21",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q22",
+          "field": "content",
+          "metrics": {
+            "tp": 10000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q23",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q24",
+          "field": "content",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q25",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q26",
+          "field": "both",
+          "metrics": {
+            "tp": 2000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q27",
+          "field": "both",
+          "metrics": {
+            "tp": 2000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q28",
+          "field": "both",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q29",
+          "field": "both",
+          "metrics": {
+            "tp": 1000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q30",
+          "field": "both",
+          "metrics": {
+            "tp": 2000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        }
+      ],
+      "summary": {
+        "micro": {
+          "tp": 45335,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "macro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "valid_cases": {
+          "precision": 22,
+          "recall": 22,
+          "f1": 22
+        },
+        "exact_sets": 30,
+        "exact_set_fraction": 1.0
+      },
+      "by_field": {
+        "both": {
+          "micro": {
+            "tp": 8000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 5,
+            "recall": 5,
+            "f1": 5
+          },
+          "exact_sets": 5,
+          "exact_set_fraction": 1.0
+        },
+        "content": {
+          "micro": {
+            "tp": 30000,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 10,
+            "recall": 10,
+            "f1": 10
+          },
+          "exact_sets": 15,
+          "exact_set_fraction": 1.0
+        },
+        "filename": {
+          "micro": {
+            "tp": 7335,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 7,
+            "recall": 7,
+            "f1": 7
+          },
+          "exact_sets": 10,
+          "exact_set_fraction": 1.0
+        }
+      }
+    },
+    {
+      "kind": "lexical_report",
+      "corpus_id": "310404c579e638a92f9d1cf6ed2c1bf608068befdf7b5f4503d18239079bfb03",
+      "report_sha256": "e1b67e2d1a466feb2d1f647198942d35598a5f9b1783ba4e7bf5a9d1fb4b5077",
+      "query_count": 30,
+      "rows": [
+        {
+          "id": "Q01",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q02",
+          "field": "filename",
+          "metrics": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q03",
+          "field": "filename",
+          "metrics": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q04",
+          "field": "filename",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q05",
+          "field": "filename",
+          "metrics": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q06",
+          "field": "filename",
+          "metrics": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q07",
+          "field": "filename",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q08",
+          "field": "filename",
+          "metrics": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q09",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q10",
+          "field": "filename",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q11",
+          "field": "content",
+          "metrics": {
+            "tp": 35,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q12",
+          "field": "content",
+          "metrics": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q13",
+          "field": "content",
+          "metrics": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q14",
+          "field": "content",
+          "metrics": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q15",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q16",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q17",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q18",
+          "field": "content",
+          "metrics": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q19",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q20",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q21",
+          "field": "content",
+          "metrics": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q22",
+          "field": "content",
+          "metrics": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q23",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        },
+        {
+          "id": "Q24",
+          "field": "content",
+          "metrics": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q25",
+          "field": "content",
+          "metrics": {
+            "tp": 35,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q26",
+          "field": "both",
+          "metrics": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q27",
+          "field": "both",
+          "metrics": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q28",
+          "field": "both",
+          "metrics": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q29",
+          "field": "both",
+          "metrics": {
+            "tp": 28,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "Q30",
+          "field": "both",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "exact": true,
+            "false_positives_without_expected": 0
+          }
+        }
+      ],
+      "summary": {
+        "micro": {
+          "tp": 232,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "macro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "valid_cases": {
+          "precision": 25,
+          "recall": 25,
+          "f1": 25
+        },
+        "exact_sets": 30,
+        "exact_set_fraction": 1.0
+      },
+      "by_field": {
+        "both": {
+          "micro": {
+            "tp": 58,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 4,
+            "recall": 4,
+            "f1": 4
+          },
+          "exact_sets": 5,
+          "exact_set_fraction": 1.0
+        },
+        "content": {
+          "micro": {
+            "tp": 133,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 13,
+            "recall": 13,
+            "f1": 13
+          },
+          "exact_sets": 15,
+          "exact_set_fraction": 1.0
+        },
+        "filename": {
+          "micro": {
+            "tp": 41,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "macro": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "valid_cases": {
+            "precision": 8,
+            "recall": 8,
+            "f1": 8
+          },
+          "exact_sets": 10,
+          "exact_set_fraction": 1.0
+        }
+      }
+    },
+    {
+      "kind": "relevance_report",
+      "corpus_id": "2ab6e343160fbac937a12d46abcd6a990c4057934b3560926a606a3bf38df8f5",
+      "report_sha256": "d94168665b40b19246ca0296590d472770b8e0aec7f3e8ae50dc70f4c7c945f8",
+      "query_count": 10,
+      "rows": [
+        {
+          "id": "N01",
+          "field": "content",
+          "metrics": {
+            "tp": 5,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.8333333333333334,
+            "recall": 1.0,
+            "f1": 0.9090909090909091,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N02",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 8,
+            "precision": 0.75,
+            "recall": 0.2727272727272727,
+            "f1": 0.4,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N03",
+          "field": "content",
+          "metrics": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.5,
+            "recall": 1.0,
+            "f1": 0.6666666666666666,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N04",
+          "field": "content",
+          "metrics": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "precision": 1.0,
+            "recall": 0.25,
+            "f1": 0.4,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N05",
+          "field": "content",
+          "metrics": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.7142857142857143,
+            "f1": 0.8333333333333334,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N06",
+          "field": "content",
+          "metrics": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.8571428571428571,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N07",
+          "field": "content",
+          "metrics": {
+            "tp": 4,
+            "fp": 5,
+            "fn": 10,
+            "precision": 0.4444444444444444,
+            "recall": 0.2857142857142857,
+            "f1": 0.34782608695652173,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N08",
+          "field": "content",
+          "metrics": {
+            "tp": 5,
+            "fp": 13,
+            "fn": 4,
+            "precision": 0.2777777777777778,
+            "recall": 0.5555555555555556,
+            "f1": 0.37037037037037035,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N09",
+          "field": "content",
+          "metrics": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "precision": null,
+            "recall": 0.0,
+            "f1": 0.0,
+            "exact": false,
+            "false_positives_without_expected": null
+          }
+        },
+        {
+          "id": "N10",
+          "field": "content",
+          "metrics": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "exact": true,
+            "false_positives_without_expected": null
+          }
+        }
+      ],
+      "summary": {
+        "micro": {
+          "tp": 30,
+          "fp": 22,
+          "fn": 31,
+          "precision": 0.5769230769230769,
+          "recall": 0.4918032786885246,
+          "f1": 0.5309734513274337
+        },
+        "macro": {
+          "precision": 0.7283950617283951,
+          "recall": 0.6078282828282828,
+          "f1": 0.5784430223560658
+        },
+        "valid_cases": {
+          "precision": 9,
+          "recall": 10,
+          "f1": 10
+        },
+        "exact_sets": 1,
+        "exact_set_fraction": 0.1
+      },
+      "by_field": {
+        "content": {
+          "micro": {
+            "tp": 30,
+            "fp": 22,
+            "fn": 31,
+            "precision": 0.5769230769230769,
+            "recall": 0.4918032786885246,
+            "f1": 0.5309734513274337
+          },
+          "macro": {
+            "precision": 0.7283950617283951,
+            "recall": 0.6078282828282828,
+            "f1": 0.5784430223560658
+          },
+          "valid_cases": {
+            "precision": 9,
+            "recall": 10,
+            "f1": 10
+          },
+          "exact_sets": 1,
+          "exact_set_fraction": 0.1
+        }
+      }
+    }
+  ]
+}

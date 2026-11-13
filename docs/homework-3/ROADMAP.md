@@ -1,6 +1,6 @@
 # Homework 3 — Roadmap di valutazione e relazione
 
-**Stato: HW3-01 conclusa; HW3-02–04 approvate e da eseguire.** La mail del docente richiede di esplicitare costruzione del dataset e metriche, raccomanda più documenti per valutare tempi e recall e chiede l'indirizzo email nella relazione. Le evidenze di HW3-01 sono nel protocollo collegato; nessun invio del report è attestato.
+**Stato: HW3-01 e HW3-02 concluse; HW3-03 ridotta a pilot; HW3-04 da eseguire.** La mail del docente richiede di esplicitare costruzione del dataset e metriche, raccomanda più documenti per valutare tempi e recall e chiede l'indirizzo email nella relazione. Le evidenze di HW3-01 e HW3-02 sono nei protocolli collegati; nessun invio del report è attestato.
 
 Restano separate quattro evidenze: [regressione Homework](QUERY_TEST_PLAN.md) su otto TXT (dieci query e due regressioni), nuova valutazione Homework qui pianificata, [corpus funzionale V2-01](../TEST_DATASETS.md) e [benchmark desktop V2-02](../PERFORMANCE.md). Nessuna modifica prevista alle API pubbliche, alla semantica di ricerca o alla CLI; strumenti nuovi solo nell'area sperimentale. Le milestone si eseguono nell'ordine seguente.
 
@@ -21,16 +21,44 @@ Evidenze riconciliate: `real-002` verificato, 392 TXT e accettazione dell'utente
 
 ## HW3-02 — Correttezza e rilevanza
 
-- [ ] Preservare le dieci query storiche e le due regressioni. Preparare 30 query per ciascun nuovo corpus: 10 nome, 15 contenuto, 5 entrambi; termini, AND, frasi, assenze e selettività diverse. Fissare query e attesi prima di osservare i risultati del motore.
-- [ ] Implementare un verificatore a scansione indipendente, senza riusare analyzer, parser o evaluator del prodotto. Applicare le regole documentate e confrontare insiemi completi, non conteggi o prime pagine.
-- [ ] Riportare TP, FP, FN, precision, recall e F1 per query, aggregati micro/macro e percentuale di insiemi esattamente corretti. Denominatori nulli producono `N/A`, con numero di casi validi dichiarato; per query senza attesi controllare esplicitamente i falsi positivi.
-- [ ] Selezionare 60 documenti reali stratificati per materia, formato originale e lunghezza. Definire 10 bisogni informativi, ciascuno con criterio binario di rilevanza e query iniziale.
-- [ ] Preparare tutti i 600 giudizi documento-bisogno e sottoporli alla revisione finale dell'utente senza mostrare i risultati del motore. Risolvere gli ambigui prima di congelare i giudizi.
-- [ ] Valutare la rilevanza su un indice dei soli 60 documenti: la recall tematica si riferisce a questo sottoinsieme, non a tutta `Uni`. Non usare metriche di ranking per la CLI ordinata per percorso.
+[Protocollo ed evidenze](HW3_02_EVALUATION.md): milestone conclusa il 13 novembre
+2026, 120/120 confronti lessicali esatti, 600 giudizi approvati e report tematico
+completo. Test mirati 24 passati, backend 488 passati/7 skip, CLI 10+2 PASS.
+
+- [x] Preservare le dieci query storiche e le due regressioni. Preparare 30 query per ciascun nuovo corpus: 10 nome, 15 contenuto, 5 entrambi; termini, AND, frasi, assenze e selettività diverse. Fissare query e attesi prima di osservare i risultati del motore.
+- [x] Implementare un verificatore a scansione indipendente, senza riusare analyzer, parser o evaluator del prodotto. Applicare le regole documentate e confrontare insiemi completi, non conteggi o prime pagine.
+- [x] Riportare TP, FP, FN, precision, recall e F1 per query, aggregati micro/macro e percentuale di insiemi esattamente corretti. Denominatori nulli producono `N/A`, con numero di casi validi dichiarato; per query senza attesi controllare esplicitamente i falsi positivi.
+- [x] Selezionare 60 documenti reali stratificati per materia, formato originale e lunghezza. Definire 10 bisogni informativi, ciascuno con criterio binario di rilevanza e query iniziale.
+- [x] Preparare tutti i 600 giudizi documento-bisogno e sottoporli alla revisione finale dell'utente senza mostrare i risultati del motore. Risolvere gli ambigui prima di congelare i giudizi.
+- [x] Valutare la rilevanza su un indice dei soli 60 documenti: la recall tematica si riferisce a questo sottoinsieme, non a tutta `Uni`. Non usare metriche di ranking per la CLI ordinata per percorso.
 
 **Completamento ed evidenze:** query e giudizi versionati localmente con identità del corpus, confronti completi senza differenze lessicali inattese, tabelle metriche e diagnosi degli errori. La qualità tematica si riporta anche se imperfetta: distinguere limiti delle query, analyzer ed estrazione. Correttezza sul TXT convertito non dimostra fedeltà dell'estrazione al sorgente.
 
 ## HW3-03 — Prestazioni e scalabilità
+
+**Scope ridotto concordato il 13 novembre 2026 per il tempo disponibile:**
+eseguire soltanto un pilot su `small-003` (100 TXT), poi passare a HW3-04.
+Non dichiarare completata la campagna estesa di scalabilità. Le verifiche
+HW3-02 forniscono correttezza e un'osservazione del costo complessivo del run
+grande (circa 33 minuti), non sostituiscono misure separate o ripetute.
+
+### Pilot richiesto prima della relazione
+
+- [ ] Riutilizzare le 30 query e gli attesi congelati di `small-003`. Confrontare indice volatile e scansione indipendente sugli stessi TXT; la scansione apre e analizza i documenti a ogni query, senza cache applicativa.
+- [ ] Cronometrare separatamente build e ricerca con `perf_counter`; misurare il recupero completo su entrambi i metodi, senza stampa. Il backend include snippet e controlli di paginazione; dichiarare questa differenza di lavoro rispetto alla scansione. Verificare gli insiemi fuori dai tratti cronometrati.
+- [ ] Eseguire un processo, un passaggio di warm-up e tre ripetizioni per query, in ordine deterministico registrato. Riportare tempi grezzi, mediana e intervallo min–max per query/campo e rapporto scansione/indice; non stimare p95 da tre valori.
+- [ ] Registrare hardware, Python, revisione, working tree, hash degli strumenti e corpus, stato alimentazione e condizioni di cache osservabili. Cache OS non svuotata; nessuna dichiarazione di cache fredda. Preparazione/conversione escluse dai tempi.
+- [ ] Budget operativo: dieci minuti per il pilot, nessuna nuova prova grande. Se esaurito, conservare risultati e timeout, indicare i casi mancanti senza selezionare soltanto quelli favorevoli; passare comunque a HW3-04 con il limite esplicito.
+
+**Completamento del pilot:** report locale e aggregati pubblici, confronto di
+correttezza, misure separate e limiti. Un solo corpus e un solo processo non
+dimostrano scalabilità o variabilità fra processi. Il picco RAM non è requisito
+del pilot. Nessuna ottimizzazione del prodotto rientra in questa riduzione.
+
+### Campagna estesa rinviata, non vincolante per HW3-04
+
+Il protocollo originario resta sotto come lavoro non eseguito; i suoi requisiti
+di ripetizione, p95, RAM e scalabilità non sono attribuiti al pilot.
 
 - [ ] Confrontare indice Homework in memoria e scansione sequenziale sugli stessi TXT, campi e query. La baseline apre e analizza i documenti a ogni interrogazione, senza indice o cache applicativa.
 - [ ] Separare preparazione/conversione, avvio del processo, build e ricerca. Misurare prima pagina di 50 risultati con totale e recupero completo, senza stampa a console.
@@ -50,4 +78,4 @@ Evidenze riconciliate: `real-002` verificato, 392 TXT e accettazione dell'utente
 - [ ] Pubblicare solo aggregati, ID anonimi ed esempi sintetici. Testi, percorsi personali, query reali e giudizi dettagliati restano locali; dichiarare il limite alla riproducibilità esterna del corpus personale.
 - [ ] Inserire l'email solo nel PDF di consegna tramite configurazione locale non versionata; chiedere l'indirizzo prima della compilazione finale. Aggiornare le [istruzioni di build](BUILD.md), renderizzare e verificare PDF e dati riportati.
 
-**Completamento ed evidenze:** test pertinenti con esiti e skip dichiarati, relazione coerente con i report, PDF controllato e contatto presente solo nella copia di consegna. Restano necessari i giudizi dell'utente e il suo indirizzo email. Nessuna pubblicazione dei documenti universitari o invio automatico al docente.
+**Completamento ed evidenze:** test pertinenti con esiti e skip dichiarati, relazione coerente con i report, PDF controllato e contatto presente solo nella copia di consegna. I giudizi dell'utente sono approvati in HW3-02; resta necessario il suo indirizzo email per la consegna. Nessuna pubblicazione dei documenti universitari o invio automatico al docente.
