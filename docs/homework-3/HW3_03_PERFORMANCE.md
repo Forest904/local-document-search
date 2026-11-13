@@ -96,4 +96,6 @@ non controllato. Queste evidenze non attestano un installer o una release.
 Verifiche: **29 test mirati passati** (5 HW3-03 e 24 HW3-02), nessuno skip;
 regressione CLI **10 query e 2 regressioni PASS**. Suite backend completa non
 ripetuta per questa modifica esclusivamente sperimentale. Il pilot ridotto
-è concluso; campagna estesa non eseguita, HW3-04 resta da eseguire.
+è concluso; campagna estesa non eseguita. Alla chiusura del pilot HW3-04
+restava da eseguire; la successiva [chiusura della relazione](HW3_04_REPORT.md)
+documenta PDF e verifiche finali senza nuove misure prestazionali.

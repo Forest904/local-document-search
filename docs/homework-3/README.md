@@ -1,10 +1,10 @@
 # Homework 3 — Materiale di consegna
 
 1. [ASSIGNMENT_ALIGNMENT.md](ASSIGNMENT_ALIGNMENT.md): requisiti derivati dalle slide del compito, perimetro minimo vs estensioni.
-2. [QUERY_TEST_PLAN.md](QUERY_TEST_PLAN.md): matrice di ~10 prove, da adattare al corpus reale.
-3. [REPORT.md](REPORT.md): relazione riscritta il 12 novembre 2026, dieci pagine illustrate; requisiti Homework, motore, query eseguite ed evoluzione fino al candidato Luma 0.2.2, con evidenze e limiti separati.
+2. [QUERY_TEST_PLAN.md](QUERY_TEST_PLAN.md): matrice storica di dieci prove e due regressioni, distinta dalle valutazioni ampliate.
+3. [REPORT.md](REPORT.md): relazione del 13 novembre 2026, 15 pagine, sei tabelle e otto figure: dataset, ground truth, metriche e risultati, con tre pagine su Luma.
 4. [BUILD.md](BUILD.md): generazione del PDF e delle figure, controllo visivo e aggiornamento delle misure.
-5. [ROADMAP.md](ROADMAP.md): HW3-01, HW3-02 e pilot ridotto HW3-03 conclusi; relazione HW3-04 da eseguire, campagna estesa rinviata.
+5. [ROADMAP.md](ROADMAP.md): HW3-01, HW3-02 e pilot ridotto HW3-03 conclusi; HW3-04 conclusa, campagna estesa rinviata.
 6. [HW3_02_EVALUATION.md](HW3_02_EVALUATION.md): strumenti, corpus/query congelati, campione, giudizi approvati, metriche e limiti.
 7. [HW3_03_PERFORMANCE.md](HW3_03_PERFORMANCE.md): pilot su 100 TXT, misure separate, confronto indice/scansione e limiti.
 
@@ -28,4 +28,8 @@ Il [protocollo](HW3_02_EVALUATION.md) distingue risultati, approvazioni e limiti
 **Pilot ridotto concluso:** 100 TXT, build 1,910427 s, run 138,388906 s,
 240/240 confronti esatti, nessun timeout. Test mirati 29 passati, CLI 10+2 PASS.
 [Misure e limiti](HW3_03_PERFORMANCE.md): un corpus e un processo non attestano
-scalabilità; campagna estesa rinviata e HW3-04 ancora da eseguire.
+scalabilità; campagna estesa rinviata. La successiva HW3-04 è conclusa.
+
+## HW3-04
+
+**Conclusa:** sorgente e PDF di consegna verificati, contatto presente solo nella copia finale e nei metadati locali. Metriche e grafici riconciliati, tutte le 15 pagine ispezionate. Backend **493 passed, 7 skipped**, inclusi 54 test Homework senza skip; CLI **10+2 PASS**. [Registro di chiusura](HW3_04_REPORT.md). Nessun invio al docente attestato.

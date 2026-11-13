@@ -8,6 +8,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import time
 
+from report_evaluation_figures import main as evaluation_figures
+
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 os.environ["QT_QUICK_BACKEND"] = "software"
 os.environ["QT_SCALE_FACTOR"] = "1"
@@ -59,6 +61,7 @@ def diagram(name, height, boxes, arrows):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    evaluation_figures()
     QQuickStyle.setStyle("Basic")
     app = QGuiApplication([])
     app.setQuitOnLastWindowClosed(False)

@@ -1,6 +1,6 @@
 # Homework 3 — Roadmap di valutazione e relazione
 
-**Stato: HW3-01 e HW3-02 concluse; pilot ridotto HW3-03 concluso; campagna estesa rinviata; HW3-04 da eseguire.** La mail del docente richiede di esplicitare costruzione del dataset e metriche, raccomanda più documenti per valutare tempi e recall e chiede l'indirizzo email nella relazione. Le evidenze di HW3-01 e HW3-02 sono nei protocolli collegati; nessun invio del report è attestato.
+**Stato: HW3-01, HW3-02 e HW3-04 concluse; pilot ridotto HW3-03 concluso; campagna estesa rinviata.** La mail del docente richiede di esplicitare costruzione del dataset e metriche, raccomanda più documenti per valutare tempi e recall e chiede l'indirizzo email nella relazione. Le evidenze di HW3-01 e HW3-02 sono nei protocolli collegati; nessun invio del report è attestato.
 
 Restano separate quattro evidenze: [regressione Homework](QUERY_TEST_PLAN.md) su otto TXT (dieci query e due regressioni), nuova valutazione Homework qui pianificata, [corpus funzionale V2-01](../TEST_DATASETS.md) e [benchmark desktop V2-02](../PERFORMANCE.md). Nessuna modifica prevista alle API pubbliche, alla semantica di ricerca o alla CLI; strumenti nuovi solo nell'area sperimentale. Le milestone si eseguono nell'ordine seguente.
 
@@ -77,10 +77,13 @@ di ripetizione, p95, RAM e scalabilità non sono attribuiti al pilot.
 
 ## HW3-04 — Correzioni, relazione e consegna
 
-- [ ] Correggere difetti di correttezza con regressioni e ripetere le valutazioni interessate, conservando gli esiti precedenti. Pianificare separatamente eventuali ottimizzazioni.
-- [ ] Testare generatore, manifest, conversioni, verificatore indipendente e metriche con piccoli esempi calcolati manualmente. Benchmark grandi opt-in, fuori dalla suite ordinaria; preservare la regressione CLI Homework.
-- [ ] Aggiornare protocollo dataset e [piano query](QUERY_TEST_PLAN.md); riscrivere la [relazione](REPORT.md) attorno a costruzione del corpus, metriche, risultati, grafici e limiti. Aggiornare lo stato negli indici solo sulla base delle evidenze ottenute.
-- [ ] Pubblicare solo aggregati, ID anonimi ed esempi sintetici. Testi, percorsi personali, query reali e giudizi dettagliati restano locali; dichiarare il limite alla riproducibilità esterna del corpus personale.
-- [ ] Inserire l'email solo nel PDF di consegna tramite configurazione locale non versionata; chiedere l'indirizzo prima della compilazione finale. Aggiornare le [istruzioni di build](BUILD.md), renderizzare e verificare PDF e dati riportati.
+- [x] Verificare eventuali difetti di correttezza e la copertura delle regressioni: nessun difetto emerso nella riconciliazione finale, nessuna correzione del prodotto necessaria. Esiti precedenti conservati; ottimizzazioni separate.
+- [x] Testare generatore, manifest, conversioni, verificatore indipendente e metriche con piccoli esempi calcolati manualmente. Benchmark grandi opt-in, fuori dalla suite ordinaria; preservare la regressione CLI Homework.
+- [x] Aggiornare protocollo dataset e [piano query](QUERY_TEST_PLAN.md); riscrivere la [relazione](REPORT.md) attorno a costruzione del corpus, metriche, risultati, grafici e limiti. Aggiornare lo stato negli indici solo sulla base delle evidenze ottenute.
+- [x] Pubblicare solo aggregati, ID anonimi ed esempi sintetici. Testi, percorsi personali, query reali e giudizi dettagliati restano locali; dichiarare il limite alla riproducibilità esterna del corpus personale.
+- [x] Inserire l'email solo nel PDF di consegna tramite configurazione locale non versionata; indirizzo universitario fornito dall'utente e usato nella compilazione finale. Aggiornare le [istruzioni di build](BUILD.md), renderizzare e verificare PDF e dati riportati.
 
-**Completamento ed evidenze:** test pertinenti con esiti e skip dichiarati, relazione coerente con i report, PDF controllato e contatto presente solo nella copia di consegna. I giudizi dell'utente sono approvati in HW3-02; resta necessario il suo indirizzo email per la consegna. Nessuna pubblicazione dei documenti universitari o invio automatico al docente.
+**Completamento ed evidenze:** test pertinenti con esiti e skip dichiarati, relazione coerente con i report, PDF controllato e contatto presente solo nella copia di consegna. I giudizi sono approvati in HW3-02; il contatto fornito dall'utente è presente soltanto nella copia di consegna e negli artefatti locali ignorati da Git. Nessuna pubblicazione dei documenti universitari o invio automatico al docente.
+
+
+**Chiusura verificata — 13 novembre 2026:** relazione e PDF di 15 pagine, sei tabelle e otto figure; dati riconciliati con cinque report congelati e campioni del pilot. Backend **493 passed, 7 skipped**, inclusi 54 test Homework senza skip; CLI **10+2 PASS**. Build pubblica senza email e copia finale con contatto controllate, tutte le pagine renderizzate e ispezionate. [Evidenze e limiti](HW3_04_REPORT.md). Campagna estesa non eseguita, nessun invio attestato.

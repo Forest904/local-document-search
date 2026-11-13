@@ -43,3 +43,7 @@ usano un indice dei soli 60 documenti selezionati. I 600 giudizi sono stati
 revisionati e approvati prima di mostrarne i risultati; non derivano dalla
 presenza lessicale dei termini. ID anonimi, metriche e limiti sono nel protocollo;
 testi delle query reali, motivazioni e documenti dettagliati restano locali.
+
+## Riconciliazione HW3-04
+
+Il 13 novembre 2026 la regressione console è stata ripetuta: **10 query e due regressioni PASS**. La relazione conserva query, attesi e ottenuti della matrice storica e separa i 120 confronti lessicali ampliati dai dieci bisogni tematici. Per questi ultimi pubblica soltanto ID e metriche: precision macro su 9/10 casi, recall e F1 su 10/10; N09 ha precision N/A, recall e F1 zero. Il pilot riusa le trenta query sintetiche congelate e non aggiunge nuovi attesi. [Controlli finali](HW3_04_REPORT.md).

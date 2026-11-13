@@ -35,3 +35,7 @@ Le slide `id-02-source-discovery-basics.pptx` presentano inverted index con dict
 - Repository pubblico fornito dall'utente: https://github.com/Forest904/local-document-search. Nessun push o invio al docente eseguito.
 
 Vedere [ROADMAP](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/ROADMAP.md), [relazione compilata](REPORT.md) e [evidenze M3](https://github.com/Forest904/local-document-search/blob/11c46d9bbcc46898af7781816bc515a51135aa7a/docs/archive/v1/M3_VERIFICATION.md).
+
+## Relazione finale — 13 novembre 2026
+
+HW3-04 conclusa: relazione di 15 pagine con costruzione dei corpus, ground truth, metriche e pilot prestazionale; email fornita presente soltanto nel PDF locale di consegna. Regressione CLI nuovamente PASS (10+2). [Evidenze finali](HW3_04_REPORT.md). La campagna prestazionale estesa resta rinviata e non è attestato alcun invio tramite modulo o email.

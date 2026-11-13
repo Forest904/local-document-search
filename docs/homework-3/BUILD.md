@@ -1,29 +1,52 @@
-# Generazione della relazione
+# Generazione e verifica della relazione
 
-Il testo sorgente è [REPORT.md](REPORT.md). Modificarlo e lanciare in VS Code il task **Homework 3: genera PDF**. Il task produce `output/pdf/homework-3-report.pdf` e conserva LaTeX e log in `build/homework-3/`; gli artefatti generati sono ignorati da Git.
+[REPORT.md](REPORT.md) è l'unica fonte narrativa. La relazione del 13 novembre 2026 ha **15 pagine, sei tabelle e otto figure**: costruzione dei corpus, ground truth, metriche e risultati sono centrali; tre pagine illustrano Luma. Le evidenze tecniche sono in [HW3_04_REPORT.md](HW3_04_REPORT.md).
 
-Servono Pandoc e MiKTeX con XeLaTeX disponibili nel `PATH`. Da PowerShell il comando equivalente è:
+## Build pubblica e copia di consegna
+
+Servono Pandoc e MiKTeX/XeLaTeX nel PATH. Il task VS Code **Homework 3: genera PDF**, oppure il comando seguente dalla radice, genera una copia senza email:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/docs/build-report.ps1
 ```
 
-Il task compila solo la relazione e copia le figure nella directory di lavoro. La versione del 12 novembre 2026 contiene dieci pagine, con interruzioni esplicite nel Markdown. Per aggiornare le misure Homework, eseguire separatamente `backend/.venv/Scripts/python.exe experiments/run_homework3.py` dalla radice, verificare il JSON e aggiornare data, revisione, ambiente e risultati. Le misure del candidato 0.2.2 provengono dal [registro prestazionale](../PERFORMANCE.md); stato e limiti dal [registro V2-14](../V2_14_ACCEPTANCE.md). Non attribuire automaticamente queste evidenze a revisioni successive.
+Il PDF è `output/pdf/homework-3-report.pdf`; LaTeX e log sono in `build/homework-3/`. Questi artefatti sono ignorati da Git. Ogni build sostituisce il PDF di destinazione soltanto dopo una compilazione riuscita.
 
-## Figure e controllo visivo
+Per la consegna, predisporre `local-data/homework-3-metadata.yaml`, non versionato, con la chiave `contact-email` e l'indirizzo concordato. Non inserirlo in `REPORT.md`, negli script o in questa guida. Il filtro Lua associa il contatto all'autore durante la compilazione; senza metadati il contatto è assente.
 
-Le immagini in `figures/` sono versionate. Per rigenerarle con il backend e il frontend installati nell'ambiente di sviluppo:
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/docs/build-report.ps1 -MetadataFile local-data/homework-3-metadata.yaml
+```
+
+Il parametro accetta un file di metadati Pandoc esistente; il percorso è risolto prima di cambiare directory. Anche il LaTeX intermedio della copia di consegna contiene il contatto e deve restare locale. Una build successiva senza metadati produce nuovamente la copia pubblica: controllare sempre quale versione si sta consegnando.
+
+## Figure
+
+Le figure sono versionate. I grafici leggono soltanto `experiments/homework3_results.json` e `experiments/homework3_performance_results.json`; non aprono documenti personali. Gli schemi metodologici usano i conteggi riconciliati nel protocollo corpus e vanno aggiornati se cambiano le evidenze.
+
+Per rigenerare solo schemi metodologici e grafici:
+
+```powershell
+backend/.venv/Scripts/python.exe -m pip install matplotlib
+backend/.venv/Scripts/python.exe scripts/docs/report_evaluation_figures.py
+```
+
+Matplotlib è uno strumento documentale opzionale, non una dipendenza del prodotto o dei test backend. La generazione verificata usa Matplotlib 3.11.2; il rendering PNG non è promesso identico byte per byte fra versioni/font diversi.
+
+Per rigenerare anche gli schemi storici e le schermate, con backend e frontend installati nell'ambiente di sviluppo:
 
 ```powershell
 backend/.venv/Scripts/python.exe scripts/docs/create-report-figures.py
 ```
 
-Il generatore usa PySide6 e i font Windows Segoe UI/Consolas: crea due schemi e cattura due schermate del QML effettivo con tre documenti sintetici. Corpus e storage sono temporanei e separati dalla sessione personale. `interfaccia.png` riunisce le due catture senza alterarne il contenuto. Il rendering offscreen non attesta accessibilità nativa o funzionamento dell'installer. Aggiornare la revisione dichiarata nel report se si rigenerano le schermate con altro codice.
+Il comando richiama anche il generatore scientifico. Le schermate usano PySide6 e i font Windows Segoe UI/Consolas, tre documenti sintetici e storage temporaneo. Non modificano la sessione personale. Il rendering QML offscreen non attesta installer o accessibilità nativa. Le figure esistenti consentono la sola build PDF senza installare Matplotlib o avviare Qt.
 
-Dopo la compilazione, renderizzare e ispezionare tutte le pagine:
+## Controllo finale
 
 ```powershell
-pdftoppm -scale-to 1300 -png output/pdf/homework-3-report.pdf build/homework-3/check
+pdftoppm -scale-to 1500 -png output/pdf/homework-3-report.pdf build/homework-3/final
 ```
 
-Verificare 8–10 pagine, tabelle e didascalie integre, figure leggibili, collegamenti e numerazione. Controllare nel log XeLaTeX l'assenza di `Overfull` e `Missing character`. PDF, PNG di verifica e log generati restano fuori Git; `REPORT.md` resta l'unica fonte del testo.
+Ispezionare tutte le pagine, verificando 12–15 pagine, didascalie, tabelle, leggibilità dei diagrammi, collegamenti e numerazione. Nel log XeLaTeX non devono comparire `Overfull` o `Missing character`. Estrarre anche il testo per verificare metriche, unità e presenza del contatto nella sola copia finale; l'estrazione non sostituisce la verifica visuale.
+
+Le metriche derivano dalle valutazioni congelate, non da una nuova esecuzione implicita. La regressione CLI può essere ripetuta separatamente con `backend/.venv/Scripts/python.exe experiments/run_homework3.py`: controllare tutti i dieci casi e le due regressioni. Il suo tempo su otto TXT non sostituisce il pilot sui cento documenti. Campagna estesa e benchmark desktop restano separati.

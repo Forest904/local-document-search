@@ -1,4 +1,4 @@
-﻿# Documentazione e stato del progetto
+# Documentazione e stato del progetto
 
 Per installare e provare l’app parti dal [README](../README.md).
 
@@ -27,7 +27,7 @@ Test mirati 24 passati, backend 488 passati/7 skip, CLI 10+2 PASS.
 **HW3-03 pilot ridotto concluso:** 100 TXT, build 1,910427 s, run 138,388906 s,
 240/240 confronti esatti e nessun timeout. Test mirati 29 passati, CLI 10+2 PASS.
 [Misure e limiti](homework-3/HW3_03_PERFORMANCE.md). Campagna estesa rinviata;
-HW3-04 da eseguire.
+**HW3-04 conclusa:** relazione e PDF verificato di 15 pagine, sei tabelle e otto figure; backend 493 passati/7 skip, CLI 10+2 PASS. [Chiusura e controlli](homework-3/HW3_04_REPORT.md). Nessun invio attestato.
 
 | Ti serve capire… | Documento |
 |---|---|
@@ -39,7 +39,7 @@ HW3-04 da eseguire.
 | Quali dati conserva e come distribuirlo | [Privacy e diritti](SECURITY_AND_PRIVACY.md), [packaging](../scripts/package/README.md) |
 | Perché sono state fatte certe scelte | [Decisioni approvate e aperte](adr/README.md) |
 | Come verificare una modifica | [Strategia e scenari](TEST_STRATEGY.md), [corpus funzionale](TEST_DATASETS.md), [comandi esperimenti](../experiments/README.md) |
-| Come ampliare la valutazione e la relazione Homework 3 | [Roadmap Homework](homework-3/ROADMAP.md): HW3-01, HW3-02 e pilot ridotto HW3-03 conclusi, HW3-04 da eseguire; distinte da V2-01 e V2-02 |
+| Come ampliare la valutazione e la relazione Homework 3 | [Roadmap Homework](homework-3/ROADMAP.md): HW3-01, HW3-02, pilot ridotto HW3-03 e HW3-04 conclusi; campagna estesa rinviata; distinte da V2-01 e V2-02 |
 
 Requisiti e scenari mantengono ID stabili; misure ed esiti appartengono ai report. Le specifiche correnti sono autonome: l’[archivio v1](archive/v1/README.md) rimanda ai documenti storici a revisione Git fissa e riassume M9; non integra implicitamente le regole attuali.
 

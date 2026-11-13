@@ -1,285 +1,364 @@
 ---
 title: "Local Document Search"
-subtitle: "Homework 3: dal doppio indice all'applicazione Luma"
+subtitle: "Homework 3 · Progettazione e valutazione di un motore di ricerca locale"
 author: "Luca Foresti"
-date: "12 novembre 2026"
+date: "13 novembre 2026"
 lang: it-IT
+header-includes:
+  - |
+    \usepackage{caption}
+    \captionsetup{font=small,labelfont=bf}
+    \usepackage{titlesec}
+    \usepackage{titling}
+    \setlength{\droptitle}{-18mm}
+    \posttitle{\par\end{center}\vskip -0.5em}
+    \preauthor{\begin{center}\normalsize}
+    \postauthor{\end{center}\vskip -0.5em}
+    \setlength{\tabcolsep}{5.8pt}
+    \titleformat{\section}{\Large\bfseries\color{teal}}{}{0pt}{}
+    \titleformat{\subsection}{\large\bfseries}{}{0pt}{}
 ---
+# 1. Cercare per nome e per contenuto
 
-# 1. Obiettivo: cercare nei documenti, spiegare i risultati
+Un documento può essere riconosciuto dal nome oppure dalle parole che contiene. `MachineLearning.txt`, per esempio, può parlare di modelli statistici senza ripetere le parole del titolo. Local Document Search indicizza separatamente queste due rappresentazioni e rende esplicita la condizione che un risultato deve soddisfare.
 
-Un documento può essere riconosciuto dal nome oppure dal contenuto. Un file chiamato `MachineLearning.txt` può parlare di modelli statistici senza contenere le parole del titolo. Local Document Search mantiene distinti i due campi e rende esplicito il significato della ricerca.
+Il nucleo richiesto dall'Homework 3 indicizza i TXT di una directory e delle sue sottocartelle, riceve query dalla console e restituisce i documenti corrispondenti. Il progetto è disponibile nel [repository GitHub Local Document Search](https://github.com/Forest904/local-document-search). Luma è l'applicazione desktop costruita sullo stesso motore: aggiunge formati, persistenza e strumenti di lettura, mantenendo autonoma la verifica della console.
 
-Il punto di partenza è l'Homework 3 di Ingegneria dei Dati: indicizzare i TXT di una directory, interrogare nome e contenuto dalla console e verificare il comportamento con circa dieci query. Il progetto è consultabile nel [repository GitHub Local Document Search](https://github.com/Forest904/local-document-search), con codice, test, decisioni architetturali e istruzioni di esecuzione.
+La valutazione affronta tre domande: il motore rispetta la semantica dichiarata? Le query recuperano documenti pertinenti a un bisogno informativo? Quali tempi si osservano rispetto a una scansione sequenziale? Queste domande richiedono riferimenti e misure distinti.
 
-**La consegna didattica è realizzata da una CLI autonoma.** Luma è l'evoluzione desktop dello stesso backend: aggiunge formati, persistenza e strumenti di lettura senza sostituire la prova richiesta dal corso. Questa relazione presenta prima il nucleo verificabile, poi le capacità costruite attorno a esso.
+## Gli analyzer: rendere confrontabili testo e query
 
-## Requisiti ed estensioni: due livelli riconoscibili
+Un *analyzer* trasforma il testo in token con posizione. Documento e query seguono regole coerenti: normalizzazione Unicode NFC, confronto senza distinzione fra maiuscole tramite *casefold* e nuova normalizzazione NFC. Punteggiatura, apostrofi e underscore separano i token; gli accenti restano significativi.
 
-| Richiesta dell'homework | Realizzazione nel progetto |
-|:--|:--|
-| Indicizzare file TXT di una directory | Discovery ricorsiva e reader UTF-8; un file corrisponde a un documento |
-| Due campi e analyzer motivati | Indici posizionali separati per nome e contenuto; regole illustrate nella sezione 2 |
-| Query dalla console, anche per frasi | CLI con selezione del campo, AND e virgolette; risultati ordinati per percorso |
-| Circa dieci prove e misure di indicizzazione | Otto TXT sintetici, dieci query e due regressioni; risultati nella sezione 4 |
-| Relazione e URL del repository | Questo documento, sorgente Markdown e runner riproducibile |
+Nel nome si rimuove il suffisso finale supportato e si separano confini CamelCase e passaggi fra lettere e cifre. Nel contenuto queste separazioni aggiuntive non avvengono. La tabella mostra perché la distinzione è utile.
 
-Il perimetro aggiuntivo comprende PDF testuali e Markdown, riapertura dell'indice, sincronizzazione incrementale, ricerca avanzata e applicazione Windows installabile offline. La distinzione non riguarda soltanto il numero di funzioni: il passaggio a un'applicazione persistente richiede di gestire aggiornamenti, errori e versioni dei dati senza compromettere i risultati già disponibili.
+| Campo e stringa                   | Token                                       | Motivazione                                |
+| :-------------------------------- | :------------------------------------------ | :----------------------------------------- |
+| Nome `RomaTre.txt`              | `roma`, `tre`                           | Recuperare componenti concatenate          |
+| Contenuto `RomaTre`             | `romatre`                                 | Conservare la parola del testo             |
+| Nome `Unicode2026.TXT`          | `unicode`, `2026`                       | Ignorare l'estensione, mantenere il numero |
+| Contenuto `L'acqua e il caffè` | `l`, `acqua`, `e`, `il`, `caffè` | Separare l'apostrofo, preservare l'accento |
 
-Lo stato è aggiornato al **12 novembre 2026**: **0.2.1 pubblicata**, **0.2.2 candidato locale**. Implementazione, test e collaudo del pacchetto sono evidenze distinte.
+Table: Esempi degli analyzer. Le posizioni sono assegnate nella sequenza risultante.
 
-\newpage
-
-# 2. Dal file ai termini: gli analyzer
-
-Un *analyzer* trasforma una stringa in una sequenza di token, cioè unità ricercabili, ciascuna associata alla propria posizione. Applicare regole coerenti al documento e alla query è essenziale: se la stessa parola venisse normalizzata diversamente nei due momenti, potrebbe non essere trovata.
-
-## Un documento, due rappresentazioni
-
-La scansione attraversa la directory e le sottocartelle, senza seguire symlink o junction. Ogni file è un documento; il percorso relativo lo distingue anche quando due sottocartelle contengono nomi uguali. Il nome e il testo alimentano due indici separati, non un'unica sequenza concatenata.
-
-Il reader TXT decodifica UTF-8 in modo rigoroso e rimuove l'eventuale BOM iniziale, un marcatore di codifica. Un file vuoto rimane ricercabile attraverso il nome. L'assenza di contenuto e un errore di decodifica hanno dunque significati diversi: la prima è una condizione valida, il secondo impedisce di dichiarare completo un candidato di indicizzazione.
-
-## Analizzare il nome
-
-Prima dell'analisi si rimuove soltanto il suffisso finale supportato. Nei nomi sono frequenti parole concatenate e identificatori numerici: `RomaTre.txt` deve poter essere cercato con `roma` o `tre`, mentre `Unicode2026.TXT` contiene due componenti utili, `unicode` e `2026`.
-
-L'analyzer introduce quindi separazioni nei confini CamelCase e nei passaggi fra lettere e cifre. Non interpreta il nome come una frase in linguaggio naturale: rende accessibili le componenti che una convenzione di denominazione ha compattato.
-
-## Analizzare il contenuto
-
-Nel testo non si aggiungono i confini CamelCase o lettera-cifra. Un identificatore scritto come parola unica conserva questa forma. Entrambi gli analyzer normalizzano Unicode in NFC, applicano *casefold* per il confronto senza distinzione di maiuscole e normalizzano nuovamente in NFC. Punteggiatura, apostrofi e underscore separano i token; gli accenti restano significativi.
-
-| Stringa e campo | Token prodotti | Conseguenza |
-|:--|:--|:--|
-| Nome `RomaTre.txt` | `roma`, `tre` | Il nome compatto è interrogabile per componenti |
-| Contenuto `RomaTre` | `romatre` | Il testo conserva la parola unica |
-| Nome `Unicode2026.TXT` | `unicode`, `2026` | Estensione ignorata, numero ricercabile |
-| Contenuto `L'acqua e il caffè.` | `l`, `acqua`, `e`, `il`, `caffè` | Apostrofo separatore; accento preservato |
-
-## Perché non stemming e stop word
-
-Lo *stemming* ridurrebbe parole diverse a una radice; eliminare le *stop word* scarterebbe termini frequenti come articoli e preposizioni. Il progetto non applica queste trasformazioni: evita dipendenze dalla lingua e conserva tutte le posizioni per le frasi. La scelta rende prevedibile la corrispondenza, al prezzo di non unificare automaticamente varianti morfologiche o accentate. `caffè` e `caffe` rimangono distinti; l'eventuale proposta ortografica del desktop è un'operazione successiva e separata.
+Non si applicano stemming o rimozione delle stop word: si evita una dipendenza dalla lingua e si conservano articoli e preposizioni nelle frasi. Il compromesso è intenzionale: `modello` e `modelli`, oppure `caffè` e `caffe`, restano termini diversi. Questa scelta contribuisce a spiegare i limiti della recall tematica discussi più avanti.
 
 \newpage
 
-# 3. Due indici posizionali: termini, AND e frasi
+# 2. Dalle parole agli indici posizionali
 
-Un indice invertito associa ciascun termine ai documenti in cui compare. Qui ogni occorrenza conserva anche le posizioni: `termine → documento → posizioni`. La lista delle occorrenze è detta *posting list*. Il motore realizza queste strutture internamente, senza delegare la ricerca a un motore IR esterno o al full-text di SQLite.
+Un indice invertito associa un termine ai documenti nei quali compare. Qui le liste delle occorrenze, o *posting list*, conservano anche le posizioni: **termine → documento → posizioni**. Esistono due indici, uno per il nome e uno per il contenuto; le directory distinguono i documenti ma non fanno parte del campo nome. Le strutture sono implementate internamente, senza motori IR esterni.
 
-![Dal documento ai due indici. Sono mostrati tutti i token del contenuto e un estratto dei relativi posting; le posizioni partono da zero.](figures/indici.png){width=100%}
+![Un documento alimenta due indici distinti. Nel contenuto, machine e learning sono presenti ma non consecutivi; deep e learning occupano invece le posizioni 4 e 5.](figures/indici.png){width=100%}
 
-## Dalla presenza all'adiacenza
+## Presenza, adiacenza e campo
 
-Nel documento A, `machine` è in posizione 3 e `learning` in posizione 5. La query `contenuto machine learning` richiede entrambe le parole: l'intersezione dei documenti presenti nei rispettivi posting include A. Invertire l'ordine dei termini della query non cambia questa condizione AND.
+La query `contenuto machine learning` richiede entrambe le parole: si intersecano gli insiemi di documenti associati ai termini. L'ordine nella query non cambia il risultato. La query `contenuto "machine learning"` richiede anche posizioni consecutive e, nell'esempio della figura, non trova il documento. `"deep learning"` lo trova; `"data data"` richiede due occorrenze consecutive, non una sola presenza di `data`.
 
-La query `contenuto "machine learning"` impone invece l'adiacenza e non include A: fra i due termini c'è `deep`. La frase `"deep learning"` è soddisfatta dalle posizioni 4 e 5. Anche `"data data"` richiede due occorrenze distinte e consecutive, qui 6 e 7: trovare una sola volta `data` non basta.
+La modalità `entrambi` unisce i documenti che soddisfano **l'intera query nel nome oppure l'intera query nel contenuto**. Un file `machine.txt` contenente `deep learning` non soddisfa `entrambi machine "deep learning"`: nessuno dei due campi contiene tutte le clausole. Concatenare nome e testo introdurrebbe invece una corrispondenza non prevista.
 
-Le posizioni permettono questo controllo senza rileggere ogni file a ogni interrogazione. Il lavoro iniziale di costruzione dell'indice rende disponibili le informazioni necessarie alle query successive; il costo della ricerca dipende anche dalle liste coinvolte e dal numero di corrispondenze, non soltanto dal numero di termini digitati.
+La console accetta i selettori `nome`, `contenuto` ed `entrambi`; senza selettore usa entrambi i campi. Restituisce percorsi relativi ordinati lessicograficamente, senza ranking. Termini e frasi possono comparire nella stessa query e sono combinati in AND.
 
-## Cercare in entrambi i campi
+## Il costo iniziale e le ricerche successive
 
-La modalità `entrambi`, chiamata `BOTH` nell'API, unisce i documenti che soddisfano **l'intera query nel nome oppure l'intera query nel contenuto**. Non somma corrispondenze incomplete fra campi.
-
-Per esempio, `machine.txt` con contenuto `deep learning` non soddisfa `entrambi machine "deep learning"`: il nome contiene soltanto `machine`, il contenuto soltanto la frase. Questa regola impedisce un falso positivo che nascerebbe concatenando nome e testo. Sono ammesse clausole miste di termini e frasi, ma devono essere tutte soddisfatte nello stesso campo.
-
-Nella CLI le parole `nome`, `contenuto` ed `entrambi` selezionano il campo; ometterle equivale a cercare in entrambi. L'output presenta percorsi relativi in ordine lessicografico, senza ranking. La semplicità dell'interfaccia mantiene osservabile la semantica del motore.
+L'indicizzazione comprende scoperta dei file, lettura, analisi e costruzione delle strutture. Le posizioni consentono poi di verificare le frasi senza rileggere i sorgenti a ogni interrogazione. Il costo di una ricerca dipende tuttavia anche dalla lunghezza dei posting, dal numero di risultati e dal lavoro necessario a presentarli: usare un indice non garantisce che ogni percorso applicativo sia più veloce di una scansione. La valutazione prestazionale misura proprio questa distinzione.
 
 \newpage
 
-# 4. Verifica dell'homework: corpus, misura e query
+# 3. Come sono stati generati i dati sintetici
 
-Il runner crea otto TXT UTF-8 con newline LF in una directory temporanea. Gli attesi sono definiti leggendo i testi, indipendentemente dall'output del motore. La piccola dimensione permette di controllare ogni risultato e comprende sottocartelle, nomi compatti, ripetizioni, accenti e un file vuoto.
+Un piccolo corpus scritto a mano rende controllabili i casi limite, ma non mette alla prova il motore su molti documenti. Per questo sono stati generati tre corpus originali di 100, 1.000 e 10.000 TXT. Non provengono da documenti scaricati né dalla copia ripetuta di un unico testo: sono composizioni parametrizzate di frasi, con variabilità controllata.
 
-| ID | Percorso relativo | Testo, escluso il newline finale |
-|:--|:--|:--|
-| A | `RomaTre.txt` | Roma Tre studia machine deep learning. data data. |
-| B | `sub/RomaNote.txt` | Roma antica ospita tre scuole. machine learning. |
-| C | `MachineLearning.txt` | modelli statistici |
-| D | `machine.txt` | deep learning |
-| E | `DataNotes.txt` | data mining data |
-| F | `sub/DeepLearning.txt` | deep learning machine |
-| G | `Empty.txt` | *Stringa vuota, zero byte* |
-| H | `Unicode2026.TXT` | L'acqua e il caffè. |
+La generazione è deterministica, con seed **20261113**. L'identificatore di ogni documento determina materia, lingua, struttura, famiglia di prova e lunghezza obiettivo; un generatore pseudocasuale locale, inizializzato da versione, seed e identificatore, sceglie l'ordine delle sezioni e le varianti dei paragrafi. La dimensione del profilo non partecipa alla generazione del singolo documento.
 
-**Esecuzione del 12 novembre 2026**, revisione `40826b0`, working tree inizialmente pulito: Windows 11 build 26200, Python 3.12.2, processore AMD64 Family 26 Model 96 Stepping 0. La CLI ha scoperto e indicizzato **8 file, 192 byte sorgenti, zero esclusioni**, senza errori. Il build iniziale ha richiesto **0,086036 s**.
+![Dal seed al documento: proprietà controllate e variazioni locali. I profili più grandi conservano esattamente i documenti già presenti nei profili piccoli.](figures/sintetici.png){width=100%}
 
-Il timer comprende discovery, lettura, analisi, costruzione, validazione e attivazione in memoria; esclude l'avvio del processo. È una singola misura, con cache OS non controllata: verifica l'esecuzione richiesta, non costituisce un benchmark di scala o un confronto con tempi storici.
+Le sei materie sono analisi, reti, basi di dati, fisica, storia e linguistica. Ciascuna compare in italiano e inglese già nei primi cento documenti. Le quattro forme sono appunti, schede di laboratorio, esercitazioni e riepiloghi. Si mescolano da tre a sei titoli di sezione; ogni quattro paragrafi inizia una sezione. Cinque schemi di frase alternano osservazioni, esempi, procedure, domande e riepiloghi, con numeri variabili ed elenchi in alcune strutture.
 
-| # | Query console | Attesi | Ottenuti | Esito |
-|--:|:--|:--|:--|:--|
-| 1 | `nome roma` | A, B | A, B | PASS |
-| 2 | `contenuto inesistente` | nessuno | nessuno | PASS |
-| 3 | `contenuto machine learning` | A, F, B | A, F, B | PASS |
-| 4 | `contenuto learning machine` | A, F, B | A, F, B | PASS |
-| 5 | `contenuto "deep learning"` | A, D, F | A, D, F | PASS |
-| 6 | `contenuto "roma tre"` | A | A | PASS |
-| 7 | `nome "roma tre"` | A | A | PASS |
-| 8 | `contenuto ROMA` | A, B | A, B | PASS |
-| 9 | `contenuto "data data"` | A | A | PASS |
-| 10 | `contenuto learning` | A, D, F, B | A, D, F, B | PASS |
+Ogni materia ha un lessico di quattro termini e un principio descrittivo. I primi tre termini sono selezionabili in tutti i paragrafi; ogni diciassettesimo paragrafo può usare anche il quarto, più raro. Alcune frasi ripetono intenzionalmente una parola. Questa costruzione controlla frequenze e ripetizioni senza pretendere di simulare una distribuzione linguistica naturale.
 
-Gli ID seguono l'ordine dei percorsi restituiti. Le prove 3-4 verificano l'AND indipendente dall'ordine; la 6 esclude B per mancata adiacenza, la 9 esclude E perché `mining` separa i due `data`.
-
-Sono passate anche `entrambi machine "deep learning"` e la forma senza selettore `machine "deep learning"`: entrambe restituiscono **A, F**, escludendo D per il vincolo fra campi. Il runner avvia la CLI in un processo separato e confronta liste complete, ordine e totali: un conteggio corretto con documenti sbagliati non supera la prova.
+Gli obiettivi per blocco di dieci file sono **6, 12, 18, 24, 30, 30, 36, 42, 48 e 54 kB** decimali. Si aggiungono paragrafi fino a superare l'obiettivo, sempre con una frase completa; si contano byte UTF-8, non caratteri. Nomi e percorsi comprendono materia, lingua e identificatore, con spazi e Unicode. Il nome completo non viene copiato nel testo. I caratteri accentati e le forme `Café`, `città`, `naïve` verificano anche la gestione Unicode.
 
 \newpage
 
-# 5. Dalla sessione console a un indice persistente
+# 4. Dai materiali universitari ai file TXT
 
-L'applicazione desktop deve conservare il lavoro già svolto e consentire nuove ricerche mentre i file vengono aggiornati. Queste esigenze ampliano il problema didattico: non basta calcolare correttamente un risultato, occorre sapere a quale versione dei documenti si riferisce.
+Il corpus reale deriva da una raccolta personale di materiali universitari. L'inventario seleziona TXT, Markdown e PDF, scartando directory tecniche come ambienti virtuali, dipendenze e build; non attraversa collegamenti simbolici o junction. I 427 candidati descrivono questa selezione, non tutti i file presenti nell'archivio personale.
 
-![CLI e Luma condividono i casi d'uso e il dominio. Il desktop aggiunge persistenza e interfaccia; il motore non dipende da Qt.](figures/architettura.png){width=100%}
+Si lavora su copie locali ordinarie, senza modificare gli originali. Una revisione didattica esclude cinque documenti operativi o di dipendenze, mentre mantiene tre documenti introduttivi con spiegazioni utili al corso. Il percorso di preparazione è riassunto nella figura.
 
-## Responsabilità separate, stesso comportamento di ricerca
+![Esito dei 427 candidati selezionati. Le esclusioni senza testo e quelle didattiche hanno motivazioni distinte; non sono errori di conversione.](figures/corpus-reale.png){width=100%}
 
-Il dominio contiene analyzer, query, indici e snapshot senza I/O. L'application orchestra i casi d'uso tramite porte; l'infrastruttura implementa filesystem, reader e storage. La CLI e il desktop compongono gli stessi servizi con adattatori appropriati: indice volatile per la console, SQLite per l'applicazione persistente. Non servono un server o comunicazioni fra processi per collegare UI e backend.
+## La conversione, formato per formato
 
-Questa separazione rende la regressione Homework indipendente dall'interfaccia grafica. Le funzionalità desktop possono evolvere senza richiedere Qt a chi installa soltanto il backend. I test del dominio verificano la semantica, mentre quelli dell'interfaccia riguardano presentazione, flussi e gestione delle risposte asincrone.
+I TXT sono decodificati in UTF-8 rigoroso, rimuovendo l'eventuale BOM iniziale. Un file vuoto resta valido e ricercabile per nome; una codifica non valida costituisce invece un errore. L'output della preparazione è testo UTF-8.
+
+I Markdown vengono analizzati con **markdown-it-py 4.2.0**, usando CommonMark e supporto alle tabelle. Il reader conserva testo, codice inline ed etichette testuali, separa i blocchi e rimuove l'eventuale front matter. Non rende il documento come una pagina web: markup HTML, blocchi di codice e contenuti delle immagini non diventano automaticamente testo ricercabile. Non scarica risorse esterne.
+
+Per i PDF si usa **pypdf 7.0.0**: il testo è estratto pagina per pagina e concatenato con separatori di riga. Ogni PDF con testo non-whitespace è ammesso, anche se contiene poche parole e molte immagini. Un PDF senza testo estraibile con questo reader viene escluso; non è per questo necessariamente vuoto o sicuramente scansionato. Password necessarie, corruzioni e letture fallite sono errori distinti. Non è previsto OCR.
+
+**Un sorgente corrisponde a un TXT**, senza suddivisione per pagina. Nomi base e percorsi relativi sono conservati sotto gruppi separati per formato, evitando collisioni. La ricerca valutata opera sui TXT così ottenuti: può essere corretta rispetto all'estrazione anche quando il testo non rappresenta tutta l'informazione visibile nell'originale.
+
+\newpage
+
+# 5. Controllare i dati prima di valutare la ricerca
+
+I corpus hanno ruoli complementari. Quello reale introduce linguaggio e formati autentici; quelli sintetici permettono di ripetere casi controllati a dimensioni crescenti. La tabella riporta i file effettivamente disponibili alla ricerca e il volume del testo, non la dimensione dei PDF originali.
+
+| Corpus            |    TXT |  Byte UTF-8 | Composizione                     |
+| :---------------- | -----: | ----------: | :------------------------------- |
+| Sintetico piccolo |    100 |   3.008.718 | 52 IT / 48 EN                    |
+| Sintetico medio   |  1.000 |  30.082.141 | 502 IT / 498 EN                  |
+| Sintetico grande  | 10.000 | 300.840.184 | 5.002 IT / 4.998 EN              |
+| Universitario     |    392 |  12.979.279 | 346 PDF, 30 TXT, 16 MD originali |
+
+Table: Corpus finali. IT/EN indica la lingua assegnata dal generatore; non è una classificazione automatica dei documenti reali.
+
+Nei sintetici le lunghezze minime/mediane/massime sono rispettivamente 6.034/30.103/54.215 byte, 6.001/30.080/54.215 e 6.000/30.083/54.228. Ogni struttura ha 25, 250 o 2.500 documenti; ogni famiglia di prova ne ha 10, 100 o 1.000. Le materie sono quasi uniformi, ma queste proprietà non rendono indipendenti tutte le combinazioni: la costruzione segue cicli deterministici.
+
+## Negativi difficili, non soltanto esempi facili
+
+Dieci famiglie riservano termini che non compaiono casualmente nei paragrafi: uno soltanto nel nome, uno soltanto nel contenuto, una coppia nello stesso nome o nello stesso contenuto, la coppia separata fra campi nelle due direzioni, una frase consecutiva, interrotta o invertita e due termini in sezioni distanti. Tre ulteriori termini sono assenti da tutti i documenti.
+
+Per esempio, `frandilo spolvero` deve soddisfare la frase omonima, mentre `frandilo passaggio spolvero` e `spolvero frandilo` non devono soddisfarla. Un documento con `velnaro` nel nome e `tespilo` nel contenuto non soddisfa l'AND fra i due in modalità entrambi. Sono casi sintetici intenzionali: rendono riconoscibili errori che un testo generico potrebbe non rivelare.
+
+## Integrità, duplicati e qualità dell'estrazione
+
+Un registro collega originali e TXT e conserva dimensioni, identificatori di contenuto e versioni degli estrattori. I controlli rilevano file mancanti o aggiuntivi e alterazioni; sui sintetici rigenerano i documenti e verificano l'identità dei file condivisi fra profili. Nel corpus finale 36 documenti appartengono a 18 coppie di duplicati identici, sia come sorgenti sia come TXT. Restano documenti distinti: possono pesare più volte nelle metriche, che non sono misure su contenuti deduplicati.
+
+La revisione visuale ha coperto **376 PDF**, osservando **1.105 delle 14.141 pagine**: tutte fino a tre pagine, altrimenti prima, centrale e ultima. Formule, tabelle, immagini e pagine non viste restano possibili fonti di perdita informativa. Il corpus personale non è distribuibile: la riproducibilità esterna riguarda il metodo e i sintetici, non l'accesso agli originali.
+
+\newpage
+
+# 6. Due riferimenti per due domande diverse
+
+La *ground truth* è il riferimento contro cui si valuta un risultato. Qui occorrono due riferimenti: un documento può soddisfare esattamente una query senza essere pertinente al bisogno che l'ha motivata. La figura separa queste due nozioni.
+
+![Il riferimento lessicale deriva dalle regole applicate ai TXT; quello tematico dai giudizi sugli originali. Il motore non determina i propri attesi.](figures/validazione.png){width=100%}
+
+## Correttezza lessicale: una scansione indipendente
+
+Un verificatore separato applica le regole documentate senza importare parser, analyzer o evaluator del prodotto. Legge i documenti, costruisce temporaneamente i token e controlla termini, frasi e vincoli fra campi senza indice invertito. L'indipendenza riduce il rischio di replicare un errore del codice, pur non eliminando un possibile errore comune nell'interpretazione delle specifiche.
+
+Per ogni corpus si usano trenta query: dieci sul nome, quindici sul contenuto e cinque su entrambi. Comprendono termini, AND, frasi, assenze, ripetizioni, Unicode e selettività differenti. I tre sintetici condividono le query, con attesi specifici per scala; il reale usa un set distinto. Query e attesi sono congelati prima dell'esecuzione del motore. Gli attesi sono calcolati dalla scansione, con esempi controllati manualmente: non sono tutti annotati a mano.
+
+Si confrontano gli insiemi completi di documenti, recuperando tutte le pagine dei risultati e controllando totali, ordinamento e duplicazioni. Un conteggio uguale con documenti diversi non costituisce un successo.
+
+## Metriche sugli insiemi
+
+I veri positivi (TP) sono recuperati e attesi; i falsi positivi (FP) sono recuperati ma non attesi; i falsi negativi (FN) sono attesi ma mancanti:
+
+$$
+P=\frac{TP}{TP+FP},\qquad R=\frac{TP}{TP+FN},\qquad F_1=\frac{2TP}{2TP+FP+FN}.
+$$
+
+Con attesi {A, B, C} e recuperati {B, C, D}, TP=2, FP=1 e FN=1: precision, recall e F1 valgono 2/3. Se un denominatore è nullo la metrica è N/A, non uno. Due insiemi vuoti possono essere esattamente uguali pur avendo tutte le metriche indefinite.
+
+Le micro-metriche sommano prima TP, FP e FN; le macro-medie danno uguale peso alle query con valore definito e ne dichiarano il numero. La percentuale di insiemi esatti misura invece quante query non presentano alcuna differenza.
+
+\newpage
+
+# 7. Ground truth tematica: rendere osservabili i mancati recuperi
+
+Per misurare la recall non basta leggere i risultati restituiti: occorre conoscere anche i documenti pertinenti che non compaiono. È stato quindi preparato un campione di **60 documenti**, interamente giudicato rispetto a **10 bisogni informativi**. La valutazione tematica usa un indice contenente soltanto questi sessanta TXT.
+
+## Selezione del campione
+
+Le quote sono 40 PDF, 10 TXT e 10 Markdown, riferite ai formati originali. I formati minoritari sono sovrarappresentati rispetto ai 392 documenti: il campione non è proporzionale e non autorizza inferenze statistiche sull'intero archivio.
+
+La materia è attribuita usando il corso di provenienza con riscontro testuale. Per ciascun formato si ordinano i documenti per lunghezza del TXT e percorso e si dividono in terzili. I posti vengono assegnati ciclicamente agli strati non vuoti materia/terzile in ordine lessicografico. Dentro ogni strato si usa un ordinamento deterministico ottenuto dall'impronta di seed 20261113 e percorso, con spareggio per percorso. La selezione è quindi ripetibile; non è un campionamento casuale semplice. I duplicati non sono rimossi e la loro molteplicità è registrata.
+
+## Dai bisogni ai 600 giudizi
+
+Prima della ricerca, l'autore approva dieci bisogni, ciascuno con un criterio binario di rilevanza, esempi di inclusione/esclusione e una query iniziale. Ogni coppia documento–bisogno riceve poi un giudizio: **60 × 10 = 600**. La pertinenza non è dedotta dalla semplice presenza dei termini della query.
+
+Le proposte sono preparate con assistenza dell'agente, consultando originali e passaggi pertinenti, quindi revisionate e approvate dall'autore senza mostrare i risultati del motore. Diciannove interpretazioni di confine sono risolte prima del congelamento finale. Non si tratta di annotazioni indipendenti di più valutatori e non è stata misurata concordanza inter-annotatore. Le query rimangono fisse dopo la valutazione.
+
+La consultazione visuale dei 40 PDF ha interessato **117 pagine su 1.787**, scegliendo prima pagina, pagina pertinente e ultima quando distinte. I venti TXT/Markdown sono stati consultati nel sorgente e nelle sezioni pertinenti. Un Markdown rimandava soltanto a un'immagine non disponibile: la non pertinenza ai dieci bisogni è stata risolta dalla conferma dell'autore, senza osservazione dell'immagine da parte dell'agente.
+
+## Cosa significa la recall ottenuta
+
+Tutte le coppie hanno un'etichetta: questo consente di contare i rilevanti recuperati e quelli mancati nel campione. La completezza delle etichette non equivale però a una lettura integrale delle pagine. Un contenuto pertinente non osservato potrebbe produrre un giudizio negativo errato e modificare precision e recall.
+
+I risultati dipendono dunque da selezione, bisogni, query e qualità dei giudizi. La recall riportata **non misura la copertura dell'intera raccolta universitaria**, né la quantità di informazione persa nell'estrazione. Testi, query reali e giudizi dettagliati restano locali; nella relazione si usano identificatori anonimi.
+
+\newpage
+
+# 8. Risultati della verifica lessicale
+
+La prova didattica usa otto TXT, complessivamente 192 byte. Per rendere leggibili gli attesi: A contiene «Roma Tre studia machine deep learning. data data.»; B «Roma antica ospita tre scuole. machine learning.»; C «modelli statistici»; D «deep learning»; E «data mining data»; F «deep learning machine»; G è vuoto; H contiene «L'acqua e il caffè.».
+
+I nomi sono, rispettivamente, `RomaTre.txt`, `sub/RomaNote.txt`, `MachineLearning.txt`, `machine.txt`, `DataNotes.txt`, `sub/DeepLearning.txt`, `Empty.txt`, `Unicode2026.TXT`. Gli ID nella tabella seguono l'ordine dei percorsi restituiti.
+
+|  # | Query console                  | Attesi     | Ottenuti   |
+| -: | :----------------------------- | :--------- | :--------- |
+|  1 | `nome roma`                  | A, B       | A, B       |
+|  2 | `contenuto inesistente`      | nessuno    | nessuno    |
+|  3 | `contenuto machine learning` | A, F, B    | A, F, B    |
+|  4 | `contenuto learning machine` | A, F, B    | A, F, B    |
+|  5 | `contenuto "deep learning"`  | A, D, F    | A, D, F    |
+|  6 | `contenuto "roma tre"`       | A          | A          |
+|  7 | `nome "roma tre"`            | A          | A          |
+|  8 | `contenuto ROMA`             | A, B       | A, B       |
+|  9 | `contenuto "data data"`      | A          | A          |
+| 10 | `contenuto learning`         | A, D, F, B | A, D, F, B |
+
+Table: Dieci query della console, tutte corrette. Gli attesi derivano dalla lettura dei testi sintetici.
+
+Anche `entrambi machine "deep learning"` e la stessa query senza selettore restituiscono A e F, escludendo D: verificano il vincolo dell'intera query in un solo campo. Il controllo avvia la console in un processo separato e confronta risultati, ordine e totali.
+
+Sui corpus ampliati il confronto con la scansione indipendente produce:
+
+| Corpus            | Insiemi esatti |     TP | FP | FN | Query valide P/R/F1 |
+| :---------------- | -------------: | -----: | -: | -: | ------------------: |
+| Sintetico 100     |          30/30 |    455 |  0 |  0 |               22/30 |
+| Sintetico 1.000   |          30/30 |  4.535 |  0 |  0 |               22/30 |
+| Sintetico 10.000  |          30/30 | 45.335 |  0 |  0 |               22/30 |
+| Universitario 392 |          30/30 |    232 |  0 |  0 |               25/30 |
+
+Table: Confronti lessicali completi. TP somma coppie query–documento, non documenti distinti del corpus.
+
+Sono corretti **120 confronti su 120**, non 120 query testualmente diverse. Precision, recall e F1 micro e macro valgono 1 per ogni corpus; le query senza attesi hanno zero falsi positivi e metriche N/A. Questo dimostra conformità al riferimento sui casi provati, non pertinenza perfetta o assenza di ogni possibile difetto. Non verifica inoltre che il TXT conservi tutte le informazioni del PDF originale.
+
+\newpage
+
+# 9. Risultati tematici e interpretazione
+
+Il confronto con i giudizi tematici produce risultati meno uniformi della verifica lessicale. La tabella conserva tutti i bisogni, compreso quello per cui la query non recupera alcun documento.
+
+| Bisogno         |           TP |           FP |           FN |        Precision |           Recall |               F1 |
+| :-------------- | -----------: | -----------: | -----------: | ---------------: | ---------------: | ---------------: |
+| N01             |            5 |            1 |            0 |           0,8333 |           1,0000 |           0,9091 |
+| N02             |            3 |            1 |            8 |           0,7500 |           0,2727 |           0,4000 |
+| N03             |            1 |            1 |            0 |           0,5000 |           1,0000 |           0,6667 |
+| N04             |            2 |            0 |            6 |           1,0000 |           0,2500 |           0,4000 |
+| N05             |            5 |            0 |            2 |           1,0000 |           0,7143 |           0,8333 |
+| N06             |            3 |            1 |            0 |           0,7500 |           1,0000 |           0,8571 |
+| N07             |            4 |            5 |           10 |           0,4444 |           0,2857 |           0,3478 |
+| N08             |            5 |           13 |            4 |           0,2778 |           0,5556 |           0,3704 |
+| N09             |            0 |            0 |            1 |              N/A |           0,0000 |           0,0000 |
+| N10             |            2 |            0 |            0 |           1,0000 |           1,0000 |           1,0000 |
+| **Micro** | **30** | **22** | **31** | **0,5769** | **0,4918** | **0,5310** |
+| **Macro** |           — |           — |           — | **0,7284** | **0,6078** | **0,5784** |
+
+Table: Rilevanza sui soli 60 documenti giudicati. Valori macro validi: precision 9/10, recall 10/10, F1 10/10. Un solo insieme su dieci è esatto.
+
+![Precision e recall per bisogno. La precision di N09 è indefinita perché non vi sono risultati; la recall è zero perché esiste un documento pertinente non recuperato.](figures/rilevanza.png){width=92%}
+
+I 30 TP e i 31 FN danno una recall micro di circa il 49% delle **61 coppie pertinenti**, non di 61 documenti distinti. La macro-recall è maggiore perché attribuisce uguale peso ai bisogni, mentre la micro pesa maggiormente quelli con più documenti pertinenti. N04 mostra che precision perfetta non implica buona recall; N08 evidenzia il costo di molti falsi positivi.
+
+Le 53 diagnosi di FP/FN individuano menzioni in programmi o elenchi, trattazioni insufficienti e termini ambigui fra i falsi positivi; query troppo strette, singolare/plurale, sinonimi, abbreviazioni e differenze IT/EN fra i mancati recuperi. Come esempio soltanto illustrativo, cercare `transazione` può mancare un testo che usa solo `transazioni`. La scansione riproduce tutti i risultati lessicali delle dieci query: non emerge una divergenza del motore. Nessuno dei 53 casi dimostra da solo un difetto di estrazione; resta distinto il limite delle pagine e informazioni visuali non osservate.
+
+\newpage
+
+# 10. Prestazioni: che cosa è stato misurato
+
+L'indice evita di analizzare ogni documento a ogni ricerca, ma richiede una costruzione iniziale e può svolgere lavoro aggiuntivo sui risultati. Per osservare questo compromesso è stato eseguito un pilot sui **100 TXT sintetici, circa 3 MB**, con le trenta query e gli attesi già congelati. Non sono state effettuate ottimizzazioni dopo aver osservato i tempi.
+
+## Protocollo e condizioni
+
+L'ambiente è Windows 11, Python 3.12.2, processore AMD Ryzen AI 7 350 e circa 33,6 GB decimali di RAM fisica rilevata.
+
+Un processo costruisce l'indice volatile, esegue un passaggio di warm-up e tre passaggi misurati. Le query seguono l'ordine deterministico congelato; l'ordine dei metodi si alterna fra passaggi. La cache del sistema operativo non viene svuotata: letture di integrità, build e warm-up possono riscaldarla. Non si tratta di misure a cache fredda.
+
+Il timer monotono ad alta risoluzione misura separatamente build e recupero completo dei risultati. La build comprende discovery, lettura, analisi, costruzione, validazione e attivazione in memoria; esclude avvio del processo, composizione dei servizi e preparazione/conversione del corpus. La build osservata è **1,910427 secondi**, con 100 file indicizzati e nessuna esclusione.
+
+Il backend recupera tutte le pagine da 50 risultati, in ordine di percorso, includendo snippet e controlli di paginazione. La baseline enumera, apre e analizza tutti i TXT a ogni query, senza indice o cache applicativa; analizza entrambi i campi anche quando se ne interroga uno solo. Il confronto riguarda quindi **due percorsi completi con lavoro diverso**, non il solo accesso ai posting.
+
+La verifica degli insiemi avviene fuori dai tratti cronometrati. Sono corretti 240 confronti su 240: 60 nel warm-up e 180 misurati, cioè 90 per metodo. Il run termina in 138,389 secondi, senza errori, timeout o casi mancanti; questa durata operativa non è la latenza di una query.
+
+## Lettura delle statistiche
+
+| Campo     | Campioni per metodo | Indice ms, mediana [min–max] | Scansione ms, mediana [min–max] |
+| :-------- | ------------------: | :---------------------------- | :------------------------------- |
+| Nome      |                  30 | 1,333 [0,146–3,145]          | 420,542 [401,308–490,992]       |
+| Contenuto |                  45 | 454,039 [0,136–5.575,428]    | 456,790 [429,950–577,041]       |
+| Entrambi  |                  15 | 389,425 [1,301–467,863]      | 445,700 [432,113–549,218]       |
+
+Table: Statistiche sull'insieme dei campioni del campo. Gli intervalli mescolano query differenti e non sono intervalli di confidenza.
+
+La mediana dei rapporti scansione/indice per query è 319,419 sul nome, 1,185 sul contenuto e 1,228 su entrambi. Non coincide necessariamente con il rapporto fra le mediane aggregate della tabella. I dettagli della figura successiva impediscono che un unico valore nasconda i casi sfavorevoli.
+
+\newpage
+
+# 11. Variabilità fra query e limiti del pilot
+
+![Tempi per query: punto = mediana, segmento = min–max di tre campioni. Asse orizzontale logaritmico in millisecondi, uguale nei tre pannelli. La scansione è rappresentata in arancio e l'indice in blu.](figures/prestazioni.png){width=100%}
+
+Le query sul nome beneficiano nettamente dell'indice in questo pilot. Nel contenuto, invece, tempi molto brevi convivono con query che richiedono diversi secondi. Il minimo rapporto scansione/indice è **0,085**: per quel caso la scansione è più veloce. Non è stata accertata la causa specifica del rallentamento; numero di risultati e lavoro aggiuntivo sono fattori da investigare, non una diagnosi dimostrata.
+
+\newpage
+
+# 12. Luma: lo stesso motore in un'applicazione persistente
+
+La console rende osservabile la semantica della ricerca; un'applicazione quotidiana deve anche conservare il lavoro, aggiornare i documenti e restare utilizzabile durante queste operazioni. Luma realizza questo passaggio mantenendo gli stessi indici e casi d'uso fondamentali. Non richiede servizi remoti: elaborazione e dati restano locali.
+
+![Due interfacce, un motore. Il desktop conserva uno snapshot coerente e prepara separatamente l'aggiornamento; la pubblicazione avviene soltanto dopo la validazione.](figures/luma-flusso.png){width=100%}
+
+La logica di analisi e ricerca è separata da filesystem, persistenza e interfaccia. La console usa un indice volatile e non richiede Qt; il desktop usa Qt Quick e salva in SQLite testo e posting. SQLite conserva le strutture, ma non esegue il retrieval full-text. Questa separazione permette di verificare la ricerca senza dipendere dalla GUI.
 
 ## Un aggiornamento concreto
 
-Si consideri una cartella già indicizzata: un file viene modificato, uno aggiunto e uno eliminato. Il sync confronta percorso, dimensione e `mtime_ns`, ossia il timestamp con precisione in nanosecondi. Rilegge e analizza aggiunti e modificati, rimuove gli eliminati e riusa gli invariati. Se non trova differenze, non crea un nuovo snapshot.
+Dopo una prima indicizzazione, un documento può cambiare, uno essere aggiunto e uno eliminato. La sincronizzazione confronta percorso, dimensione e timestamp di modifica, rilegge aggiunti e modificati, rimuove gli eliminati e riusa gli invariati. Se non ci sono differenze non produce una nuova versione.
 
-Uno *snapshot* è una versione immutabile e coerente di catalogo, testo e indici. Un solo writer prepara il candidato; nel frattempo si continua a cercare sullo snapshot precedente della stessa directory. Il nuovo candidato viene validato e attivato con commit atomico: la ricerca vede la versione completa precedente oppure quella completa nuova.
+Uno *snapshot* è una versione immutabile e coerente di documenti, testo e indici. Un solo writer prepara il candidato mentre le ricerche della stessa directory continuano a usare lo snapshot precedente. Dopo la validazione, un commit atomico rende disponibile la nuova versione completa. Un errore o un annullamento prima del commit non pubblica risultati parziali; il commit già iniziato non è interrompibile.
 
-Un errore o un annullamento prima del commit lascia disponibile il precedente. Il commit, una volta iniziato, non è interrompibile. Anche le risposte della UI sono associate alla query, alla directory e allo snapshot: una risposta arrivata in ritardo non deve sostituire risultati più recenti.
-
-SQLite conserva testo estratto e posting, riusando le versioni documentali invariate; non esegue il retrieval full-text. La persistenza permette riapertura, estratti coerenti e aggiornamenti incrementali, ma introduce costi di storage, caricamento e gestione delle versioni. Questo compromesso è misurato separatamente dalla CLI volatile.
+Il limite del confronto per metadati è esplicito: una modifica che conserva dimensione e timestamp può non essere rilevata. Non si aggiungono letture o hash dei sorgenti durante le query. I risultati descrivono la versione indicizzata e possono diventare obsoleti fino alla successiva sincronizzazione. Le risposte asincrone sono associate alla richiesta e allo snapshot, per evitare che una ricerca precedente sostituisca risultati più recenti.
 
 \newpage
 
-# 6. Estendere la ricerca senza renderla ambigua
+# 13. Ricerca avanzata, senza cambiare quella esatta
 
-## Più formati, una rappresentazione comune
+Nel desktop l'utente può estendere una parola con un asterisco: `documen*` cerca prefissi, `*zione` suffissi. Senza asterisco resta una ricerca esatta. Un vocabolario ordinato per campo permette di individuare l'intervallo dei prefissi tramite ricerca binaria; un vocabolario di termini rovesciati trasforma i suffissi in prefissi, senza duplicare i posting.
 
-Markdown e PDF testuali vengono trasformati in testo canonico e indicizzati con lo stesso motore. I reader gestiscono le particolarità del formato; la ricerca continua a operare su termini e posizioni. Un PDF senza testo utile può essere escluso con un motivo dichiarato; un errore di lettura rimane un errore e non viene mascherato come esclusione. Non è previsto OCR per ricavare parole dalle immagini.
+Le espansioni richiedono almeno due caratteri normalizzati e sono ammesse fuori dalle frasi. Sono limitate a 256 termini per clausola e campo: superare il limite produce una segnalazione di query troppo ampia, non risultati troncati silenziosamente. La scelta mantiene esplicita la differenza fra ricerca esatta ed espansione.
 
-## Prefissi e suffissi espliciti
+## Suggerimenti e correzione proposta
 
-Nel desktop `documen*` cerca termini che iniziano con quel frammento; `*zione` termini che terminano con quel suffisso. L'asterisco rende esplicita l'espansione: una parola esatta continua ad avere il significato originario.
+Durante la digitazione vengono suggeriti termini presenti nel vocabolario; scegliere un suggerimento completa il termine e avvia la ricerca. Digitare, da solo, non esegue la query.
 
-Per ogni campo, al dizionario dei posting si affianca un vocabolario ordinato immutabile. Il prefisso individua un intervallo mediante ricerca binaria, evitando di esaminare sempre tutte le parole. Un secondo vocabolario contiene i termini rovesciati: un suffisso diventa così un prefisso della rappresentazione inversa. I posting non vengono duplicati.
+Dopo una ricerca di parole esatte può comparire una proposta ortografica. I candidati vengono confrontati mediante bigrammi, indice di Jaccard e distanza di Levenshtein, che conta inserimenti, cancellazioni e sostituzioni. La proposta richiede una scelta dell'utente: non modifica silenziosamente la query, le frasi o il comportamento della console. È una funzione distinta dalla ricerca semantica, che non è implementata.
 
-Le espansioni sono limitate a 256 termini per clausola e campo; oltre soglia viene segnalata una query troppo ampia, senza risultati parziali. Sono accettati prefissi o suffissi di almeno due caratteri normalizzati, fuori dalle frasi. Queste regole mantengono il lavoro prevedibile e impediscono che una query apparentemente semplice nasconda un'espansione illimitata.
+## Dalla corrispondenza alla lettura
 
-## Suggerire non significa correggere automaticamente
+L'ordinamento desktop considera soltanto i documenti che soddisfano tutta la query: privilegia le corrispondenze nel nome e poi le posizioni distinte corrispondenti, con spareggio stabile per percorso. Non è un modello di rilevanza appreso e non è il ranking valutato dalle metriche della console.
 
-I suggerimenti durante la digitazione provengono dal vocabolario acquisito. Selezionarne uno completa il termine e avvia la ricerca nel desktop; digitare da solo non esegue query. È una funzione distinta dalla proposta «Intendevi…?», calcolata dopo una ricerca di parole esatte.
+Filtri di formato, snippet ed evidenziazione aiutano a interpretare i risultati. Gli estratti usano il testo dello snapshot, senza rileggere il sorgente durante la ricerca. I token `.txt`, `.md` e `.pdf` nella barra possono selezionare i formati; filtri e ordinamento precedono la paginazione, mantenendo coerenti totali e pagine.
 
-La correzione ortografica cerca candidati usando coppie consecutive di caratteri, i *bigrammi*, confronta la loro sovrapposizione con l'indice di Jaccard e valuta la distanza di Levenshtein, cioè inserimenti, cancellazioni e sostituzioni necessari a trasformare una parola nell'altra. La proposta usa parole presenti nello snapshot e richiede una scelta esplicita. Non altera silenziosamente i risultati originali, le frasi o la CLI.
+I PDF si aprono nel viewer interno alla pagina del primo match nel contenuto, grazie a una mappa delle pagine; se il match è soltanto nel nome, si apre la prima. Questo non equivale a localizzare graficamente la parola nella pagina. TXT e Markdown offrono lettura e ricerca manuale, oltre al salto al match quando il sorgente è coerente con la versione indicizzata; Markdown dispone anche di anteprima formattata offline.
 
-## Ordinare e spiegare le corrispondenze
-
-Il ranking desktop opera soltanto sui documenti che soddisfano l'intera query: privilegia i match nel nome, poi le posizioni distinte corrispondenti, con spareggio stabile per percorso. Non è un punteggio semantico appreso. La CLI conserva l'ordine per percorso.
-
-Filtri di formato, snippet ed evidenziazione aiutano a capire perché un documento compare. Gli estratti usano il testo dello snapshot e non rileggono il file durante la query. Nel desktop i token `.txt`, `.md` e `.pdf` impostano rapidamente i formati; il filtro per sottocartella è disponibile nell'API, senza un controllo dedicato nella UI. Il backend applica filtri e ordinamento prima della paginazione, mantenendo coerenti totale e pagine.
+La modifica di TXT e Markdown è esplicita. La bozza viene protetta, il salvataggio verifica conflitti e sostituisce atomicamente il file, poi richiede un aggiornamento dell'indice. Italiano e inglese, temi, scorciatoie e guida locale completano il flusso. Queste funzioni ampliano l'utilizzabilità del motore, ma non eliminano i limiti lessicali e di estrazione emersi nella valutazione.
 
 \newpage
 
-# 7. Dal risultato al documento: l'interfaccia Luma
+# 14. Dal risultato al documento
 
-La GUI porta il motore in un flusso utilizzabile senza console: scegliere una cartella, attendere l'indicizzazione in background, cercare e aprire un risultato. Le due catture seguenti mostrano l'applicazione QML reale dal sorgente `40826b0`, con tre documenti sintetici e storage temporaneo; sono rendering offscreen, non prove dell'installer o dell'accessibilità nativa.
+Il flusso principale consiste nello scegliere una cartella, attendere l'indicizzazione in background, inviare una query e aprire un risultato. Le due schermate mostrano lo stesso scenario su tre documenti sintetici, senza esporre dati universitari personali.
 
-![Luma, dal risultato alla modifica. (a) Ricerca di “ricerca”: nome, formato ed estratto permettono di valutare i match. (b) Lo stesso documento Markdown aperto in modalità modifica, con corrispondenza evidenziata e strumenti di formattazione.](figures/interfaccia.png){width=75%}
+![Luma su dati dimostrativi: (a) risultati della ricerca con nome, formato ed estratto; (b) documento Markdown aperto in modifica. Le immagini provengono dall'interfaccia QML reale, renderizzata fuori schermo; non attestano da sole il collaudo di un installer o l'accessibilità nativa.](figures/interfaccia.png){width=80%}
 
-I PDF si aprono nel viewer interno alla pagina del primo match nel contenuto, grazie alla mappa delle pagine conservata nello snapshot; un match soltanto nel nome apre la prima pagina. TXT e Markdown offrono lettura, ricerca manuale nel documento e salto al match quando il sorgente è coerente con la versione indicizzata. Markdown dispone anche di anteprima formattata offline.
-
-La modifica di TXT/MD è esplicita: la bozza è protetta, il salvataggio controlla i conflitti e sostituisce il sorgente in modo atomico, poi richiede un sync. Italiano/inglese, temi, scorciatoie e guida F1 completano il flusso. Il layout supporta finestre da 480×360 pixel logici; il collaudo nativo DPI/Narrator del candidato rimane distinto dai test QML.
+Il risultato conserva il contesto necessario per decidere se aprire il documento. Lettura, ricerca manuale nel file e modifica restano azioni distinguibili: trovare una parola nel documento aperto non cambia la query sull'indice, mentre salvare una modifica richiede una sincronizzazione per renderla ricercabile. L'interfaccia rende quindi visibile il rapporto fra sorgente e rappresentazione indicizzata.
 
 \newpage
 
-# 8. Qualità verificabile e stato della distribuzione
+# 15. Conclusioni: risultati, limiti e sviluppi
 
-La correttezza della CLI non basta a dimostrare quella di un'applicazione persistente. Per questo le verifiche sono organizzate per scopo: risultati attesi, invarianti di aggiornamento, comportamento dell'interfaccia e distribuzione. Ogni gruppo risponde a una domanda diversa.
+La principale evidenza è la distinzione fra correttezza e utilità del recupero. I **120 confronti lessicali esatti** mostrano accordo con un verificatore indipendente sui casi provati. I **600 giudizi tematici**, invece, evidenziano una recall micro di **0,4918** e una precision di **0,5769**: un motore può applicare correttamente le regole e mancare documenti pertinenti quando la formulazione della query non coincide con quella dei testi.
 
-## Tre corpus, tre domande
+## Il valore dell'approccio adottato
 
-| Dati di prova | Domanda | Evidenza |
-|:--|:--|:--|
-| Homework: 8 TXT, 192 byte | I due campi, l'AND e le frasi funzionano secondo la consegna? | Nuova esecuzione: 10 query e 2 regressioni PASS |
-| Funzionale ibrido V2-01 | I reader e il retrieval gestiscono formati e testi diversi? | 13 sintetici e 11 query; corpus reale di 12 documenti IT/EN con 36 query |
-| Prestazionale V2-02 | Quali tempi e consumi si osservano aumentando il carico? | Target di 10.000 file e circa 300 MB estratti; tre cicli sul compilato |
+Il punto di forza del progetto è la possibilità di spiegare e verificare ogni passaggio: dal testo ai token, dai token ai posting e dai risultati alle metriche. Gli indici posizionali rendono esplicita la semantica delle frasi; il backend condiviso porta la stessa logica dalla console a un'applicazione utilizzabile. Gli snapshot immutabili e l'attivazione atomica proteggono la coerenza delle ricerche durante gli aggiornamenti.
 
-Il corpus reale comprende nove Markdown, un TXT e due PDF, con fonti, licenze e hash in un manifest versionato. La verifica V2-01 del 7 novembre registra **36/36 query PASS** sui dodici documenti completi. È un'evidenza storica identificata, non una nuova esecuzione svolta per questa relazione. La suite reale è opt-in: un corpus mancante non equivale a una prova superata.
+Anche il disegno sperimentale favorisce verifiche controllabili. I sintetici deterministici e annidati consentono confronti ripetibili; i materiali reali introducono varietà autentica. Il verificatore indipendente e i giudizi fissati prima dei risultati riducono il rischio di costruire una valutazione favorevole a posteriori. Distinguere correttezza, rilevanza e prestazioni permette di riconoscere con precisione sia i risultati raggiunti sia le priorità di miglioramento.
 
-Gli attesi funzionali confrontano insiemi completi di documenti. La varietà dei formati serve a verificare il comportamento dei reader; il corpus sintetico prestazionale serve invece a controllare volume, frequenze e ripetibilità del carico. I risultati dei due non sono intercambiabili.
+Le verifiche automatiche comprendono piccoli esempi calcolati manualmente per le metriche, casi Unicode e frasi, controlli di integrità e riproducibilità, paginazione completa e rifiuto di giudizi incompleti. La regressione console viene eseguita separatamente dalle funzioni desktop. Le prove automatiche non sostituiscono la revisione dei documenti o l'interpretazione dei risultati.
 
-## Test automatici e collaudo sul pacchetto
+## I limiti che restano
 
-Per il candidato `800ff756`, il registro di accettazione riporta **439 test backend superati e 7 saltati**, più **138 test frontend/script superati e 1 escluso**. I sei skip filesystem Windows e quello del corpus reale hanno motivi diversi; il test installer è stato escluso perché l'applicazione era aperta. La precedente esecuzione senza esclusione aveva fallito proprio quel caso: il limite rimane dichiarato.
+Le metriche tematiche descrivono il campione e i bisogni scelti, con i limiti di revisione e campionamento illustrati nella sezione 7. La correttezza sui TXT non equivale alla copertura di tutte le informazioni visuali degli originali. La raccolta personale resta inoltre non distribuibile, mentre metodo e generazione sintetica sono riproducibili esternamente.
 
-Le prove includono semantica della ricerca, snapshot, sync, errori, UI e script. Non si sommano conteggi di esecuzioni storiche sovrapposte. Il runner Homework resta una regressione autonoma, rieseguita anche per la presente riscrittura. Le suite complete citate sono quelle del registro, non nuove esecuzioni documentali.
+Il pilot evidenzia un netto vantaggio sul nome e risultati più variabili sul contenuto. Mancano misure ripetute sulle scale maggiori per concludere sulla scalabilità; i benchmark desktop, con protocolli e scopi diversi, restano separati.
 
-## Pubblicato e candidato locale
+Una prosecuzione utile misurerebbe build e ricerca su più scale e processi e amplierebbe la revisione indipendente dei giudizi. Stemming o espansioni linguistiche andrebbero valutati come nuovi esperimenti, confrontando benefici di recall e possibili perdite di precision; non sono miglioramenti già dimostrati. Luma mostra intanto come lo stesso motore possa sostenere un'applicazione locale con risultati spiegabili e aggiornamenti coerenti.
 
-La **0.2.1** è pubblicata dal commit `a799901` con installer, checksum e manifest. L'utente ha confermato il funzionamento dell'installer scaricato da GitHub su un PC di test, senza fornire hash o risultati per singolo scenario: questo non identifica byte per byte il pacchetto collaudato.
-
-La **0.2.2** dispone di build pulita e benchmark finale del candidato `800ff756`. Restano pendenti il collaudo installazione/aggiornamento/disinstallazione offline su account standard isolato e le verifiche native DPI/Narrator. Il superamento del gate prestazionale non chiude automaticamente queste prove. L'installer include runtime e dipendenze per l'uso offline senza Python preinstallato; nessuna pubblicazione o consegna al docente è stata eseguita durante il lavoro su questa relazione.
-
-\newpage
-
-# 9. Prestazioni: misure e condizioni di validità
-
-## Il benchmark finale del candidato 0.2.2
-
-I valori seguenti provengono dal compilato pulito `800ff756`, non dalla piccola prova TXT. Il report originale locale è identificato nel registro prestazionale; il suo SHA-256 è stato ricontrollato per questa relazione. Il runner registra completezza delle fasi, correttezza dei risultati, incluso l'atteso completo di `frasecom*`, e rispetto dei budget.
-
-Ambiente: **Windows 11 build 26200, Ryzen AI 7 350, 32 GB RAM, SSD WD SN5000S**, profilo Balanced e alimentazione collegata. Il corpus target V2-02 contiene **10.000 file**, circa **300 MB di testo estratto**. Il metodo usa tre cicli, cinque warm-up e cento campioni per query; la cache del sistema operativo non viene svuotata. I tempi di preparazione e controllo degli attesi sono esclusi dai campioni.
-
-Il *p95* è il tempo entro cui ricade almeno il 95% dei campioni, calcolato con metodo nearest-rank. La tabella usa il massimo dei tre cicli e, per le query, il massimo p95 della categoria. L'avvio termina quando la ricerca è disponibile; il sync incrementale modifica 100 file, ne aggiunge 100 e ne rimuove 100.
-
-| Metrica | Massimo osservato | Budget vigente |
-|:--|--:|--:|
-| Build iniziale | 131,868 s | 300 s |
-| Riapertura fino alla ricerca | 5,705 s | 15 s |
-| Sync senza modifiche | 0,617 s | 2 s |
-| Sync incrementale 100/100/100 | 3,140 s | 60 s |
-| Query esatte, p95 | 55,684 ms | 100 ms |
-| Wildcard ordinarie, p95 | 22,338 ms | 100 ms |
-| `frasecom*` nel contenuto, p95 | 29,058 ms | 200 ms |
-| Suggerimenti, p95 | 0,199 ms | 100 ms |
-| Working set del processo | 1.366,54 MiB | 2.560 MiB |
-
-Il working set originale è **1.432.920.064 byte**; la conversione usa 1 MiB = 1.048.576 byte. Per questo artefatto il gate T08 è chiuso con esito PASS. Il risultato descrive il compilato e l'ambiente indicati, non una misura del PC usato per il collaudo manuale.
-
-## Perché il PASS richiede una spiegazione
-
-Il 12 novembre sono state approvate soglie riviste: no-change da 1 a 2 secondi e p95 del caso ampio `frasecom*` da 100 a 200 ms; le altre restano invariate. Un precedente run 0.2.2 aveva raggiunto 1,520 s e 172,797 ms, fallendo i vecchi limiti. Quegli esiti non sono stati cancellati né trasformati in miglioramenti del codice.
-
-Un confronto alternato fra compilati locali 0.2.1 e 0.2.2 ha inoltre osservato p95 massimi delle query esatte di **54,287 e 97,799 ms**. La causa del rallentamento non è accertata; il carico concorrente non è stato campionato. Il candidato finale ha valori inferiori, ma la differenza fra sessioni impedisce di attribuirli automaticamente a un'ottimizzazione. I budget rivisti definiscono l'accettazione; non dimostrano da soli un guadagno prestazionale. Questi limiti accompagnano i numeri anziché essere nascosti da un unico esito verde.
-
-\newpage
-
-# 10. Limiti, riproduzione e riferimenti
-
-## Confini consapevoli
-
-Il sistema opera localmente e offline su una directory ricorsiva attiva. Non include OCR, ricerca semantica, watcher continuo o motori IR esterni. La normalizzazione preserva gli accenti e non unifica le varianti morfologiche: si privilegia una semantica controllabile, estesa soltanto da wildcard e proposte esplicite.
-
-I risultati descrivono lo snapshot acquisito. Le modifiche sul disco diventano ricercabili dopo il sync; variazioni che conservano dimensione e timestamp possono sfuggire al diff. Durante l'ingestione i metadati vengono ricontrollati, ma non vengono aggiunti hash dei sorgenti o accessi ai file durante le query per correggere questo limite.
-
-Nei PDF, ordine e qualità del testo estratto possono differire dal layout visivo; le frasi operano sul testo canonico. I viewer aprono il documento corrente, mentre il risultato deriva dallo snapshot: la navigazione deve rispettare i controlli e i limiti del relativo formato. Il reader TXT/MD limita dimensione e lunghezza delle righe e permette l'apertura nell'app associata per i casi non gestibili.
-
-Il corpus Homework rende gli attesi trasparenti ma non rappresenta la varietà dei documenti reali; il benchmark sintetico misura un carico definito, senza garantire gli stessi tempi su ogni PC. Per la 0.2.2 rimangono aperti i collaudi nativi indicati nella sezione 8.
-
-## Ripetere la prova didattica
-
-Con Python 3.12 o successivo, dalla radice del repository, su Windows:
-
-```powershell
-python -m venv backend/.venv
-backend/.venv/Scripts/python.exe -m pip install -e "./backend[dev]"
-backend/.venv/Scripts/python.exe experiments/run_homework3.py
-```
-
-Se l'ambiente esiste già, omettere la creazione del venv. Il runner genera i TXT temporanei, avvia la CLI e stampa JSON con ambiente, misura, attesi, ottenuti e trascrizione; restituisce codice 1 se una prova fallisce. Per una sessione interattiva usare lo stesso interprete con `-m local_document_search.interfaces.cli` seguito dal percorso della propria directory. L'installazione delle dipendenze richiede rete oppure una cache completa; l'indicizzazione e la ricerca non la richiedono.
-
-## Riferimenti e tracciabilità
-
-I riferimenti del progetto qui sotto sono fissati alla revisione `40826b0`, letta prima della riscrittura. I registri identificano a loro volta commit, artefatti e condizioni delle singole prove; corpus scaricati, snapshot e report grezzi restano fuori Git.
-
-1. **Consegna e prova TXT:** [allineamento alle slide Homework 3](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/homework-3/ASSIGNMENT_ALIGNMENT.md), [runner con corpus e attesi](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/experiments/run_homework3.py). Le slide sono sintetizzate nel documento di allineamento.
-2. **Scelte e implementazione:** [architettura](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/ARCHITECTURE.md), [indice delle decisioni ADR](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/adr/README.md).
-3. **Verifica funzionale e prestazioni:** [corpus V2-01](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/TEST_DATASETS.md), [benchmark, metodo e hash del candidato](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/PERFORMANCE.md).
-4. **Distribuzione e punti aperti:** [release 0.2.1](https://github.com/Forest904/local-document-search/releases/tag/v0.2.1), [matrice di accettazione 0.2.2](https://github.com/Forest904/local-document-search/blob/40826b0e96df4aa8ee767c05d4b13b0e84cc1529/docs/V2_14_ACCEPTANCE.md).
+**Riferimenti.**  Codice, metodo e istruzioni: [github.com/Forest904/local-document-search](https://github.com/Forest904/local-document-search).
