@@ -223,3 +223,20 @@ Per quella compilata, creare l'harness con l'interprete packaging e Nuitka 4.1.1
 quindi passare `build/fault-harness/fault_harness.dist/fault_harness.exe` al runner.
 Le tre prove `race` terminano il processo in competizione con COMMIT: accettano soltanto
 uno snapshot vecchio o nuovo completo, senza attribuire il kill a un punto interno preciso.
+
+## Homework 3 — HW3-03 pilot
+
+Runner opt-in, senza nuove dipendenze: solo il sintetico piccolo e i suoi attesi
+HW3-02 congelati. Scegliere una destinazione nuova (`NNN` libero):
+
+```powershell
+backend/.venv/Scripts/python.exe experiments/homework3_performance.py experiments/results/homework3/hw3-02-002/small-frozen.json experiments/results/homework3/hw3-03-NNN
+```
+
+Un processo, build separata, un passaggio di warm-up e tre misurati, budget
+cooperativo di 600 secondi. Non avviare altre suite durante le misure.
+Output progressivo `samples.jsonl`, report locale e `summary.json` esportabile;
+codice 0 solo con run completo e confronti corretti, 1 per run incompleto o
+discordante. Nessun rilancio automatico, p95 o soglia prestazionale.
+La baseline rilegge e analizza entrambi i campi per ciascuna query; il backend
+include snippet e paginazione. [Metodo e limiti](../docs/homework-3/HW3_03_PERFORMANCE.md).

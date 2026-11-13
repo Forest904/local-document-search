@@ -22,7 +22,12 @@ V2-01–V2-08 sono concluse; nessuna ulteriore milestone è definita. Le evidenz
 nessuna divergenza irrisolta. I 600 giudizi sono approvati e la valutazione tematica è
 completa sui soli 60 documenti: precision/recall/F1 micro 0,5769/0,4918/0,5310.
 Test mirati 24 passati, backend 488 passati/7 skip, CLI 10+2 PASS.
-[Metodo, evidenze e limiti](homework-3/HW3_02_EVALUATION.md). HW3-03–04 da eseguire.
+[Metodo, evidenze e limiti](homework-3/HW3_02_EVALUATION.md).
+
+**HW3-03 pilot ridotto concluso:** 100 TXT, build 1,910427 s, run 138,388906 s,
+240/240 confronti esatti e nessun timeout. Test mirati 29 passati, CLI 10+2 PASS.
+[Misure e limiti](homework-3/HW3_03_PERFORMANCE.md). Campagna estesa rinviata;
+HW3-04 da eseguire.
 
 | Ti serve capire… | Documento |
 |---|---|
@@ -34,7 +39,7 @@ Test mirati 24 passati, backend 488 passati/7 skip, CLI 10+2 PASS.
 | Quali dati conserva e come distribuirlo | [Privacy e diritti](SECURITY_AND_PRIVACY.md), [packaging](../scripts/package/README.md) |
 | Perché sono state fatte certe scelte | [Decisioni approvate e aperte](adr/README.md) |
 | Come verificare una modifica | [Strategia e scenari](TEST_STRATEGY.md), [corpus funzionale](TEST_DATASETS.md), [comandi esperimenti](../experiments/README.md) |
-| Come ampliare la valutazione e la relazione Homework 3 | [Roadmap Homework](homework-3/ROADMAP.md): HW3-01 e HW3-02 concluse, HW3-03–04 da eseguire; distinte da V2-01 e V2-02 |
+| Come ampliare la valutazione e la relazione Homework 3 | [Roadmap Homework](homework-3/ROADMAP.md): HW3-01, HW3-02 e pilot ridotto HW3-03 conclusi, HW3-04 da eseguire; distinte da V2-01 e V2-02 |
 
 Requisiti e scenari mantengono ID stabili; misure ed esiti appartengono ai report. Le specifiche correnti sono autonome: l’[archivio v1](archive/v1/README.md) rimanda ai documenti storici a revisione Git fissa e riassume M9; non integra implicitamente le regole attuali.
 

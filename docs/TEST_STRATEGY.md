@@ -1,5 +1,11 @@
 # Strategia di verifica v2
 
+HW3-03 usa `backend/tests/integration/test_homework3_performance.py`: fixture
+piccole per recupero completo oltre 50 risultati, rilettura a ogni query,
+confronti discordanti, statistiche note, errori, timeout con campioni preservati
+ed esportazione senza testi o percorsi personali. Il pilot su 100 TXT resta
+opt-in e separato dalla suite: [protocollo HW3-03](homework-3/HW3_03_PERFORMANCE.md).
+
 HW3-02 usa `backend/tests/integration/test_homework3_evaluation.py`: esempi manuali
 per Unicode, segni combinanti, filename senza directory/suffisso, AND/frasi/BOTH,
 input invalidi, UTF-8/BOM e metriche con denominatori nulli. Le integrazioni coprono

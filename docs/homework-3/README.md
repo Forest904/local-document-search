@@ -4,8 +4,9 @@
 2. [QUERY_TEST_PLAN.md](QUERY_TEST_PLAN.md): matrice di ~10 prove, da adattare al corpus reale.
 3. [REPORT.md](REPORT.md): relazione riscritta il 12 novembre 2026, dieci pagine illustrate; requisiti Homework, motore, query eseguite ed evoluzione fino al candidato Luma 0.2.2, con evidenze e limiti separati.
 4. [BUILD.md](BUILD.md): generazione del PDF e delle figure, controllo visivo e aggiornamento delle misure.
-5. [ROADMAP.md](ROADMAP.md): HW3-01 e HW3-02 concluse; confronto indice-scansione e revisione della relazione restano attività HW3-03–04.
+5. [ROADMAP.md](ROADMAP.md): HW3-01, HW3-02 e pilot ridotto HW3-03 conclusi; relazione HW3-04 da eseguire, campagna estesa rinviata.
 6. [HW3_02_EVALUATION.md](HW3_02_EVALUATION.md): strumenti, corpus/query congelati, campione, giudizi approvati, metriche e limiti.
+7. [HW3_03_PERFORMANCE.md](HW3_03_PERFORMANCE.md): pilot su 100 TXT, misure separate, confronto indice/scansione e limiti.
 
 La CLI TXT, il doppio indice e la valutazione con dieci query sono documentati nella [relazione compilata](REPORT.md). Questo non dimostra l'invio amministrativo al docente.
 
@@ -21,3 +22,10 @@ approvati dall'utente prima delle ricerche. Rilevanza micro: precision 0,5769,
 recall 0,4918, F1 0,5310; recall limitata al campione e revisione visuale PDF
 rappresentativa. Test mirati 24 passati, backend 488 passati/7 skip, CLI 10+2 PASS.
 Il [protocollo](HW3_02_EVALUATION.md) distingue risultati, approvazioni e limiti.
+
+## HW3-03
+
+**Pilot ridotto concluso:** 100 TXT, build 1,910427 s, run 138,388906 s,
+240/240 confronti esatti, nessun timeout. Test mirati 29 passati, CLI 10+2 PASS.
+[Misure e limiti](HW3_03_PERFORMANCE.md): un corpus e un processo non attestano
+scalabilità; campagna estesa rinviata e HW3-04 ancora da eseguire.
